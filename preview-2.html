@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전관리 솔루션 UI 프리뷰</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--gray-100);
+            color: var(--gray-800);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .search-bar {
+            flex: 1;
+            margin: 0 2rem;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .search-bar svg {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: var(--gray-500);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-info .avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        nav {
+            margin-bottom: 1.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--gray-500);
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--gray-700);
+            background-color: var(--gray-100);
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Dashboard View */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-grid .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+
+        .stat-card .label {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .alert-banner {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background-color: #fef2f2;
+            border: 1px solid #fee2e2;
+            border-radius: 0.5rem;
+            padding: a1.25rem;
+            margin-bottom: 1.5rem;
+            color: #b91c1c;
+        }
+
+        .chart-container {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Table View */
+        .table-container {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-options select {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem 1.5rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--gray-100);
+            font-weight: 500;
+            color: var(--gray-600);
+        }
+
+        tr {
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        tr:last-child {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-badge.present {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.absent {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-badge.late {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .table-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .pagination-controls button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            background-color: white;
+            color: var(--gray-700);
+            cursor: pointer;
+        }
+
+        .pagination-controls button:hover {
+            background-color: var(--gray-100);
+        }
+
+        .pagination-controls button.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Card View */
+        .card-view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .view-options {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .view-options button {
+            padding: 0.5rem 1rem;
+            background-color: white;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .view-options button.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .worker-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 1rem;
+        }
+
+        .worker-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .worker-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .worker-photo {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: var(--gray-300);
+        }
+
+        .worker-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .worker-name {
+            font-weight: 500;
+        }
+
+        .worker-role {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+
+        .worker-card-body {
+            padding: 1rem;
+        }
+
+        .worker-info {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .worker-info .label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .worker-info .value {
+            font-size: 0.875rem;
+        }
+
+        .worker-card-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background-color: var(--gray-50);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .worker-status {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .worker-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .worker-actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .worker-actions button.contact {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .worker-actions button.view {
+            background-color: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        /* Calendar View */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .calendar-nav button {
+            padding: 0.5rem;
+            background-color: white;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .calendar-nav button:hover {
+            background-color: var(--gray-100);
+        }
+
+        .calendar-view-options {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .calendar-view-options button {
+            padding: 0.5rem 1rem;
+            background-color: white;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .calendar-view-options button.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 500;
+            padding: 0.5rem;
+            background-color: var(--gray-100);
+            border-radius: 4px;
+        }
+
+        .calendar-day {
+            min-height: 100px;
+            background-color: white;
+            border-radius: 4px;
+            border: 1px solid var(--gray-200);
+            padding: 0.5rem;
+        }
+
+        .calendar-day.today {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+        }
+
+        .calendar-day .date {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .calendar-day .workers {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+
+        .calendar-day .summary {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .calendar-day .summary .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .color-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+        }
+
+        .color-dot.present {
+            background-color: var(--success);
+        }
+
+        .color-dot.absent {
+            background-color: var(--danger);
+        }
+
+        .color-dot.late {
+            background-color: var(--warning);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .worker-cards {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+
+            .calendar-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .search-bar {
+                display: none;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+
+            .tabs::-webkit-scrollbar {
+                display: none;
+            }
+
+            .worker-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .calendar-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>안전관리 솔루션</span>
+        </div>
+        <div class="search-bar">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" placeholder="작업자 이름, 업체명, 직종 등 검색...">
+        </div>
+        <div class="user-info">
+            <span>관리자</span>
+            <div class="avatar">A</div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="tabs">
+            <div class="tab active" data-view="dashboard">대시보드</div>
+            <div class="tab" data-view="table">리스트 뷰</div>
+            <div class="tab" data-view="card">카드 뷰</div>
+            <div class="tab" data-view="calendar">캘린더 뷰</div>
+        </div>
+    </nav>
+
+    <!-- Dashboard View -->
+    <div class="view active" id="dashboard">
+        <div class="dashboard-grid">
+            <div class="card stat-card">
+                <div class="label">금일 총 출역 인원</div>
+                <div class="value">32/38</div>
+                <div class="label">84% 출석률</div>
+            </div>
+            <div class="card stat-card">
+                <div class="label">안전교육 미이수자</div>
+                <div class="value">3</div>
+                <div class="label">전체 인원 대비 7.9%</div>
+            </div>
+            <div class="card stat-card">
+                <div class="label">위험 작업 진행 중</div>
+                <div class="value">5</div>
+                <div class="label">고소 작업 3건, 중장비 작업 2건</div>
+            </div>
+        </div>
+
+        <div class="alert-banner">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+                <strong>안전 경고:</strong> B구역에서 안전모 미착용 인원 2명이 감지되었습니다.
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div style="text-align: center; color: #6b7280;">
+                [일별 출역 현황 그래프]<br>
+                이 부분에는 실제 그래프가 표시됩니다
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div style="text-align: center; color: #6b7280;">
+                [구역별 인원 분포 현황]<br>
+                이 부분에는 실제 그래프가 표시됩니다
+            </div>
+        </div>
+    </div>
+
+    <!-- Table View -->
+    <div class="view" id="table">
+        <div class="table-container">
+            <div class="table-header">
+                <h2>작업자 목록</h2>
+                <div class="filter-options">
+                    <select>
+                        <option>전체 업체</option>
+                        <option>대한건설</option>
+                        <option>신성산업</option>
+                        <option>우진전기</option>
+                    </select>
+                    <select>
+                        <option>전체 직종</option>
+                        <option>전기</option>
+                        <option>설비</option>
+                        <option>토목</option>
+                        <option>용접</option>
+                    </select>
+                    <select>
+                        <option>전체 출석 상태</option>
+                        <option>출근</option>
+                        <option>결근</option>
+                        <option>지각</option>
+                    </select>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>업체</th>
+                    <th>직종</th>
+                    <th>출근 시간</th>
+                    <th>현재 위치</th>
+                    <th>출석 상태</th>
+                    <th>안전교육</th>
+                    <th>작업</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 2rem; height: 2rem; border-radius: 50%; background-color: #d1d5db; overflow: hidden;">
+                                <img src="/api/placeholder/32/32" alt="김민수" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <span>김민수</span>
+                        </div>
+                    </td>
+                    <td>대한건설</td>
+                    <td>전기</td>
+                    <td>08:02</td>
+                    <td>A구역</td>
+                    <td><span class="status-badge present">출근</span></td>
+                    <td>완료</td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button style="background: none; border: none; cursor: pointer; color: #2563eb;">상세</button>
+                            <button style="background: none; border: none; cursor: pointer; color: #2563eb;">연락</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 2rem; height: 2rem; border-radius: 50%; background-color: #d1d5db; overflow: hidden;">
+                                <img src="/api/placeholder/32/32" alt="이지훈" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <span>이지훈</span>
+                        </div>
+                    </td>
+                    <td>신성산업</td>
+                    <td>용접</td>
+                    <td>07:48</td>
+                    <td>C구역</td>
+                    <td><span class="status-badge present">출근</span></td>
+                    <td>완료</td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button style="background: none; border: none; cursor: pointer; color: #2563eb;">상세</button>
+                            <button style="background: none; border: none; cursor: pointer; color: #2563eb;">연락</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 2rem; height: 2rem; border-radius: 50%; background-color: #d1d5db; overflow: hidden;">
+                                <img src="/api/placeholder/32/32" alt="박준영" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <span>박준영</span>
+                        </div>
+                    </td>
+                    <td>우진전기</td>
+                    <td>설비</td>
+                    <td>08:45</td>
+                    <td>B구역</td>
+                    <td><span class="status-badge late">지각</span></td>
+                    <td>미완료</td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button style="background: none; border: none; cursor: pointer; color: #2563eb;">상세</button>
+                            <button style="background: none; border: none; cursor: pointer; color: #2563eb;">연락</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 2rem; height: 2rem; border-radius: 50%; background-color: #d1d5db; overflow: hidden;">
+                                <img src="/api/placeholder/32/32" alt="최현우" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <span>최현우</span>
+                        </div>
+                    </td>
+                    <td>대한건설</td>
+                    <td>토목</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><span class="status-badge absent">결근</span></td>
+                    <td>완료</td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button style="background: none; border: none; cursor: pointer; color: #2563eb;">상세</button>
+                            <button style="background: none; border: none; cursor: pointer; color: #2563eb;">연락</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 2rem; height: 2rem; border-radius: 50%; background-color: #d1d5db; overflow: hidden;">
+                                <img src="/api/placeholder/32/32" alt="장서연" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <span>장서연</span>
+                        </div>
+                    </td>
+                    <td>신성산업</td>
+                    <td>안전관리</td>
+                    <td>07:52</td>
+                    <td>관리사무소</td>
+                    <td><span class="status-badge present">출근</span></td>
+                    <td>완료</td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button style="background: none; border: none; cursor: pointer; color: #2563eb;">상세</button>
+                            <button style="background: none; border: none; cursor: pointer; color: #2563eb;">연락</button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="table-pagination">
+                <div class="pagination-info">총 38명 중 1-5 표시</div>
+                <div class="pagination-controls">
+                    <button>&lt;</button>
+                    <button class="active">1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>&gt;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card View -->
+    <div class="view" id="card">
+        <div class="card-view-header">
+            <h2>작업자 카드</h2>
+            <div class="view-options">
+                <button>전체 업체</button>
+                <button>전체 직종</button>
+                <button>전체 상태</button>
+            </div>
+        </div>
+
+        <div class="worker-cards">
+            <!-- Worker Card 1 -->
+            <div class="worker-card">
+                <div class="worker-card-header">
+                    <div class="worker-photo">
+                        <img src="/api/placeholder/48/48" alt="김민수">
+                    </div>
+                    <div>
+                        <div class="worker-name">김민수</div>
+                        <div class="worker-role">전기 / 대한건설</div>
+                    </div>
+                </div>
+                <div class="worker-card-body">
+                    <div class="worker-info">
+                        <div class="label">연락처</div>
+                        <div class="value">010-1234-5678</div>
+                        <div class="label">출근 시간</div>
+                        <div class="value">08:02</div>
+                        <div class="label">현재 위치</div>
+                        <div class="value">A구역</div>
+                        <div class="label">안전교육</div>
+                        <div class="value" style="color: #22c55e;">완료</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background-color: #22c55e;"></div>
+                        <span style="font-size: 0.875rem;">안전장비 착용 완료</span>
+                    </div>
+                </div>
+                <div class="worker-card-footer">
+                    <div class="worker-status" style="color: #22c55e;">출근</div>
+                    <div class="worker-actions">
+                        <button class="contact">연락</button>
+                        <button class="view">상세</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Worker Card 2 -->
+            <div class="worker-card">
+                <div class="worker-card-header">
+                    <div class="worker-photo">
+                        <img src="/api/placeholder/48/48" alt="이지훈">
+                    </div>
+                    <div>
+                        <div class="worker-name">이지훈</div>
+                        <div class="worker-role">용접 / 신성산업</div>
+                    </div>
+                </div>
+                <div class="worker-card-body">
+                    <div class="worker-info">
+                        <div class="label">연락처</div>
+                        <div class="value">010-2345-6789</div>
+                        <div class="label">출근 시간</div>
+                        <div class="value">07:48</div>
+                        <div class="label">현재 위치</div>
+                        <div class="value">C구역</div>
+                        <div class="label">안전교육</div>
+                        <div class="value" style="color: #22c55e;">완료</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background-color: #22c55e;"></div>
+                        <span style="font-size: 0.875rem;">안전장비 착용 완료</span>
+                    </div>
+                </div>
+                <div class="worker-card-footer">
+                    <div class="worker-status" style="color: #22c55e;">출근</div>
+                    <div class="worker-actions">
+                        <button class="contact">연락</button>
+                        <button class="view">상세</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Worker Card 3 -->
+            <div class="worker-card">
+                <div class="worker-card-header">
+                    <div class="worker-photo">
+                        <img src="/api/placeholder/48/48" alt="박준영">
+                    </div>
+                    <div>
+                        <div class="worker-name">박준영</div>
+                        <div class="worker-role">설비 / 우진전기</div>
+                    </div>
+                </div>
+                <div class="worker-card-body">
+                    <div class="worker-info">
+                        <div class="label">연락처</div>
+                        <div class="value">010-3456-7890</div>
+                        <div class="label">출근 시간</div>
+                        <div class="value" style="color: #f59e0b;">08:45</div>
+                        <div class="label">현재 위치</div>
+                        <div class="value">B구역</div>
+                        <div class="label">안전교육</div>
+                        <div class="value" style="color: #ef4444;">미완료</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background-color: #ef4444;"></div>
+                        <span style="font-size: 0.875rem;">안전모 미착용</span>
+                    </div>
+                </div>
+                <div class="worker-card-footer">
+                    <div class="worker-status" style="color: #f59e0b;">지각</div>
+                    <div class="worker-actions">
+                        <button class="contact">연락</button>
+                        <button class="view">상세</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Worker Card 4 -->
+            <div class="worker-card">
+                <div class="worker-card-header">
+                    <div class="worker-photo">
+                        <img src="/api/placeholder/48/48" alt="최현우">
+                    </div>
+                    <div>
+                        <div class="worker-name">최현우</div>
+                        <div class="worker-role">토목 / 대한건설</div>
+                    </div>
+                </div>
+                <div class="worker-card-body">
+                    <div class="worker-info">
+                        <div class="label">연락처</div>
+                        <div class="value">010-4567-8901</div>
+                        <div class="label">출근 시간</div>
+                        <div class="value">-</div>
+                        <div class="label">현재 위치</div>
+                        <div class="value">-</div>
+                        <div class="label">안전교육</div>
+                        <div class="value" style="color: #22c55e;">완료</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background-color: #6b7280;"></div>
+                        <span style="font-size: 0.875rem;">상태 확인 불가</span>
+                    </div>
+                </div>
+                <div class="worker-card-footer">
+                    <div class="worker-status" style="color: #ef4444;">결근</div>
+                    <div class="worker-actions">
+                        <button class="contact">연락</button>
+                        <button class="view">상세</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Worker Card 5 -->
+            <div class="worker-card">
+                <div class="worker-card-header">
+                    <div class="worker-photo">
+                        <img src="/api/placeholder/48/48" alt="장서연">
+                    </div>
+                    <div>
+                        <div class="worker-name">장서연</div>
+                        <div class="worker-role">안전관리 / 신성산업</div>
+                    </div>
+                </div>
+                <div class="worker-card-body">
+                    <div class="worker-info">
+                        <div class="label">연락처</div>
+                        <div class="value">010-5678-9012</div>
+                        <div class="label">출근 시간</div>
+                        <div class="value">07:52</div>
+                        <div class="label">현재 위치</div>
+                        <div class="value">관리사무소</div>
+                        <div class="label">안전교육</div>
+                        <div class="value" style="color: #22c55e;">완료</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background-color: #22c55e;"></div>
+                        <span style="font-size: 0.875rem;">안전장비 착용 완료</span>
+                    </div>
+                </div>
+                <div class="worker-card-footer">
+                    <div class="worker-status" style="color: #22c55e;">출근</div>
+                    <div class="worker-actions">
+                        <button class="contact">연락</button>
+                        <button class="view">상세</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Worker Card 6 -->
+            <div class="worker-card">
+                <div class="worker-card-header">
+                    <div class="worker-photo">
+                        <img src="/api/placeholder/48/48" alt="김도현">
+                    </div>
+                    <div>
+                        <div class="worker-name">김도현</div>
+                        <div class="worker-role">전기 / 우진전기</div>
+                    </div>
+                </div>
+                <div class="worker-card-body">
+                    <div class="worker-info">
+                        <div class="label">연락처</div>
+                        <div class="value">010-6789-0123</div>
+                        <div class="label">출근 시간</div>
+                        <div class="value">08:15</div>
+                        <div class="label">현재 위치</div>
+                        <div class="value">D구역</div>
+                        <div class="label">안전교육</div>
+                        <div class="value" style="color: #22c55e;">완료</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background-color: #22c55e;"></div>
+                        <span style="font-size: 0.875rem;">안전장비 착용 완료</span>
+                    </div>
+                </div>
+                <div class="worker-card-footer">
+                    <div class="worker-status" style="color: #22c55e;">출근</div>
+                    <div class="worker-actions">
+                        <button class="contact">연락</button>
+                        <button class="view">상세</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar View -->
+    <div class="view" id="calendar">
+        <div class="calendar-header">
+            <div class="calendar-title">2023년 3월</div>
+            <div style="display: flex; gap: 1rem;">
+                <div class="calendar-nav">
+                    <button>&lt;</button>
+                    <button>오늘</button>
+                    <button>&gt;</button>
+                </div>
+                <div class="calendar-view-options">
+                    <button>월</button>
+                    <button class="active">주</button>
+                    <button>일</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="calendar-grid">
+            <div class="calendar-day-header">일</div>
+            <div class="calendar-day-header">월</div>
+            <div class="calendar-day-header">화</div>
+            <div class="calendar-day-header">수</div>
+            <div class="calendar-day-header">목</div>
+            <div class="calendar-day-header">금</div>
+            <div class="calendar-day-header">토</div>
+
+            <div class="calendar-day">
+                <div class="date">26</div>
+                <div class="workers">작업자: 30명</div>
+                <div class="summary">
+                    <div class="stat">
+                        <div class="color-dot present"></div>
+                        <span>28</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot absent"></div>
+                        <span>1</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot late"></div>
+                        <span>1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar-day">
+                <div class="date">27</div>
+                <div class="workers">작업자: 32명</div>
+                <div class="summary">
+                    <div class="stat">
+                        <div class="color-dot present"></div>
+                        <span>29</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot absent"></div>
+                        <span>2</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot late"></div>
+                        <span>1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar-day">
+                <div class="date">28</div>
+                <div class="workers">작업자: 32명</div>
+                <div class="summary">
+                    <div class="stat">
+                        <div class="color-dot present"></div>
+                        <span>31</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot absent"></div>
+                        <span>0</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot late"></div>
+                        <span>1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar-day today">
+                <div class="date">1</div>
+                <div class="workers">작업자: 38명</div>
+                <div class="summary">
+                    <div class="stat">
+                        <div class="color-dot present"></div>
+                        <span>32</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot absent"></div>
+                        <span>4</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot late"></div>
+                        <span>2</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar-day">
+                <div class="date">2</div>
+                <div class="workers">작업자: 38명 (예정)</div>
+                <div class="summary">
+                    <div class="stat">
+                        <div class="color-dot present"></div>
+                        <span>-</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot absent"></div>
+                        <span>-</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot late"></div>
+                        <span>-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar-day">
+                <div class="date">3</div>
+                <div class="workers">작업자: 38명 (예정)</div>
+                <div class="summary">
+                    <div class="stat">
+                        <div class="color-dot present"></div>
+                        <span>-</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot absent"></div>
+                        <span>-</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot late"></div>
+                        <span>-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar-day">
+                <div class="date">4</div>
+                <div class="workers">작업자: 15명 (예정)</div>
+                <div class="summary">
+                    <div class="stat">
+                        <div class="color-dot present"></div>
+                        <span>-</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot absent"></div>
+                        <span>-</span>
+                    </div>
+                    <div class="stat">
+                        <div class="color-dot late"></div>
+                        <span>-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple tab switching functionality
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active class from all tabs and views
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+
+            // Add active class to clicked tab and corresponding view
+            tab.classList.add('active');
+            const viewId = tab.getAttribute('data-view');
+            document.getElementById(viewId).classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>

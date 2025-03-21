@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 협업 문서 테이블</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            position: relative;
+        }
+        
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .child1 {
+            padding-left: 20px;
+        }
+        
+        .child2 {
+            padding-left: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        
+        .structure-changed {
+            background-color: #e8f5e9;
+        }
+        
+        .edit-cell {
+            min-height: 20px;
+            outline: none;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .edit-cell:focus {
+            border: 2px solid #3498db;
+            background-color: #ecf0f1;
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .online {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .offline {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: currentColor;
+        }
+        
+        .user-editing {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 10px;
+            background-color: rgba(52, 152, 219, 0.8);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-info {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"] {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .users-online {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .user-badge {
+            background-color: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .activity-log {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .search-box {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 250px;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .filter-btn.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .save-controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .save-btn {
+            background-color: #2ecc71;
+        }
+
+        .undo-btn {
+            background-color: #e67e22;
+        }
+        
+        .history-btn {
+            background-color: #9b59b6;
+        }
+
+        @keyframes highlight {
+            0% { background-color: yellow; }
+            100% { background-color: transparent; }
+        }
+        
+        .highlight {
+            animation: highlight 2s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>건설현장 안전관리 시스템 문서 구조</h1>
+        
+        <div class="status-indicator offline">
+            <div class="status-dot"></div>
+            <span>오프라인</span>
+        </div>
+        
+        <div class="user-info">
+            <input type="text" id="username" placeholder="사용자 이름 입력" value="사용자_">
+            <button id="connect-btn">연결</button>
+            <div id="connection-status" class="user-badge" style="display: none;"></div>
+        </div>
+        
+        <div class="controls">
+            <div>
+                <input type="text" class="search-box" id="search-box" placeholder="검색어 입력...">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">전체</button>
+                    <button class="filter-btn" data-filter="조직 인력">조직 인력</button>
+                    <button class="filter-btn" data-filter="안전관리">안전관리</button>
+                    <button class="filter-btn" data-filter="현장기록">현장기록</button>
+                    <button class="filter-btn" data-filter="소통">소통</button>
+                    <button class="filter-btn" data-filter="초대">초대</button>
+                    <button class="filter-btn" data-filter="파일">파일</button>
+                </div>
+            </div>
+            
+            <div class="users-online">
+                <span>실제 접속자:</span>
+                <div id="online-users"></div>
+            </div>
+        </div>
+        
+        <table id="docs-table">
+            <thead>
+                <tr>
+                    <th>문서명</th>
+                    <th>계층</th>
+                    <th>카테고리</th>
+                    <th>상위 문서</th>
+                    <th>설명</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td contenteditable="true" class="edit-cell" data-field="name">SITE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">버킷</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">최상위</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">없음</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">프로젝트/현장 최상위 컨테이너</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell" data-field="name">COMPANY</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">1단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">조직 인력</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SITE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">원청사/협력사 정보</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child1" data-field="name">PARTICIPANT</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">2단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">조직 인력</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">COMPANY</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">현장 참여자 정보</td>
+                </tr>
+                <tr class="structure-changed">
+                    <td contenteditable="true" class="edit-cell" data-field="name">SITE_ROLE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">1단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">조직 인력</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SITE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">현장 내 역할 정의</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell" data-field="name">DAILY_RISK</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">1단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">안전관리</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SITE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">일일 위험성평가(원청사)</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child1" data-field="name">DAILY_RISK_DOCUMENT</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">2단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">안전관리</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">DAILY_RISK</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">일일 위험성평가 상세문서</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child2" data-field="name">SINGLE_RISK</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">3단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">안전관리</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">DAILY_RISK_DOCUMENT</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">단일 위험성평가</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell" data-field="name">DYNAMIC_RISK</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">1단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">안전관리</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SITE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">수시 위험성평가</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child1" data-field="name">DYNAMIC_RISK_MEETING_SHEET</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">2단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">안전관리</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">DYNAMIC_RISK</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">수시 위험성평가 갑지</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell" data-field="name">SAFETY_CHECK</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">1단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">안전관리</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SITE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">안전보건점검</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child1" data-field="name">SAFETY_CHECK_DOCUMENT</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">2단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">안전관리</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SAFETY_CHECK</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">안전보건점검 일지</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child1" data-field="name">SAFETY_CHECK_ACTIVITY</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">2단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">안전관리</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SAFETY_CHECK</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">안전보건점검 활동</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child1" data-field="name">SAFETY_CHECK_REVIEW</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">2단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">안전관리</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SAFETY_CHECK</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">안전보건점검 리뷰</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell" data-field="name">PHOTO_RECORD</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">1단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">현장기록</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SITE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">현장 사진기록</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child1" data-field="name">PHOTO_RECORD_MANAGE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">2단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">현장기록</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">PHOTO_RECORD</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">사진기록 관리</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child2" data-field="name">COMMENT</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">3단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">현장기록</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">PHOTO_RECORD_MANAGE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">댓글</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell" data-field="name">SAFETY_ALERT</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">1단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">소통</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SITE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">안전 경고/알림</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child1" data-field="name">SAFETY_LOG</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">2단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">소통</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SAFETY_ALERT</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">안전 로그</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child2" data-field="name">CONFERENCE_REGISTER</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">3단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">소통</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SAFETY_LOG</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">회의/교육 등록</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell" data-field="name">INVITATION_PARTNER</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">1단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">초대</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SITE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">협력사 초대</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell child1" data-field="name">INVITATION_PARTICIPANT</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">2단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">초대</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">INVITATION_PARTNER</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">참여자 초대</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true" class="edit-cell" data-field="name">FILE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="level">1단계</td>
+                    <td contenteditable="true" class="edit-cell" data-field="category">파일</td>
+                    <td contenteditable="true" class="edit-cell" data-field="parent">SITE</td>
+                    <td contenteditable="true" class="edit-cell" data-field="description">파일 관리</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="save-controls">
+            <button class="undo-btn" id="undo-btn">이전으로 되돌리기</button>
+            <button class="history-btn" id="history-btn">수정 이력 보기</button>
+            <button class="save-btn" id="save-btn">변경사항 저장</button>
+        </div>
+        
+        <div id="activity-log" class="activity-log">
+            <h3>활동 로그</h3>
+            <div id="log-entries"></div>
+        </div>
+    </div>
+
+    <script>
+        // 실제 서버 및 WebSocket 연결이 없으므로 클라이언트 사이드에서 시뮬레이션합니다
+        let socket = null;
+        let username = '';
+        let connected = false;
+        let onlineUsers = {};
+        let editHistory = [];
+        let currentFilters = { text: '', category: 'all' };
+        
+        // 소켓 연결 시뮬레이션
+        function simulateSocketConnection() {
+            // 실제 연결 대신 가상의 소켓 객체 생성
+            socket = {
+                emit: function(event, data) {
+                    console.log(`Socket emitting ${event}:`, data);
+                    // 서버 이벤트 시뮬레이션
+                    setTimeout(() => {
+                        switch(event) {
+                            case 'join':
+                                handleUserJoin(data);
+                                break;
+                            case 'edit-cell':
+                                broadcastCellEdit(data);
+                                break;
+                            case 'request-users':
+                                updateOnlineUsers(Object.values(onlineUsers));
+                                break;
+                        }
+                    }, 100);
+                }
+            };
+            
+            // 연결 성공 시뮬레이션
+            setTimeout(() => {
+                connected = true;
+                updateConnectionStatus();
+                
+                // 초기 접속 시에만 사용자 목록에 추가
+                onlineUsers[username] = {
+                    username: username,
+                    joinedAt: new Date()
+                };
+                updateOnlineUsers(Object.values(onlineUsers));
+                
+                // 로그에 추가
+                addLogEntry(`${username}님이 접속했습니다.`);
+            }, 500);
+        }
+        
+        // 사용자 참여 처리
+        function handleUserJoin(data) {
+            if (data && data.username) {
+                // 기존 사용자 목록 초기화 (단일 사용자만 표시)
+                onlineUsers = {};
+                
+                // 새 사용자 추가
+                onlineUsers[data.username] = {
+                    username: data.username,
+                    joinedAt: new Date()
+                };
+                
+                // 사용자 목록 업데이트
+                updateOnlineUsers(Object.values(onlineUsers));
+                
+                // 로그에 추가
+                addLogEntry(`${data.username}님이 접속했습니다.`);
+            }
+        }
+        
+        // 셀 편집 이벤트 브로드캐스트
+        function broadcastCellEdit(data) {
+            if (!data) return;
+            
+            // 히스토리에 추가
+            editHistory.push({
+                ...data,
+                timestamp: new Date()
+            });
+            
+            // 로그에 추가
+            addLogEntry(`${data.username}님이 ${data.rowIndex + 1}행의 ${getColumnName(data.field)} 수정: ${data.oldValue} → ${data.newValue}`);
+            
+            // 현재 사용자의 편집만 처리 (실제 접속자만 표시)
+            if (data.username === username) {
+                updateCellContent(data.rowIndex, data.field, data.newValue, data.username);
+            }
+        }
+        
+        // 사용자 목록 업데이트
+        function updateOnlineUsers(users) {
+            const userContainer = document.getElementById('online-users');
+            userContainer.innerHTML = '';
+            
+            users.forEach(user => {
+                const userBadge = document.createElement('div');
+                userBadge.className = 'user-badge';
+                userBadge.textContent = user.username;
+                userContainer.appendChild(userBadge);
+            });
+            
+            // 현재 사용자 표시 업데이트
+            const connectionStatus = document.getElementById('connection-status');
+            if (connectionStatus && connected) {
+                connectionStatus.textContent = `현재 사용자: ${username}`;
+            }
+        }
+        
+        // 연결 상태 업데이트
+        function updateConnectionStatus() {
+            const statusIndicator = document.querySelector('.status-indicator');
+            const connectBtn = document.getElementById('connect-btn');
+            const connectionStatus = document.getElementById('connection-status');
+            
+            if (connected) {
+                statusIndicator.classList.remove('offline');
+                statusIndicator.classList.add('online');
+                statusIndicator.innerHTML = '<div class="status-dot"></div><span>온라인</span>';
+                connectBtn.textContent = '사용자명 변경';
+                
+                // 현재 사용자명 표시
+                connectionStatus.style.display = 'inline-block';
+                connectionStatus.textContent = `현재 사용자: ${username}`;
+                connectionStatus.style.backgroundColor = '#2ecc71';
+            } else {
+                statusIndicator.classList.remove('online');
+                statusIndicator.classList.add('offline');
+                statusIndicator.innerHTML = '<div class="status-dot"></div><span>오프라인</span>';
+                connectBtn.textContent = '연결';
+                
+                connectionStatus.style.display = 'none';
+            }
+        }
+        
+        // 셀 내용 업데이트
+        function updateCellContent(rowIndex, field, value, editingUser) {
+            const rows = document.querySelectorAll('#docs-table tbody tr');
+            
+            if (rowIndex >= 0 && rowIndex < rows.length) {
+                const row = rows[rowIndex];
+                const cells = row.querySelectorAll('.edit-cell');
+                
+                cells.forEach(cell => {
+                    if (cell.dataset.field === field) {
+                        // 셀 내용 업데이트
+                        cell.textContent = value;
+                        
+                        // 하이라이트 효과
+                        cell.classList.add('highlight');
+                        setTimeout(() => {
+                            cell.classList.remove('highlight');
+                        }, 2000);
+                        
+                        // 편집 중인 사용자 표시
+                        if (editingUser && editingUser !== username) {
+                            let userTag = cell.querySelector('.user-editing');
+                            
+                            if (!userTag) {
+                                userTag = document.createElement('div');
+                                userTag.className = 'user-editing';
+                                cell.appendChild(userTag);
+                            }
+                            
+                            userTag.textContent = editingUser;
+                            
+                            // 3초 후 편집 표시 제거
+                            setTimeout(() => {
+                                if (userTag && userTag.parentNode) {
+                                    userTag.parentNode.removeChild(userTag);
+                                }
+                            }, 3000);
+                        }
+                    }
+                });
+            }
+        }
+        
+        // 필드 이름을 한글로 변환
+        function getColumnName(field) {
+            const fieldNames = {
+                'name': '문서명',
+                'level': '계층',
+                'category': '카테고리',
+                'parent': '상위 문서',
+                'description': '설명'
+            };
+            
+            return fieldNames[field] || field;
+        }
+        
+        // 로그 항목 추가
+        function addLogEntry(message) {
+            const logEntries = document.getElementById('log-entries');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const now = new Date();
+            const time = now.toLocaleTimeString();
+            
+            entry.innerHTML = `<span>[${time}]</span> ${message}`;
+            logEntries.prepend(entry);
+            
+            // 최대 50개 항목 유지
+            const entries = logEntries.querySelectorAll('.log-entry');
+            if (entries.length > 50) {
+                for (let i = 50; i < entries.length; i++) {
+                    logEntries.removeChild(entries[i]);
+                }
+            }
+        }
+        
+        // 필터 적용
+        function applyFilters() {
+            const searchText = currentFilters.text.toLowerCase();
+            const category = currentFilters.category;
+            
+            const rows = document.querySelectorAll('#docs-table tbody tr');
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const rowText = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+                const rowCategory = cells[2].textContent;
+                
+                let showRow = true;
+                
+                // 텍스트 필터 적용
+                if (searchText && !rowText.includes(searchText)) {
+                    showRow = false;
+                }
+                
+                // 카테고리 필터 적용
+                if (category !== 'all' && rowCategory !== category) {
+                    showRow = false;
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+        
+        // 이벤트 리스너 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            // 연결 버튼 클릭
+            document.getElementById('connect-btn').addEventListener('click', function() {
+                const usernameInput = document.getElementById('username');
+                const newUsername = usernameInput.value.trim() || `사용자_${Math.floor(Math.random() * 1000)}`;
+                const oldUsername = username;
+                
+                // 사용자명 업데이트
+                username = newUsername;
+                usernameInput.value = newUsername;
+                
+                // 이미 연결된 경우 사용자 이름만 업데이트
+                if (connected) {
+                    // 기존 사용자 제거
+                    delete onlineUsers[oldUsername];
+                    
+                    // 새 사용자명으로 추가
+                    onlineUsers[newUsername] = {
+                        username: newUsername,
+                        joinedAt: new Date()
+                    };
+                    
+                    // 사용자 목록 업데이트
+                    updateOnlineUsers(Object.values(onlineUsers));
+                    
+                    // 로그에 추가
+                    addLogEntry(`사용자명이 ${oldUsername}에서 ${newUsername}(으)로 변경되었습니다.`);
+                    
+                    // 연결 상태 UI 업데이트
+                    updateConnectionStatus();
+                } else {
+                    // 첫 연결인 경우
+                    simulateSocketConnection();
+                    
+                    // 연결 후 사용자 정보 전송
+                    setTimeout(() => {
+                        socket.emit('join', { username: newUsername });
+                    }, 600);
+                }
+            });
+            
+            // 랜덤 사용자 이름 생성
+            document.getElementById('username').value = `사용자_${Math.floor(Math.random() * 1000)}`;
+            
+            // 셀 편집 이벤트
+            const editableCells = document.querySelectorAll('.edit-cell');
+            editableCells.forEach((cell, cellIndex) => {
+                // 편집 시작 시
+                cell.addEventListener('focus', function() {
+                    if (!connected) {
+                        alert('먼저 연결 버튼을 클릭하여 접속해주세요.');
+                        cell.blur();
+                        return;
+                    }
+                    
+                    // 원래 값 저장
+                    cell.dataset.originalValue = cell.textContent;
+                    
+                    // 편집 중임을 다른 사용자에게 알림 (실제 구현에서는 서버로 전송)
+                    const rowIndex = Array.from(document.querySelectorAll('#docs-table tbody tr')).indexOf(cell.closest('tr'));
+                    if (socket) {
+                        socket.emit('start-editing', { 
+                            username, 
+                            rowIndex, 
+                            field: cell.dataset.field 
+                        });
+                    }
+                });
+                
+                // 편집 완료 시
+                cell.addEventListener('blur', function() {
+                    if (!connected) return;
+                    
+                    const originalValue = cell.dataset.originalValue;
+                    const newValue = cell.textContent.trim();
+                    
+                    // 값이 변경된 경우에만 처리
+                    if (originalValue !== newValue) {
+                        const rowIndex = Array.from(document.querySelectorAll('#docs-table tbody tr')).indexOf(cell.closest('tr'));
+                        
+                        // 변경 사항 전송
+                        if (socket) {
+                            socket.emit('edit-cell', { 
+                                username, 
+                                rowIndex, 
+                                field: cell.dataset.field, 
+                                oldValue: originalValue,
+                                newValue: newValue
+                            });
+                        }
+                    }
+                });
+                
+                // Enter 키 누르면 편집 완료 처리
+                cell.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        cell.blur();
+                    }
+                });
+            });
+            
+            // 검색창 입력 이벤트
+            document.getElementById('search-box').addEventListener('input', function(e) {
+                currentFilters.text = e.target.value;
+                applyFilters();
+            });
+            
+            // 카테고리 필터 버튼 클릭
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 활성 버튼 스타일 변경
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // 필터 적용
+                    currentFilters.category = button.dataset.filter;
+                    applyFilters();
+                });
+            });
+            
+            // 이전으로 되돌리기 버튼
+            document.getElementById('undo-btn').addEventListener('click', function() {
+                if (editHistory.length === 0) {
+                    alert('되돌릴 수 있는 변경 사항이 없습니다.');
+                    return;
+                }
+                
+                // 마지막 변경 사항 가져오기
+                const lastEdit = editHistory.pop();
+                
+                // 셀 내용을 이전 값으로 되돌리기
+                updateCellContent(lastEdit.rowIndex, lastEdit.field, lastEdit.oldValue);
+                
+                // 로그 추가
+                addLogEntry(`${username}님이 변경 사항을 되돌렸습니다: ${lastEdit.newValue} → ${lastEdit.oldValue}`);
+            });
+            
+            // 수정 이력 보기 버튼
+            document.getElementById('history-btn').addEventListener('click', function() {
+                if (editHistory.length === 0) {
+                    alert('변경 이력이 없습니다.');
+                    return;
+                }
+                
+                // 이력 문자열 생성
+                let historyText = '변경 이력:\n\n';
+                editHistory.slice().reverse().forEach((edit, index) => {
+                    const time = new Date(edit.timestamp).toLocaleTimeString();
+                    historyText += `${index + 1}. [${time}] ${edit.username}: 행 ${edit.rowIndex + 1}, ${getColumnName(edit.field)} - ${edit.oldValue} → ${edit.newValue}\n`;
+                });
+                
+                alert(historyText);
+            });
+            
+            // 변경사항 저장 버튼
+            document.getElementById('save-btn').addEventListener('click', function() {
+                // 실제로는 서버에 저장하는 로직이 필요합니다.
+                // 여기서는 시뮬레이션으로 저장 성공 메시지만 표시합니다.
+                alert('변경사항이 저장되었습니다.');
+                addLogEntry(`${username}님이 변경사항을 저장했습니다.`);
+            });
+            
+            // 새로운 행 추가 기능
+            function addNewRow() {
+                const tbody = document.querySelector('#docs-table tbody');
+                const newRow = document.createElement('tr');
+                
+                const fields = ['name', 'level', 'category', 'parent', 'description'];
+                fields.forEach(field => {
+                    const td = document.createElement('td');
+                    td.contentEditable = true;
+                    td.className = 'edit-cell';
+                    td.dataset.field = field;
+                    if (field === 'name') {
+                        td.textContent = '새 문서';
+                    }
+                    newRow.appendChild(td);
+                });
+                
+                tbody.appendChild(newRow);
+                
+                // 새 행 추가 로그
+                addLogEntry(`${username}님이 새 행을 추가했습니다.`);
+                
+                // 이벤트 리스너 재설정
+                const editableCells = newRow.querySelectorAll('.edit-cell');
+                editableCells.forEach(cell => setupCellListeners(cell));
+            }
+            
+            // 키보드 단축키
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+S: 저장
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    document.getElementById('save-btn').click();
+                }
+                
+                // Ctrl+Z: 실행 취소
+                if (e.ctrlKey && e.key === 'z') {
+                    e.preventDefault();
+                    document.getElementById('undo-btn').click();
+                }
+                
+                // Ctrl+N: 새 행 추가
+                if (e.ctrlKey && e.key === 'n') {
+                    e.preventDefault();
+                    addNewRow();
+                }
+            });
+            
+            // 자동 연결 (예제를 위해)
+            setTimeout(() => {
+                document.getElementById('connect-btn').click();
+            }, 1000);
+            
+            // 실제 접속자만 표시하기 위해 가상 사용자 시뮬레이션 코드를 제거했습니다
+            // 로그에 접속 알림 추가
+            setTimeout(() => {
+                if (connected) {
+                    addLogEntry('실제 접속한 사용자만 사용자 목록에 표시됩니다.');
+                }
+            }, 3000);
+        });
+        
+        // 셀 리스너 설정 함수
+        function setupCellListeners(cell) {
+            // 편집 시작 시
+            cell.addEventListener('focus', function() {
+                if (!connected) {
+                    alert('먼저 연결 버튼을 클릭하여 접속해주세요.');
+                    cell.blur();
+                    return;
+                }
+                
+                // 원래 값 저장
+                cell.dataset.originalValue = cell.textContent;
+                
+                // 편집 중임을 다른 사용자에게 알림
+                const rowIndex = Array.from(document.querySelectorAll('#docs-table tbody tr')).indexOf(cell.closest('tr'));
+                if (socket) {
+                    socket.emit('start-editing', { 
+                        username, 
+                        rowIndex, 
+                        field: cell.dataset.field 
+                    });
+                }
+            });
+            
+            // 편집 완료 시
+            cell.addEventListener('blur', function() {
+                if (!connected) return;
+                
+                const originalValue = cell.dataset.originalValue;
+                const newValue = cell.textContent.trim();
+                
+                // 값이 변경된 경우에만 처리
+                if (originalValue !== newValue) {
+                    const rowIndex = Array.from(document.querySelectorAll('#docs-table tbody tr')).indexOf(cell.closest('tr'));
+                    
+                    // 변경 사항 전송
+                    if (socket) {
+                        socket.emit('edit-cell', { 
+                            username, 
+                            rowIndex, 
+                            field: cell.dataset.field, 
+                            oldValue: originalValue,
+                            newValue: newValue
+                        });
+                    }
+                }
+            });
+            
+            // Enter 키 누르면 편집 완료 처리
+            cell.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    cell.blur();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

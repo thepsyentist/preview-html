@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전관리 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f3f4f6;
+            min-height: 100vh;
+        }
+        
+        /* 헤더 스타일 */
+        .header {
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .header-top {
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .header-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #4b5563;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .header-action-btn:hover {
+            color: #1f2937;
+        }
+        
+        /* 년/월 선택기 */
+        .date-selector {
+            padding: 0 24px;
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .date-select {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .date-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* 탭 스타일 */
+        .tabs {
+            padding: 0 24px;
+            display: flex;
+            gap: 32px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 4px;
+            border-bottom: 2px solid transparent;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #4b5563;
+            transition: all 0.2s;
+        }
+        
+        .tab:hover:not(.tab-disabled) {
+            color: #1f2937;
+        }
+        
+        .tab.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        
+        .tab-disabled {
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .tab-disabled-text {
+            font-size: 12px;
+            margin-left: 4px;
+        }
+        
+        /* 메인 콘텐츠 */
+        .main {
+            padding: 24px;
+        }
+        
+        .content-header {
+            margin-bottom: 16px;
+        }
+        
+        .content-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .content-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        /* 카드 스타일 */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card-section {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .card-section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        /* 그리드 레이아웃 */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        /* 정보 항목 */
+        .info-item label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .info-item p {
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        
+        /* 위험도 박스 */
+        .risk-box {
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .risk-high { background-color: #fef2f2; }
+        .risk-medium { background-color: #fff7ed; }
+        .risk-low { background-color: #fefce8; }
+        
+        .risk-number {
+            font-size: 30px;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+        
+        .risk-high .risk-number { color: #dc2626; }
+        .risk-medium .risk-number { color: #ea580c; }
+        .risk-low .risk-number { color: #ca8a04; }
+        
+        .risk-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        /* 빈 상태 */
+        .empty-state {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 48px;
+            text-align: center;
+        }
+        
+        .empty-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            opacity: 0.4;
+        }
+        
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .empty-text {
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+        
+        /* 버튼 */
+        .btn-primary {
+            background-color: #ea580c;
+            color: white;
+            padding: 8px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .btn-primary:hover {
+            background-color: #dc2626;
+        }
+        
+        /* 테이블 */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background-color: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            padding: 12px 24px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+        }
+        
+        tbody tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        td {
+            padding: 16px 24px;
+        }
+        
+        /* 상태 표시 */
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-active {
+            color: #2563eb;
+        }
+        
+        .status-active .status-dot {
+            background-color: #2563eb;
+        }
+        
+        .status-completed {
+            color: #059669;
+        }
+        
+        /* 체크리스트 항목 */
+        .checklist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .checklist-count {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        /* 주간 카드 */
+        .weekly-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+        
+        .weekly-card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .weekly-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+        
+        .weekly-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .weekly-date {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        /* 숨김 처리 */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* 아이콘 (간단한 SVG) */
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-top">
+            <h1 class="header-title">안전관리 시스템</h1>
+            <div class="header-actions">
+                <button class="header-action-btn">
+                    <span class="icon">⏰</span>
+                    <span>최근 활동</span>
+                </button>
+                <button class="header-action-btn">
+                    <span class="icon">🔍</span>
+                    <span>검색</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 년/월 선택기 -->
+        <div class="date-selector">
+            <select class="date-select" id="yearSelect">
+                <option value="2025" selected>2025년</option>
+                <option value="2024">2024년</option>
+                <option value="2023">2023년</option>
+            </select>
+            <select class="date-select" id="monthSelect">
+                <option value="1">1월</option>
+                <option value="2">2월</option>
+                <option value="3">3월</option>
+                <option value="4">4월</option>
+                <option value="5">5월</option>
+                <option value="6" selected>6월</option>
+                <option value="7">7월</option>
+                <option value="8">8월</option>
+                <option value="9">9월</option>
+                <option value="10">10월</option>
+                <option value="11">11월</option>
+                <option value="12">12월</option>
+            </select>
+        </div>
+        
+        <!-- 탭 네비게이션 -->
+        <div class="tabs">
+            <button class="tab active" data-tab="risk-assessment">
+                <span class="icon">⚠️</span>
+                <span>상시 위험성평가</span>
+            </button>
+            <button class="tab" data-tab="monthly">
+                <span class="icon">👥</span>
+                <span>월간 합동점검</span>
+            </button>
+            <button class="tab" data-tab="weekly">
+                <span class="icon">📅</span>
+                <span>주간점검회의</span>
+            </button>
+            <button class="tab" data-tab="tbm">
+                <span class="icon">📋</span>
+                <span>TBM일지</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main">
+        <!-- 상시 위험성평가 -->
+        <div id="risk-assessment" class="tab-content">
+            <div class="content-header">
+                <h3 class="content-title">상시 위험성평가</h3>
+                <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-section">
+                    <h3 class="section-title">기본 정보</h3>
+                    <div class="grid-2">
+                        <div class="info-item">
+                            <label>평가 기간</label>
+                            <p>2025-06-01 ~ 2025-06-30</p>
+                        </div>
+                        <div class="info-item">
+                            <label>참여 협력사</label>
+                            <p>4개 업체</p>
+                        </div>
+                        <div class="info-item">
+                            <label>작성일</label>
+                            <p>2025-06-01</p>
+                        </div>
+                        <div class="info-item">
+                            <label>현황</label>
+                            <p style="color: #2563eb;">서명 대기 중</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-section">
+                    <h3 class="section-title">위험도 요약</h3>
+                    <div class="grid-3">
+                        <div class="risk-box risk-high">
+                            <div class="risk-number">16</div>
+                            <div class="risk-label">상위험</div>
+                        </div>
+                        <div class="risk-box risk-medium">
+                            <div class="risk-number">16</div>
+                            <div class="risk-label">중위험</div>
+                        </div>
+                        <div class="risk-box risk-low">
+                            <div class="risk-number">21</div>
+                            <div class="risk-label">하위험</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 월간 합동점검 -->
+        <div id="monthly" class="tab-content hidden">
+            <div class="content-header">
+                <h3 class="content-title">월간 합동점검</h3>
+                <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-section">
+                    <h3 class="section-title">점검 정보</h3>
+                    <div class="grid-2">
+                        <div class="info-item">
+                            <label>점검 일시</label>
+                            <p>2025-06-30 09:00</p>
+                        </div>
+                        <div class="info-item">
+                            <label>점검 장소</label>
+                            <p>2층 회의실</p>
+                        </div>
+                        <div class="info-item">
+                            <label>참여 협력사</label>
+                            <p>4개 업체</p>
+                        </div>
+                        <div class="info-item">
+                            <label>진행 상태</label>
+                            <p style="color: #2563eb;">예정</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-section">
+                    <h3 class="section-title">참석자 명단</h3>
+                    <div class="grid-2">
+                        <div>
+                            <div style="font-weight: 500; font-size: 14px; color: #6b7280; margin-bottom: 8px;">관리감독자</div>
+                            <div style="background: #f9fafb; padding: 12px; border-radius: 4px;">김길동 · LG엔솔 · 현장소장</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 500; font-size: 14px; color: #6b7280; margin-bottom: 8px;">협력업체 담당자</div>
+                            <div style="background: #f9fafb; padding: 12px; border-radius: 4px; margin-bottom: 8px;">이길동 · LG엔솔 · 안전관리자</div>
+                            <div style="background: #f9fafb; padding: 12px; border-radius: 4px;">박길동 · 신신이앤씨 · 안전관리자</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-section">
+                    <h3 class="section-title">체크리스트 항목</h3>
+                    <div class="checklist-item">
+                        <span>안전보건관리체제 및 교육</span>
+                        <span class="checklist-count">10개 항목</span>
+                    </div>
+                    <div class="checklist-item">
+                        <span>작업장 주변의 장애물로 인한 사고 위험</span>
+                        <span class="checklist-count">8개 항목</span>
+                    </div>
+                    <div class="checklist-item">
+                        <span>작업 전 점검 처리 및 안전 사인물 설치</span>
+                        <span class="checklist-count">5개 항목</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 주간점검회의 -->
+        <div id="weekly" class="tab-content hidden">
+            <div class="content-header">
+                <h3 class="content-title">주간점검회의</h3>
+                <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+            </div>
+            
+            <div class="weekly-card">
+                <div class="weekly-header">
+                    <div>
+                        <h3 class="weekly-title">1주차 주간점검회의</h3>
+                        <p class="weekly-date">2025-06-07 ~ 2025-06-13</p>
+                    </div>
+                    <div class="status status-active">
+                        <span class="status-dot"></span>
+                        <span>진행 중</span>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="info-item">
+                        <label>참여 협력사</label>
+                        <p>4개 업체</p>
+                    </div>
+                    <div class="info-item">
+                        <label>회의 일시</label>
+                        <p>2025-06-13</p>
+                    </div>
+                    <div class="info-item">
+                        <label>주요 안건</label>
+                        <p>3건</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="weekly-card">
+                <div class="weekly-header">
+                    <div>
+                        <h3 class="weekly-title">2주차 주간점검회의</h3>
+                        <p class="weekly-date">2025-06-14 ~ 2025-06-20</p>
+                    </div>
+                    <div class="status status-completed">
+                        <span>✓</span>
+                        <span>완료</span>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="info-item">
+                        <label>참여 협력사</label>
+                        <p>4개 업체</p>
+                    </div>
+                    <div class="info-item">
+                        <label>회의 일시</label>
+                        <p>2025-06-20</p>
+                    </div>
+                    <div class="info-item">
+                        <label>주요 안건</label>
+                        <p>없음</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TBM일지 -->
+        <div id="tbm" class="tab-content hidden">
+            <div class="content-header">
+                <h3 class="content-title">TBM일지 (최근 7일)</h3>
+                <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>TBM 일시</th>
+                            <th>요일</th>
+                            <th>참여 협력사</th>
+                            <th>참여 인원</th>
+                            <th>주요 내용</th>
+                            <th>현황</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 500;">2025-06-20</td>
+                            <td>금요일</td>
+                            <td>4곳</td>
+                            <td>40명</td>
+                            <td style="font-size: 14px; color: #6b7280;">안전 수칙 교육, 위험 요소 점검</td>
+                            <td>
+                                <div class="status status-active">
+                                    <span class="status-dot"></span>
+                                    <span>작성 중</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 500;">2025-06-19</td>
+                            <td>목요일</td>
+                            <td>4곳</td>
+                            <td>40명</td>
+                            <td style="font-size: 14px; color: #6b7280;">안전 수칙 교육, 위험 요소 점검</td>
+                            <td>
+                                <div class="status status-completed">
+                                    <span>✓</span>
+                                    <span>완료</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="padding: 16px; background-color: #f9fafb; text-align: center;">
+                    <button style="color: #2563eb; text-decoration: none; font-size: 14px; background: none; border: none; cursor: pointer;">이전 기록 더보기</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 탭 전환 기능
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (tab.classList.contains('tab-disabled')) return;
+                
+                // 모든 탭 비활성화
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(content => content.classList.add('hidden'));
+                
+                // 선택한 탭 활성화
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.remove('hidden');
+            });
+        });
+        
+        // 월 선택 변경 시 처리
+        const monthSelect = document.getElementById('monthSelect');
+        monthSelect.addEventListener('change', (e) => {
+            const selectedMonth = parseInt(e.target.value);
+            const otherTabs = document.querySelectorAll('.tab:not([data-tab="risk-assessment"])');
+            
+            // 6월 이전에만 다른 탭 활성화 (예시)
+            if (selectedMonth > 6) {
+                otherTabs.forEach(tab => {
+                    tab.classList.add('tab-disabled');
+                    if (!tab.querySelector('.tab-disabled-text')) {
+                        tab.innerHTML += '<span class="tab-disabled-text">(비활성)</span>';
+                    }
+                });
+            } else {
+                otherTabs.forEach(tab => {
+                    tab.classList.remove('tab-disabled');
+                    const disabledText = tab.querySelector('.tab-disabled-text');
+                    if (disabledText) {
+                        disabledText.remove();
+                    }
+                });
+            }
+        });
+        
+        // 카드/테이블 행 클릭 이벤트
+        document.querySelectorAll('.card, .weekly-card, tbody tr').forEach(element => {
+            element.addEventListener('click', () => {
+                console.log('상세 페이지로 이동');
+                // 실제로는 페이지 이동 처리
+            });
+        });
+    </script>
+</body>
+</html>

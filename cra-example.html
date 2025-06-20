@@ -131,6 +131,12 @@
             margin-bottom: 16px;
         }
         
+        .content-header > div {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
         .content-title {
             font-size: 18px;
             font-weight: 600;
@@ -147,7 +153,6 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            cursor: pointer;
             transition: box-shadow 0.2s;
         }
         
@@ -234,6 +239,8 @@
             width: 64px;
             height: 64px;
             margin: 0 auto 16px;
+            font-size: 48px;
+            line-height: 64px;
             opacity: 0.4;
         }
         
@@ -266,6 +273,23 @@
             background-color: #dc2626;
         }
         
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+            padding: 8px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+        
         /* 테이블 */
         .table-container {
             background: white;
@@ -294,7 +318,6 @@
         
         tbody tr {
             border-bottom: 1px solid #e5e7eb;
-            cursor: pointer;
         }
         
         tbody tr:hover {
@@ -354,7 +377,6 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             padding: 24px;
             margin-bottom: 16px;
-            cursor: pointer;
             transition: box-shadow 0.2s;
         }
         
@@ -459,9 +481,20 @@
     <main class="main">
         <!-- 상시 위험성평가 -->
         <div id="risk-assessment" class="tab-content">
-            <div class="content-header">
-                <h3 class="content-title">상시 위험성평가</h3>
-                <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+            <div class="content-header" id="risk-header">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h3 class="content-title">상시 위험성평가</h3>
+                        <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-secondary">이전 평가 보기</button>
+                        <button class="btn-primary">
+                            <span>✏️</span>
+                            <span>수정하기</span>
+                        </button>
+                    </div>
+                </div>
             </div>
             
             <div class="card">
@@ -505,13 +538,35 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 빈 상태 (7월 이후 선택 시 보임) -->
+            <div class="empty-state" style="display: none;" id="risk-empty">
+                <div class="empty-icon">⚠️</div>
+                <h3 class="empty-title">2025년 7월 상시 위험성평가가 없습니다</h3>
+                <p class="empty-text">상시 위험성평가를 먼저 작성해주세요.</p>
+                <button class="btn-primary">
+                    <span>➕</span>
+                    <span>상시 위험성평가 작성하기</span>
+                </button>
+            </div>
         </div>
 
         <!-- 월간 합동점검 -->
         <div id="monthly" class="tab-content hidden">
             <div class="content-header">
-                <h3 class="content-title">월간 합동점검</h3>
-                <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h3 class="content-title">월간 합동점검</h3>
+                        <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-secondary">이전 점검 보기</button>
+                        <button class="btn-primary">
+                            <span>✏️</span>
+                            <span>수정하기</span>
+                        </button>
+                    </div>
+                </div>
             </div>
             
             <div class="card">
@@ -566,6 +621,9 @@
                         <span>작업 전 점검 처리 및 안전 사인물 설치</span>
                         <span class="checklist-count">5개 항목</span>
                     </div>
+                    <button class="btn-primary" style="width: 100%; margin-top: 16px;">
+                        체크리스트 작성하기
+                    </button>
                 </div>
             </div>
         </div>
@@ -573,8 +631,16 @@
         <!-- 주간점검회의 -->
         <div id="weekly" class="tab-content hidden">
             <div class="content-header">
-                <h3 class="content-title">주간점검회의</h3>
-                <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h3 class="content-title">주간점검회의</h3>
+                        <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+                    </div>
+                    <button class="btn-primary">
+                        <span>➕</span>
+                        <span>작성하기</span>
+                    </button>
+                </div>
             </div>
             
             <div class="weekly-card">
@@ -601,6 +667,10 @@
                         <label>주요 안건</label>
                         <p>3건</p>
                     </div>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 16px;">
+                    <button class="btn-secondary" style="flex: 1;">상세 보기</button>
+                    <button class="btn-primary" style="flex: 1;">수정</button>
                 </div>
             </div>
             
@@ -629,14 +699,26 @@
                         <p>없음</p>
                     </div>
                 </div>
+                <div style="display: flex; gap: 8px; margin-top: 16px;">
+                    <button class="btn-secondary" style="flex: 1;">상세 보기</button>
+                    <button class="btn-primary" style="flex: 1;">수정</button>
+                </div>
             </div>
         </div>
 
         <!-- TBM일지 -->
         <div id="tbm" class="tab-content hidden">
             <div class="content-header">
-                <h3 class="content-title">TBM일지 (최근 7일)</h3>
-                <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h3 class="content-title">TBM일지 (최근 7일)</h3>
+                        <p class="content-subtitle">클릭하여 상세 내용을 확인하세요</p>
+                    </div>
+                    <button class="btn-primary">
+                        <span>➕</span>
+                        <span>작성하기</span>
+                    </button>
+                </div>
             </div>
             
             <div class="table-container">
@@ -649,6 +731,7 @@
                             <th>참여 인원</th>
                             <th>주요 내용</th>
                             <th>현황</th>
+                            <th>작업</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -664,6 +747,12 @@
                                     <span>작성 중</span>
                                 </div>
                             </td>
+                            <td>
+                                <div style="display: flex; justify-content: center; gap: 8px;">
+                                    <button class="btn-secondary" style="padding: 4px 12px; font-size: 14px;">보기</button>
+                                    <button class="btn-primary" style="padding: 4px 12px; font-size: 14px;">수정</button>
+                                </div>
+                            </td>
                         </tr>
                         <tr>
                             <td style="font-weight: 500;">2025-06-19</td>
@@ -675,6 +764,12 @@
                                 <div class="status status-completed">
                                     <span>✓</span>
                                     <span>완료</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="display: flex; justify-content: center; gap: 8px;">
+                                    <button class="btn-secondary" style="padding: 4px 12px; font-size: 14px;">보기</button>
+                                    <button class="btn-primary" style="padding: 4px 12px; font-size: 14px;">수정</button>
                                 </div>
                             </td>
                         </tr>
@@ -709,12 +804,33 @@
         
         // 월 선택 변경 시 처리
         const monthSelect = document.getElementById('monthSelect');
-        monthSelect.addEventListener('change', (e) => {
-            const selectedMonth = parseInt(e.target.value);
+        const yearSelect = document.getElementById('yearSelect');
+        
+        monthSelect.addEventListener('change', updateContent);
+        yearSelect.addEventListener('change', updateContent);
+        
+        function updateContent() {
+            const selectedMonth = parseInt(monthSelect.value);
+            const selectedYear = parseInt(yearSelect.value);
             const otherTabs = document.querySelectorAll('.tab:not([data-tab="risk-assessment"])');
             
-            // 6월 이전에만 다른 탭 활성화 (예시)
+            // 상시 위험성평가 콘텐츠 업데이트
+            const riskCard = document.querySelector('#risk-assessment .card');
+            const riskEmpty = document.getElementById('risk-empty');
+            const riskButtons = document.querySelector('#risk-assessment .content-header > div > div:last-child');
+            const riskSubtitle = document.querySelector('#risk-assessment .content-subtitle');
+            
+            // 6월 이후에는 빈 상태 표시 (예시)
             if (selectedMonth > 6) {
+                riskCard.style.display = 'none';
+                riskEmpty.style.display = 'block';
+                riskButtons.style.display = 'none';
+                riskSubtitle.textContent = '새로운 평가를 작성해주세요';
+                
+                // 빈 상태 텍스트 업데이트
+                riskEmpty.querySelector('.empty-title').textContent = `${selectedYear}년 ${selectedMonth}월 상시 위험성평가가 없습니다`;
+                
+                // 다른 탭 비활성화
                 otherTabs.forEach(tab => {
                     tab.classList.add('tab-disabled');
                     if (!tab.querySelector('.tab-disabled-text')) {
@@ -722,6 +838,19 @@
                     }
                 });
             } else {
+                riskCard.style.display = 'block';
+                riskEmpty.style.display = 'none';
+                riskButtons.style.display = 'flex';
+                riskSubtitle.textContent = '클릭하여 상세 내용을 확인하세요';
+                
+                // 날짜 정보 업데이트
+                const monthStr = String(selectedMonth).padStart(2, '0');
+                document.querySelectorAll('#risk-assessment .info-item p')[0].textContent = 
+                    `${selectedYear}-${monthStr}-01 ~ ${selectedYear}-${monthStr}-30`;
+                document.querySelectorAll('#risk-assessment .info-item p')[2].textContent = 
+                    `${selectedYear}-${monthStr}-01`;
+                
+                // 다른 탭 활성화
                 otherTabs.forEach(tab => {
                     tab.classList.remove('tab-disabled');
                     const disabledText = tab.querySelector('.tab-disabled-text');
@@ -730,14 +859,24 @@
                     }
                 });
             }
-        });
+        }
         
-        // 카드/테이블 행 클릭 이벤트
-        document.querySelectorAll('.card, .weekly-card, tbody tr').forEach(element => {
-            element.addEventListener('click', () => {
-                console.log('상세 페이지로 이동');
-                // 실제로는 페이지 이동 처리
-            });
+        // 버튼 클릭 이벤트
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                const button = e.target.closest('button');
+                if (button.textContent.includes('수정')) {
+                    console.log('수정 페이지로 이동');
+                } else if (button.textContent.includes('작성')) {
+                    console.log('작성 페이지로 이동');
+                } else if (button.textContent.includes('보기') || button.textContent.includes('상세')) {
+                    console.log('상세 보기 페이지로 이동');
+                } else if (button.textContent.includes('이전')) {
+                    console.log('이전 목록 보기');
+                } else if (button.textContent.includes('체크리스트')) {
+                    console.log('체크리스트 작성 페이지로 이동');
+                }
+            }
         });
     </script>
 </body>

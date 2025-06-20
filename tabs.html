@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>탭 네비게이션 UX 개선안</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', '맑은 고딕', sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        /* 현재 디자인 */
+        .current-design {
+            position: relative;
+            overflow: hidden;
+            padding: 0 40px;
+        }
+        
+        .tab-container-current {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            scroll-behavior: smooth;
+        }
+        
+        .tab-container-current::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab-current {
+            padding: 12px 24px;
+            border: 1px solid #ddd;
+            background: white;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tab-current.active {
+            background: #ff6b35;
+            color: white;
+            border-color: #ff6b35;
+        }
+        
+        .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+        
+        .arrow:hover {
+            background: #f0f0f0;
+        }
+        
+        .arrow.left {
+            left: 0;
+        }
+        
+        .arrow.right {
+            right: 0;
+        }
+        
+        /* 개선안 1: 시각적 단서 강화 */
+        .improved-visual {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gradient-left, .gradient-right {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .gradient-left {
+            left: 0;
+            background: linear-gradient(to right, white, transparent);
+        }
+        
+        .gradient-right {
+            right: 0;
+            background: linear-gradient(to left, white, transparent);
+        }
+        
+        .arrow-enhanced {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            font-size: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-50%) scale(1.1); }
+            100% { transform: translateY(-50%) scale(1); }
+        }
+        
+        .arrow-enhanced.left {
+            left: 10px;
+        }
+        
+        .arrow-enhanced.right {
+            right: 10px;
+        }
+        
+        /* 개선안 2: 드롭다운 */
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-button {
+            padding: 12px 24px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 300px;
+            justify-content: space-between;
+        }
+        
+        .dropdown-button:hover {
+            background: #f5f5f5;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .dropdown-item.active {
+            background: #fff3ed;
+            color: #ff6b35;
+            font-weight: 500;
+        }
+        
+        /* 개선안 3: 2단 구조 */
+        .two-row-tabs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        
+        .tab-chip {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .tab-chip:hover {
+            border-color: #ff6b35;
+            color: #ff6b35;
+        }
+        
+        .tab-chip.active {
+            background: #ff6b35;
+            color: white;
+            border-color: #ff6b35;
+        }
+        
+        /* 개선안 4: 칩 스타일 + 더보기 */
+        .chips-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .more-button {
+            padding: 10px 20px;
+            border: 1px solid #ff6b35;
+            background: white;
+            color: #ff6b35;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .more-button:hover {
+            background: #ff6b35;
+            color: white;
+        }
+        
+        /* 개선안 5: 미니맵 */
+        .minimap-container {
+            position: relative;
+            margin-top: 16px;
+        }
+        
+        .minimap {
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            position: relative;
+        }
+        
+        .minimap-indicator {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: #ff6b35;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        
+        .tab-scroll-container {
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="margin-bottom: 32px; color: #333;">탭 네비게이션 UX 개선안</h1>
+        
+        <!-- 현재 디자인 -->
+        <div class="section">
+            <h2>현재 디자인</h2>
+            <p class="description">좌우 화살표로 스크롤하는 기본 디자인</p>
+            <div class="current-design">
+                <button class="arrow left" onclick="scrollTabs('current', -200)">‹</button>
+                <div class="tab-container-current" id="currentTabs">
+                    <div class="tab-current active">가설공사-현장사무소 설치</div>
+                    <div class="tab-current">가설공사-가푸집 설치</div>
+                    <div class="tab-current">가설공사-가설전기 설치</div>
+                    <div class="tab-current">가설공사-가설전기 설치</div>
+                    <div class="tab-current">가설공사-안전펜스 설치</div>
+                    <div class="tab-current">가설공사-가설전기 설치</div>
+                    <div class="tab-current">콘크리트공사-콘크리트 타설</div>
+                </div>
+                <button class="arrow right" onclick="scrollTabs('current', 200)">›</button>
+            </div>
+        </div>
+        
+        <!-- 개선안 1: 시각적 단서 강화 -->
+        <div class="section">
+            <h2>개선안 1: 시각적 단서 강화</h2>
+            <p class="description">그라데이션 효과와 강조된 화살표로 스크롤 가능 영역 표시</p>
+            <div class="improved-visual">
+                <div class="gradient-left"></div>
+                <div class="gradient-right"></div>
+                <button class="arrow-enhanced left" onclick="scrollTabs('improved', -200)">‹</button>
+                <div class="tab-container-current" id="improvedTabs" style="padding: 0 60px;">
+                    <div class="tab-current active">가설공사-현장사무소 설치</div>
+                    <div class="tab-current">가설공사-가푸집 설치</div>
+                    <div class="tab-current">가설공사-가설전기 설치</div>
+                    <div class="tab-current">가설공사-가설전기 설치</div>
+                    <div class="tab-current">가설공사-안전펜스 설치</div>
+                    <div class="tab-current">가설공사-가설전기 설치</div>
+                    <div class="tab-current">콘크리트공사-콘크리트 타설</div>
+                </div>
+                <button class="arrow-enhanced right" onclick="scrollTabs('improved', 200)">›</button>
+            </div>
+        </div>
+        
+        <!-- 개선안 2: 드롭다운 -->
+        <div class="section">
+            <h2>개선안 2: 드롭다운 메뉴</h2>
+            <p class="description">현재 선택된 항목만 보이고 클릭하면 전체 목록 표시</p>
+            <div class="dropdown-container">
+                <button class="dropdown-button" onclick="toggleDropdown()">
+                    <span id="selectedTab">가설공사-현장사무소 설치</span>
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #666;">1/7</span>
+                        <span>▼</span>
+                    </span>
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-item active" onclick="selectTab(this, '가설공사-현장사무소 설치')">가설공사-현장사무소 설치</div>
+                    <div class="dropdown-item" onclick="selectTab(this, '가설공사-가푸집 설치')">가설공사-가푸집 설치</div>
+                    <div class="dropdown-item" onclick="selectTab(this, '가설공사-가설전기 설치')">가설공사-가설전기 설치</div>
+                    <div class="dropdown-item" onclick="selectTab(this, '가설공사-가설전기 설치')">가설공사-가설전기 설치</div>
+                    <div class="dropdown-item" onclick="selectTab(this, '가설공사-안전펜스 설치')">가설공사-안전펜스 설치</div>
+                    <div class="dropdown-item" onclick="selectTab(this, '가설공사-가설전기 설치')">가설공사-가설전기 설치</div>
+                    <div class="dropdown-item" onclick="selectTab(this, '콘크리트공사-콘크리트 타설')">콘크리트공사-콘크리트 타설</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 개선안 3: 2단 구조 -->
+        <div class="section">
+            <h2>개선안 3: 2단 그리드 구조</h2>
+            <p class="description">모든 옵션을 한눈에 볼 수 있는 그리드 레이아웃</p>
+            <div class="two-row-tabs">
+                <div class="tab-chip active">가설공사-현장사무소 설치</div>
+                <div class="tab-chip">가설공사-가푸집 설치</div>
+                <div class="tab-chip">가설공사-가설전기 설치</div>
+                <div class="tab-chip">가설공사-가설전기 설치</div>
+                <div class="tab-chip">가설공사-안전펜스 설치</div>
+                <div class="tab-chip">가설공사-가설전기 설치</div>
+                <div class="tab-chip">콘크리트공사-콘크리트 타설</div>
+            </div>
+        </div>
+        
+        <!-- 개선안 4: 칩 스타일 + 더보기 -->
+        <div class="section">
+            <h2>개선안 4: 칩 스타일 + 더보기</h2>
+            <p class="description">주요 항목만 보이고 나머지는 더보기로 확장</p>
+            <div class="chips-container" id="chipsContainer">
+                <div class="tab-chip active">가설공사-현장사무소 설치</div>
+                <div class="tab-chip">가설공사-가푸집 설치</div>
+                <button class="more-button" onclick="showMoreChips()">+5개 더보기</button>
+            </div>
+        </div>
+        
+        <!-- 개선안 5: 미니맵 -->
+        <div class="section">
+            <h2>개선안 5: 미니맵 인디케이터</h2>
+            <p class="description">하단에 전체 탭 위치와 현재 보이는 영역 표시</p>
+            <div class="tab-scroll-container">
+                <div class="tab-container-current" id="minimapTabs" onscroll="updateMinimap()">
+                    <div class="tab-current active">가설공사-현장사무소 설치</div>
+                    <div class="tab-current">가설공사-가푸집 설치</div>
+                    <div class="tab-current">가설공사-가설전기 설치</div>
+                    <div class="tab-current">가설공사-가설전기 설치</div>
+                    <div class="tab-current">가설공사-안전펜스 설치</div>
+                    <div class="tab-current">가설공사-가설전기 설치</div>
+                    <div class="tab-current">콘크리트공사-콘크리트 타설</div>
+                </div>
+                <div class="minimap-container">
+                    <div class="minimap">
+                        <div class="minimap-indicator" id="minimapIndicator" style="width: 30%; left: 0;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 탭 스크롤 함수
+        function scrollTabs(containerId, amount) {
+            const container = document.getElementById(containerId + 'Tabs');
+            container.scrollLeft += amount;
+        }
+        
+        // 드롭다운 토글
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.classList.toggle('show');
+        }
+        
+        // 드롭다운 선택
+        function selectTab(element, tabName) {
+            document.getElementById('selectedTab').textContent = tabName;
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+            toggleDropdown();
+        }
+        
+        // 더보기 버튼
+        function showMoreChips() {
+            const container = document.getElementById('chipsContainer');
+            container.innerHTML = `
+                <div class="tab-chip active">가설공사-현장사무소 설치</div>
+                <div class="tab-chip">가설공사-가푸집 설치</div>
+                <div class="tab-chip">가설공사-가설전기 설치</div>
+                <div class="tab-chip">가설공사-가설전기 설치</div>
+                <div class="tab-chip">가설공사-안전펜스 설치</div>
+                <div class="tab-chip">가설공사-가설전기 설치</div>
+                <div class="tab-chip">콘크리트공사-콘크리트 타설</div>
+                <button class="more-button" onclick="showLessChips()">접기</button>
+            `;
+        }
+        
+        function showLessChips() {
+            const container = document.getElementById('chipsContainer');
+            container.innerHTML = `
+                <div class="tab-chip active">가설공사-현장사무소 설치</div>
+                <div class="tab-chip">가설공사-가푸집 설치</div>
+                <button class="more-button" onclick="showMoreChips()">+5개 더보기</button>
+            `;
+        }
+        
+        // 미니맵 업데이트
+        function updateMinimap() {
+            const container = document.getElementById('minimapTabs');
+            const indicator = document.getElementById('minimapIndicator');
+            const scrollPercentage = container.scrollLeft / (container.scrollWidth - container.clientWidth);
+            const indicatorPosition = scrollPercentage * 70; // 70%는 최대 이동 가능 범위
+            indicator.style.left = indicatorPosition + '%';
+        }
+        
+        // 탭 클릭 이벤트 추가
+        document.querySelectorAll('.tab-current, .tab-chip').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const siblings = this.parentElement.querySelectorAll('.tab-current, .tab-chip');
+                siblings.forEach(sibling => sibling.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // 외부 클릭시 드롭다운 닫기
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown-container')) {
+                document.getElementById('dropdownMenu').classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

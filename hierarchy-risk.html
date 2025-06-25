@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>작업계획서 위험요인 선택</title>
+  <style>
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+      }
+
+      body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          font-size: 12px;
+          color: #212121;
+      }
+
+      .modal-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+
+      .modal {
+          width: 900px;
+          height: 500px;
+          background: #FFFFFF;
+          border-radius: 8px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+      }
+
+      .modal-header {
+          height: 40px;
+          background: #F5F5F5;
+          border-bottom: 1px solid #E0E0E0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 16px;
+      }
+
+      .modal-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #212121;
+      }
+
+      .selection-count {
+          font-size: 12px;
+          color: #757575;
+          background: #EEEEEE;
+          padding: 4px 12px;
+          border-radius: 12px;
+      }
+
+      .modal-body {
+          flex: 1;
+          display: flex;
+          overflow: hidden;
+      }
+
+      .left-panel {
+          width: 50%;
+          border-right: 1px solid #E0E0E0;
+          display: flex;
+          flex-direction: column;
+          background: #FAFAFA;
+      }
+
+      .right-panel {
+          width: 50%;
+          display: flex;
+          flex-direction: column;
+          background: #FFFFFF;
+      }
+
+      .panel-toolbar {
+          height: 36px;
+          padding: 6px 12px;
+          border-bottom: 1px solid #E0E0E0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: #FFFFFF;
+      }
+
+      .search-box {
+          flex: 1;
+          height: 24px;
+          padding: 0 8px;
+          border: 1px solid #E0E0E0;
+          border-radius: 4px;
+          font-size: 11px;
+          background: #FAFAFA;
+      }
+
+      .search-box:focus {
+          outline: none;
+          border-color: #BDBDBD;
+          background: #FFFFFF;
+      }
+
+      .summary-list {
+          padding: 8px;
+          border-bottom: 1px solid #E0E0E0;
+          background: #F5F5F5;
+      }
+
+      .summary-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 4px 8px;
+          margin-bottom: 4px;
+          font-size: 11px;
+          cursor: pointer;
+          border-radius: 4px;
+      }
+
+      .summary-item:hover {
+          background: #EEEEEE;
+      }
+
+      .summary-item.active {
+          background: #E0E0E0;
+          font-weight: 500;
+      }
+
+      .summary-checkbox {
+          width: 14px;
+          height: 14px;
+          margin-right: 6px;
+      }
+
+      .summary-count {
+          font-size: 10px;
+          color: #757575;
+      }
+
+      .tree-container {
+          flex: 1;
+          overflow-y: auto;
+          padding: 8px;
+      }
+
+      .tree-group {
+          margin-bottom: 8px;
+          border: 1px solid #E0E0E0;
+          border-radius: 4px;
+          background: #FFFFFF;
+      }
+
+      .tree-group-header {
+          display: flex;
+          align-items: center;
+          padding: 6px 8px;
+          cursor: pointer;
+          user-select: none;
+          background: #F5F5F5;
+          border-radius: 4px 4px 0 0;
+      }
+
+      .tree-group-header:hover {
+          background: #EEEEEE;
+      }
+
+      .arrow {
+          width: 16px;
+          font-size: 10px;
+          color: #757575;
+          transition: transform 0.2s;
+      }
+
+      .arrow.open {
+          transform: rotate(90deg);
+      }
+
+      .tree-items {
+          display: none;
+          padding: 4px 8px 8px 24px;
+      }
+
+      .tree-items.open {
+          display: block;
+      }
+
+      .tree-item {
+          display: flex;
+          align-items: center;
+          padding: 3px 4px;
+          margin: 2px 0;
+          font-size: 11px;
+          cursor: pointer;
+          border-radius: 3px;
+      }
+
+      .tree-item:hover {
+          background: #F5F5F5;
+      }
+
+      .tree-item.selected {
+          background: #EEEEEE;
+      }
+
+      .tree-item-checkbox {
+          width: 14px;
+          height: 14px;
+          margin-right: 6px;
+          cursor: pointer;
+      }
+
+      .tree-item-name {
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+      }
+
+      .selected-header {
+          padding: 8px 12px;
+          font-size: 11px;
+          color: #757575;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+      }
+
+      .clear-btn {
+          font-size: 11px;
+          color: #757575;
+          background: none;
+          border: 1px solid #E0E0E0;
+          padding: 2px 8px;
+          border-radius: 3px;
+          cursor: pointer;
+      }
+
+      .clear-btn:hover {
+          background: #F5F5F5;
+      }
+
+      .selected-container {
+          flex: 1;
+          overflow-y: auto;
+          padding: 8px;
+      }
+
+      .selected-group {
+          margin-bottom: 8px;
+          border: 1px solid #E0E0E0;
+          border-radius: 4px;
+          background: #FAFAFA;
+      }
+
+      .selected-group-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 6px 8px;
+          background: #F5F5F5;
+          border-radius: 4px 4px 0 0;
+          cursor: move;
+          user-select: none;
+      }
+
+      .selected-group-header:hover {
+          background: #EEEEEE;
+      }
+
+      .group-title {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 500;
+          flex: 1;
+      }
+
+      .group-count {
+          font-size: 10px;
+          color: #757575;
+          font-weight: normal;
+      }
+
+      .drag-handle {
+          color: #BDBDBD;
+          font-size: 10px;
+      }
+
+      .selected-items {
+          display: none;
+          padding: 4px 8px 8px 8px;
+      }
+
+      .selected-items.open {
+          display: block;
+      }
+
+      .selected-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 3px 4px;
+          margin: 2px 0;
+          font-size: 11px;
+      }
+
+      .selected-item:hover {
+          background: #F5F5F5;
+          border-radius: 3px;
+      }
+
+      .delete-btn {
+          width: 16px;
+          height: 16px;
+          border: none;
+          background: none;
+          color: #BDBDBD;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 3px;
+      }
+
+      .delete-btn:hover {
+          background: #EEEEEE;
+          color: #757575;
+      }
+
+      .empty-state {
+          text-align: center;
+          padding: 60px 20px;
+          color: #BDBDBD;
+          font-size: 11px;
+      }
+
+      .modal-footer {
+          height: 48px;
+          padding: 8px 16px;
+          border-top: 1px solid #E0E0E0;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 8px;
+          background: #F5F5F5;
+      }
+
+      .btn {
+          padding: 6px 16px;
+          border: 1px solid #E0E0E0;
+          border-radius: 4px;
+          font-size: 12px;
+          cursor: pointer;
+          background: #FFFFFF;
+          transition: all 0.2s;
+      }
+
+      .btn:hover {
+          background: #F5F5F5;
+      }
+
+      .btn-primary {
+          background: #424242;
+          color: #FFFFFF;
+          border-color: #424242;
+      }
+
+      .btn-primary:hover {
+          background: #616161;
+      }
+
+      .btn-primary:disabled {
+          background: #E0E0E0;
+          border-color: #E0E0E0;
+          color: #BDBDBD;
+          cursor: not-allowed;
+      }
+
+      /* 스크롤바 */
+      ::-webkit-scrollbar {
+          width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+          background: #F5F5F5;
+      }
+
+      ::-webkit-scrollbar-thumb {
+          background: #E0E0E0;
+          border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+          background: #BDBDBD;
+      }
+
+      .collapsed-indicator {
+          font-size: 10px;
+          color: #757575;
+          margin-left: 4px;
+      }
+  </style>
+</head>
+<body>
+<div class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">작업계획서 위험요인 선택</h2>
+      <span class="selection-count" id="selectionCount">선택: 0/45</span>
+    </div>
+
+    <div class="modal-body">
+      <div class="left-panel">
+        <div class="panel-toolbar">
+          <input type="text" class="search-box" placeholder="검색..." id="searchBox">
+        </div>
+
+        <div class="summary-list" id="summaryList"></div>
+
+        <div class="tree-container" id="treeContainer"></div>
+      </div>
+
+      <div class="right-panel">
+        <div class="selected-header">
+          <span>선택된 항목</span>
+          <button class="clear-btn" id="clearBtn" style="display:none" onclick="clearAll()">
+            모두 삭제
+          </button>
+        </div>
+
+        <div class="selected-container" id="selectedContainer">
+          <div class="empty-state">
+            <div>항목을 선택하세요</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" id="completeBtn" disabled onclick="complete()">선택 완료</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const data = [
+    {
+      id: 1,
+      name: '작업계획서 1',
+      fullName: '작업계획서 1 - 고소작업',
+      children: [
+        { id: 11, name: '추락 위험' },
+        { id: 12, name: '안전대 미착용' },
+        { id: 13, name: '작업발판 불안정' },
+        { id: 14, name: '강풍 위험' },
+        { id: 15, name: '난간대 미설치' },
+        { id: 16, name: '개구부 방호조치 미흡' },
+        { id: 17, name: '수직사다리 미고정' },
+        { id: 18, name: '비계 결함' },
+        { id: 19, name: '안전난간 파손' },
+        { id: 110, name: '달비계 고정불량' },
+        { id: 111, name: '고소작업대 정격하중 초과' },
+        { id: 112, name: '안전모 미착용' },
+        { id: 113, name: '작업구역 미구획' },
+        { id: 114, name: '통신장비 미휴대' },
+        { id: 115, name: '2인 1조 작업 미준수' }
+      ]
+    },
+    {
+      id: 2,
+      name: '작업계획서 2',
+      fullName: '작업계획서 2 - 전기작업',
+      children: [
+        { id: 21, name: '감전 위험' },
+        { id: 22, name: '절연 불량' },
+        { id: 23, name: '단락 사고' },
+        { id: 24, name: '활선 작업' },
+        { id: 25, name: '접지 미실시' },
+        { id: 26, name: '차단기 오작동' },
+        { id: 27, name: '케이블 손상' },
+        { id: 28, name: '과부하 위험' },
+        { id: 29, name: '정전작업 미실시' },
+        { id: 210, name: '검전기 미사용' },
+        { id: 211, name: '잠금장치(LOTO) 미설치' },
+        { id: 212, name: '절연장갑 미착용' }
+      ]
+    },
+    {
+      id: 3,
+      name: '작업계획서 3',
+      fullName: '작업계획서 3 - 중장비작업',
+      children: [
+        { id: 31, name: '충돌 위험' },
+        { id: 32, name: '전도 위험' },
+        { id: 33, name: '협착 위험' },
+        { id: 34, name: '시야 확보 불량' },
+        { id: 35, name: '신호수 미배치' },
+        { id: 36, name: '작업반경 내 출입' },
+        { id: 37, name: '지반 침하' },
+        { id: 38, name: '붐대 접촉' },
+        { id: 39, name: '와이어로프 파단' },
+        { id: 310, name: '아웃리거 미설치' },
+        { id: 311, name: '정격하중 초과' },
+        { id: 312, name: '후진경보기 고장' },
+        { id: 313, name: '운전원 무자격' },
+        { id: 314, name: '안전장치 해제' },
+        { id: 315, name: '야간작업 조명 부족' },
+        { id: 316, name: '유압오일 누유' },
+        { id: 317, name: '브레이크 불량' },
+        { id: 318, name: '타이어 마모' }
+      ]
+    }
+  ];
+
+  let selectedItems = {};
+  let expandedGroups = new Set([1]); // 첫 번째 그룹만 기본 열림
+  let expandedSelected = new Set();
+  let activeGroup = null;
+
+  function init() {
+    renderSummary();
+    renderTree();
+    renderSelected();
+    updateCount();
+  }
+
+  function renderSummary() {
+    const container = document.getElementById('summaryList');
+    let html = '';
+
+    data.forEach(group => {
+      const selectedCount = group.children.filter(child =>
+        selectedItems[group.id] && selectedItems[group.id].includes(child.id)
+      ).length;
+
+      html += '<div class="summary-item' + (activeGroup === group.id ? ' active' : '') + '" ';
+      html += 'onclick="scrollToGroup(' + group.id + ')">';
+      html += '<div>';
+      html += '<input type="checkbox" class="summary-checkbox" id="summary-' + group.id + '" ';
+      html += 'onclick="event.stopPropagation(); toggleGroup(' + group.id + ')">';
+      html += '<label for="summary-' + group.id + '" style="cursor:pointer">' + group.name + '</label>';
+      html += '</div>';
+      html += '<span class="summary-count">' + selectedCount + '/' + group.children.length + '</span>';
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+    updateSummaryCheckboxes();
+  }
+
+  function renderTree() {
+    const container = document.getElementById('treeContainer');
+    const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+    let html = '';
+
+    data.forEach(group => {
+      const isExpanded = expandedGroups.has(group.id);
+      const matchingChildren = group.children.filter(child =>
+        !searchTerm || child.name.toLowerCase().includes(searchTerm)
+      );
+
+      if (searchTerm && matchingChildren.length === 0) return;
+
+      html += '<div class="tree-group" id="group-' + group.id + '">';
+      html += '<div class="tree-group-header" onclick="toggleTreeGroup(' + group.id + ')">';
+      html += '<span class="arrow' + (isExpanded ? ' open' : '') + '">▶</span>';
+      html += '<span>' + group.fullName + '</span>';
+      html += '</div>';
+      html += '<div class="tree-items' + (isExpanded ? ' open' : '') + '">';
+
+      matchingChildren.forEach(child => {
+        const isSelected = selectedItems[group.id] && selectedItems[group.id].includes(child.id);
+        html += '<div class="tree-item' + (isSelected ? ' selected' : '') + '">';
+        html += '<input type="checkbox" class="tree-item-checkbox" id="item-' + child.id + '" ';
+        html += (isSelected ? 'checked ' : '') + 'onchange="toggleItem(' + group.id + ', ' + child.id + ')">';
+        html += '<label for="item-' + child.id + '" class="tree-item-name" style="cursor:pointer">';
+        html += child.name + '</label>';
+        html += '</div>';
+      });
+
+      html += '</div>';
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  function renderSelected() {
+    const container = document.getElementById('selectedContainer');
+    const clearBtn = document.getElementById('clearBtn');
+    const completeBtn = document.getElementById('completeBtn');
+
+    const hasSelection = Object.keys(selectedItems).some(groupId => selectedItems[groupId].length > 0);
+    clearBtn.style.display = hasSelection ? 'block' : 'none';
+    completeBtn.disabled = !hasSelection;
+
+    if (!hasSelection) {
+      container.innerHTML = '<div class="empty-state"><div>항목을 선택하세요</div></div>';
+      return;
+    }
+
+    let html = '';
+    const orderedGroups = Object.keys(selectedItems).sort((a, b) => parseInt(a) - parseInt(b));
+
+    orderedGroups.forEach(groupId => {
+      if (selectedItems[groupId].length === 0) return;
+
+      const group = data.find(g => g.id === parseInt(groupId));
+      const isExpanded = expandedSelected.has(group.id);
+
+      html += '<div class="selected-group" draggable="true" ondragstart="dragStart(event, ' + group.id + ')" ';
+      html += 'ondragover="dragOver(event)" ondrop="drop(event, ' + group.id + ')">';
+      html += '<div class="selected-group-header" onclick="toggleSelectedGroup(' + group.id + ')">';
+      html += '<div class="group-title">';
+      html += '<span class="arrow' + (isExpanded ? ' open' : '') + '">▶</span>';
+      html += '<span>' + group.name + '</span>';
+      html += '<span class="group-count">(' + selectedItems[groupId].length + ')</span>';
+      html += '</div>';
+      html += '<span class="drag-handle">⋮⋮</span>';
+      html += '</div>';
+
+      html += '<div class="selected-items' + (isExpanded ? ' open' : '') + '">';
+      selectedItems[groupId].forEach(itemId => {
+        const item = group.children.find(c => c.id === itemId);
+        html += '<div class="selected-item">';
+        html += '<span class="tree-item-name">' + item.name + '</span>';
+        html += '<button class="delete-btn" onclick="removeItem(' + group.id + ', ' + item.id + ')">×</button>';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  function toggleTreeGroup(groupId) {
+    if (expandedGroups.has(groupId)) {
+      expandedGroups.delete(groupId);
+    } else {
+      expandedGroups.add(groupId);
+    }
+    renderTree();
+  }
+
+  function toggleSelectedGroup(groupId) {
+    if (expandedSelected.has(groupId)) {
+      expandedSelected.delete(groupId);
+    } else {
+      expandedSelected.add(groupId);
+    }
+    renderSelected();
+  }
+
+  function toggleGroup(groupId) {
+    const group = data.find(g => g.id === groupId);
+    const allSelected = selectedItems[groupId] && selectedItems[groupId].length === group.children.length;
+
+    if (allSelected) {
+      selectedItems[groupId] = [];
+    } else {
+      selectedItems[groupId] = group.children.map(c => c.id);
+    }
+
+    renderSummary();
+    renderTree();
+    renderSelected();
+    updateCount();
+  }
+
+  function toggleItem(groupId, itemId) {
+    if (!selectedItems[groupId]) {
+      selectedItems[groupId] = [];
+    }
+
+    const index = selectedItems[groupId].indexOf(itemId);
+    if (index > -1) {
+      selectedItems[groupId].splice(index, 1);
+    } else {
+      selectedItems[groupId].push(itemId);
+    }
+
+    renderSummary();
+    renderTree();
+    renderSelected();
+    updateCount();
+  }
+
+  function removeItem(groupId, itemId) {
+    const index = selectedItems[groupId].indexOf(itemId);
+    if (index > -1) {
+      selectedItems[groupId].splice(index, 1);
+    }
+
+    renderSummary();
+    renderTree();
+    renderSelected();
+    updateCount();
+  }
+
+  function clearAll() {
+    if (confirm('선택된 모든 항목을 삭제하시겠습니까?')) {
+      selectedItems = {};
+      expandedSelected.clear();
+      renderSummary();
+      renderTree();
+      renderSelected();
+      updateCount();
+    }
+  }
+
+  function updateCount() {
+    const total = data.reduce((sum, group) => sum + group.children.length, 0);
+    const selected = Object.values(selectedItems).reduce((sum, items) => sum + items.length, 0);
+    document.getElementById('selectionCount').textContent = '선택: ' + selected + '/' + total;
+  }
+
+  function updateSummaryCheckboxes() {
+    data.forEach(group => {
+      const checkbox = document.getElementById('summary-' + group.id);
+      if (checkbox) {
+        const selectedCount = selectedItems[group.id] ? selectedItems[group.id].length : 0;
+        checkbox.checked = selectedCount === group.children.length;
+        checkbox.indeterminate = selectedCount > 0 && selectedCount < group.children.length;
+      }
+    });
+  }
+
+  function scrollToGroup(groupId) {
+    activeGroup = groupId;
+    renderSummary();
+    const element = document.getElementById('group-' + groupId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // 드래그앤드롭
+  let draggedGroupId = null;
+
+  function dragStart(event, groupId) {
+    draggedGroupId = groupId;
+    event.dataTransfer.effectAllowed = 'move';
+  }
+
+  function dragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }
+
+  function drop(event, targetGroupId) {
+    event.preventDefault();
+    if (draggedGroupId && draggedGroupId !== targetGroupId) {
+      // 순서 변경 로직
+      const newSelectedItems = {};
+      const orderedGroups = Object.keys(selectedItems).sort((a, b) => parseInt(a) - parseInt(b));
+
+      orderedGroups.forEach(groupId => {
+        if (parseInt(groupId) === targetGroupId) {
+          newSelectedItems[draggedGroupId] = selectedItems[draggedGroupId];
+        }
+        if (parseInt(groupId) !== draggedGroupId) {
+          newSelectedItems[groupId] = selectedItems[groupId];
+        }
+      });
+
+      selectedItems = newSelectedItems;
+      renderSelected();
+    }
+  }
+
+  function complete() {
+    const selected = Object.values(selectedItems).reduce((sum, items) => sum + items.length, 0);
+    alert('총 ' + selected + '개의 위험요인이 선택되었습니다.');
+    closeModal();
+  }
+
+  function closeModal() {
+    document.body.style.display = 'none';
+  }
+
+  // 검색
+  document.getElementById('searchBox').addEventListener('input', function() {
+    renderTree();
+  });
+
+  // 키보드 단축키
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    } else if (e.key === 'Enter' && !document.getElementById('completeBtn').disabled) {
+      complete();
+    }
+  });
+
+  // 초기화
+  init();
+</script>
+</body>
+</html>

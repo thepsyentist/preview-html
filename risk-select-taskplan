@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>위험성평가 시스템 문제점 분석</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: #dc3545;
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .section h2 {
+            color: #dc3545;
+            font-size: 24px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .case-study {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .case-study h3 {
+            color: #495057;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .timeline {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #e7f3ff;
+            border-radius: 10px;
+        }
+        
+        .timeline-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .timeline-item:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            color: #667eea;
+        }
+        
+        .date-badge {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .work-list {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0;
+            margin: 15px 0;
+            list-style: none;
+        }
+        
+        .work-list li {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f1f3f5;
+            display: flex;
+            align-items: center;
+        }
+        
+        .work-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .work-list li::before {
+            content: '📋';
+            margin-right: 10px;
+        }
+        
+        .problem-highlight {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .problem-highlight h4 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .duplicate-marker {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+        
+        .screen-example {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .screen-example h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .evaluation-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .evaluation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .evaluation-title {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .evaluation-period {
+            background: #e9ecef;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            color: #495057;
+        }
+        
+        .impact-box {
+            background: #f8f9fa;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .impact-box h4 {
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+        
+        .solution-preview {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .solution-preview h3 {
+            color: #155724;
+            margin-bottom: 20px;
+        }
+        
+        .checkbox-container {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 5px 0;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        
+        .checkbox-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+        
+        .checkbox-item label {
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+            font-weight: 500;
+        }
+        
+        .tag.included {
+            background: #e7f3ff;
+            color: #0066cc;
+        }
+        
+        .tag.excluded {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚠️ 위험성평가 시스템 작업계획서 중복 문제</h1>
+            <p>평가기간 내 모든 작업계획서가 자동 포함되어 발생하는 중복 이슈</p>
+        </div>
+
+        <div class="section">
+            <h2>🔍 문제 상황 분석</h2>
+            
+            <div class="case-study">
+                <h3>📅 실제 사례: 혹서기 건강장애 예방 평가</h3>
+                
+                <div class="screen-example">
+                    <h4>현재 시스템 동작 방식</h4>
+                    <div class="evaluation-card">
+                        <div class="evaluation-header">
+                            <span class="evaluation-title">혹서기 근로자 건강장애 예방</span>
+                            <span class="evaluation-period">2025.06.01 ~ 2025.09.30 (122일간)</span>
+                        </div>
+                        <p style="margin-bottom: 15px;">이 기간 동안 작성된 <strong>모든 작업계획서</strong>가 자동으로 포함됩니다:</p>
+                        <ul class="work-list">
+                            <li>슬라브 타설작업</li>
+                            <li>슬라브 철근 조립</li>
+                            <li>슬라브 거푸집 조립</li>
+                            <li>콘크리트 양생 작업</li>
+                            <li>외벽 도장 작업</li>
+                            <li>기타 122일간의 모든 작업...</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="problem-highlight">
+                    <h4>❌ 문제점</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px;">📍 <strong>122일</strong>이라는 긴 기간 설정 시, 그 기간 내 모든 작업계획서가 포함됨</li>
+                        <li style="margin-bottom: 10px;">📍 혹서기 대책과 <strong>무관한 작업</strong>까지 모두 포함되어 문서가 비대해짐</li>
+                        <li style="margin-bottom: 10px;">📍 원하는 작업계획서만 <strong>선택할 수 없음</strong></li>
+                        <li>📍 출력물에도 불필요한 내용이 포함되어 <strong>가독성 저하</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔄 중복 발생 시나리오</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="date-badge">7월 1일</div>
+                    <p><strong>첫 번째 평가</strong><br>7/1~7/15 슬라브 작업 평가</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="date-badge">7월 9일</div>
+                    <p><strong>추가 공정 발생</strong><br>7/14~7/15 신규 작업 필요</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="date-badge">7월 10일</div>
+                    <p><strong>두 번째 평가 작성</strong><br>문제 발생!</p>
+                </div>
+            </div>
+            
+            <div class="impact-box">
+                <h4>💥 결과적으로 발생하는 문제</h4>
+                <div class="screen-example">
+                    <h4>7/14~7/15 평가 작성 시</h4>
+                    <ul class="work-list">
+                        <li>슬라브 타설작업 <span class="duplicate-marker">중복!</span></li>
+                        <li>슬라브 철근 조립 <span class="duplicate-marker">중복!</span></li>
+                        <li>슬라브 거푸집 조립 <span class="duplicate-marker">중복!</span></li>
+                        <li>외벽 도장 작업 <span class="tag included">신규</span></li>
+                    </ul>
+                    <p style="margin-top: 15px; color: #dc3545;">
+                        ⚠️ 이미 7/1에 평가한 슬라브 작업들이 자동으로 다시 포함되어 중복 평가됨
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>✅ 해결방안: 작업계획서 선택 기능</h2>
+            
+            <div class="solution-preview">
+                <h3>개선된 위험성평가 생성 프로세스</h3>
+                
+                <p style="margin-bottom: 20px;"><strong>평가기간:</strong> 2025.07.14 ~ 2025.07.15</p>
+                
+                <div class="checkbox-container">
+                    <p style="margin-bottom: 15px; font-weight: 600;">📋 해당 기간의 작업계획서 목록 (선택해주세요)</p>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="work1" disabled>
+                        <label for="work1">
+                            슬라브 타설작업
+                            <span class="tag excluded">이미 평가됨</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="work2" disabled>
+                        <label for="work2">
+                            슬라브 철근 조립
+                            <span class="tag excluded">이미 평가됨</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="work3" disabled>
+                        <label for="work3">
+                            슬라브 거푸집 조립
+                            <span class="tag excluded">이미 평가됨</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="work4" checked>
+                        <label for="work4">
+                            외벽 도장 작업
+                            <span class="tag included">신규 - 선택됨</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <p style="margin-top: 20px; text-align: center; color: #28a745;">
+                    ✓ 필요한 작업계획서만 선택하여 위험성평가 작성 가능
+                </p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 핵심 개선 요구사항</h2>
+            
+            <div style="background: #e7f3ff; padding: 25px; border-radius: 10px; border: 2px solid #0066cc;">
+                <h3 style="color: #0066cc; margin-bottom: 20px;">시스템 개선 포인트</h3>
+                <ol style="margin-left: 20px;">
+                    <li style="margin-bottom: 15px;">
+                        <strong>평가기간 설정 후 작업계획서 선택 UI 추가</strong><br>
+                        <code>기간 설정 → 작업계획서 목록 조회 → 체크박스로 선택 → 선택된 항목만 평가서 생성</code>
+                    </li>
+                    <li style="margin-bottom: 15px;">
+                        <strong>이미 평가된 작업 구분 표시</strong><br>
+                        동일 기간에 이미 평가된 작업은 비활성화 또는 구분 표시
+                    </li>
+                    <li>
+                        <strong>장기간 평가 시 작업계획서 필터링</strong><br>
+                        122일처럼 긴 기간 설정 시에도 원하는 작업만 선택 가능
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

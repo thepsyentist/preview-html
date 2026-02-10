@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>체크리스트 반복 점검 — 완전한 해결안</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Pretendard', -apple-system, 'Noto Sans KR', sans-serif; background: #F1F3F5; color: #212529; line-height: 1.65; }
+
+  /* Nav */
+  .topnav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid #dee2e6; padding: 10px 24px; display: flex; gap: 6px; overflow-x: auto; }
+  .topnav a { font-size: 12px; color: #868e96; text-decoration: none; padding: 6px 12px; border-radius: 6px; white-space: nowrap; font-weight: 500; }
+  .topnav a:hover { background: #f8f9fa; color: #212529; }
+
+  /* Hero */
+  .hero { background: #212529; color: white; padding: 64px 32px 48px; text-align: center; }
+  .hero h1 { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .hero p { font-size: 16px; color: #adb5bd; max-width: 620px; margin: 0 auto; }
+
+  /* Sections */
+  .section { max-width: 960px; margin: 0 auto; padding: 56px 24px; }
+  .section-header { margin-bottom: 32px; }
+  .section-num { font-size: 11px; font-weight: 700; color: #868e96; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+  .section-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  .section-desc { font-size: 14px; color: #868e96; margin-top: 6px; }
+  .divider { border: none; height: 1px; background: #dee2e6; margin: 0; }
+
+  /* Problem Cards */
+  .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .problem-card { background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #e9ecef; }
+  .problem-card .pnum { font-size: 11px; font-weight: 700; color: #fa5252; background: #fff5f5; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; }
+  .problem-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .problem-card p { font-size: 13px; color: #666; }
+
+  /* App Mockup Frame */
+  .app-frame { background: #fff; border-radius: 12px; border: 1px solid #dee2e6; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .app-sidebar { width: 200px; background: #1B2A4A; color: #adb5bd; min-height: 100%; }
+  .app-sidebar .menu-item { padding: 10px 16px; font-size: 12px; cursor: pointer; border-left: 3px solid transparent; }
+  .app-sidebar .menu-item:hover { background: rgba(255,255,255,.05); }
+  .app-sidebar .menu-item.active { background: rgba(255,255,255,.1); color: #fff; border-left-color: #4dabf7; font-weight: 600; }
+  .app-sidebar .menu-group { padding: 12px 16px 4px; font-size: 10px; font-weight: 700; color: #6c7a8d; text-transform: uppercase; letter-spacing: 1px; }
+  .app-topbar { background: #fff; border-bottom: 1px solid #e9ecef; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .app-topbar h2 { font-size: 16px; font-weight: 700; }
+  .app-content { padding: 20px; background: #f8f9fa; }
+
+  /* Mockup Components */
+  .mock-breadcrumb { font-size: 11px; color: #adb5bd; margin-bottom: 12px; }
+  .mock-breadcrumb span { color: #495057; font-weight: 600; }
+  .mock-tabs { display: flex; gap: 0; border-bottom: 2px solid #e9ecef; margin-bottom: 16px; }
+  .mock-tab { padding: 10px 20px; font-size: 13px; font-weight: 500; color: #868e96; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .mock-tab.active { color: #228be6; border-bottom-color: #228be6; font-weight: 700; }
+  .mock-tab.new { position: relative; }
+  .mock-tab.new::after { content: 'NEW'; position: absolute; top: 4px; right: -4px; font-size: 8px; background: #fa5252; color: white; padding: 1px 4px; border-radius: 3px; font-weight: 700; }
+  .mock-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mock-table th { background: #f1f3f5; padding: 8px 12px; text-align: left; font-weight: 600; color: #495057; border-bottom: 1px solid #dee2e6; }
+  .mock-table td { padding: 8px 12px; border-bottom: 1px solid #f1f3f5; color: #495057; }
+  .mock-btn { display: inline-block; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .mock-btn.primary { background: #228be6; color: white; }
+  .mock-btn.outline { background: white; color: #495057; border: 1px solid #dee2e6; }
+  .mock-btn.danger { background: #fff5f5; color: #fa5252; border: 1px solid #ffc9c9; }
+  .mock-btn.success { background: #ebfbee; color: #2b8a3e; border: 1px solid #b2f2bb; }
+  .mock-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+  .mock-input { width: 100%; padding: 8px 12px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 13px; background: #fff; }
+  .mock-select { padding: 8px 12px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 13px; background: #fff; }
+
+  /* Annotation */
+  .annotation { position: relative; border: 2px dashed #fa5252; border-radius: 10px; padding: 16px; margin: 12px 0; }
+  .annotation-label { position: absolute; top: -10px; left: 12px; background: #fa5252; color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .annotation.blue { border-color: #228be6; }
+  .annotation.blue .annotation-label { background: #228be6; }
+  .annotation.green { border-color: #40c057; }
+  .annotation.green .annotation-label { background: #40c057; }
+
+  /* New Feature Highlight */
+  .new-feature { background: linear-gradient(135deg, #fff9db 0%, #fff3bf 100%); border: 2px solid #fcc419; border-radius: 12px; padding: 20px; margin: 16px 0; }
+  .new-feature h4 { font-size: 14px; font-weight: 700; color: #e67700; margin-bottom: 8px; }
+
+  /* Settings Panel */
+  .settings-panel { background: #fff; border: 1px solid #dee2e6; border-radius: 10px; padding: 20px; }
+  .settings-row { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid #f1f3f5; }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-label { width: 120px; font-size: 13px; font-weight: 600; color: #495057; flex-shrink: 0; }
+  .settings-value { flex: 1; }
+
+  /* Toggle Switch */
+  .toggle { width: 44px; height: 24px; border-radius: 12px; position: relative; cursor: pointer; transition: all .2s; }
+  .toggle.on { background: #228be6; }
+  .toggle.off { background: #dee2e6; }
+  .toggle .knob { width: 20px; height: 20px; border-radius: 50%; background: white; position: absolute; top: 2px; transition: all .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .toggle.on .knob { right: 2px; }
+  .toggle.off .knob { left: 2px; }
+
+  /* Checkbox */
+  .mock-checkbox { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .mock-checkbox .box { width: 18px; height: 18px; border: 2px solid #dee2e6; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mock-checkbox .box.checked { background: #228be6; border-color: #228be6; color: white; font-size: 12px; }
+  .mock-checkbox .box.unchecked { background: white; }
+
+  /* Comparison */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compare-card { border-radius: 12px; overflow: hidden; border: 2px solid; }
+  .compare-card.before { border-color: #ffc9c9; }
+  .compare-card.after { border-color: #b2f2bb; }
+  .compare-header { padding: 10px 16px; font-size: 13px; font-weight: 700; }
+  .compare-card.before .compare-header { background: #fff5f5; color: #e03131; }
+  .compare-card.after .compare-header { background: #ebfbee; color: #2b8a3e; }
+  .compare-body { background: #fff; padding: 16px; }
+
+  /* Checklist Item */
+  .cl-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 12px; }
+  .cl-item:last-child { border-bottom: none; }
+  .cl-item .cl-check { width: 16px; height: 16px; border: 2px solid #dee2e6; border-radius: 4px; flex-shrink: 0; }
+  .cl-item .cl-company { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: #f1f3f5; color: #868e96; white-space: nowrap; }
+  .cl-item .cl-task { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: #e7f5ff; color: #1971c2; white-space: nowrap; }
+  .cl-item.dimmed { opacity: 0.25; }
+  .cl-item.dimmed .cl-text { text-decoration: line-through; }
+
+  /* Calendar */
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-header { font-size: 10px; font-weight: 600; color: #868e96; text-align: center; padding: 4px; }
+  .cal-day { text-align: center; padding: 8px 4px; border-radius: 8px; font-size: 11px; }
+  .cal-day .day-num { font-weight: 600; margin-bottom: 2px; }
+  .cal-day .day-pct { font-size: 10px; font-weight: 700; }
+  .cal-day.done { background: #ebfbee; color: #2b8a3e; }
+  .cal-day.partial { background: #fff9db; color: #e67700; }
+  .cal-day.missed { background: #fff5f5; color: #e03131; }
+  .cal-day.future { background: #f8f9fa; color: #ced4da; }
+  .cal-day.today { border: 2px solid #228be6; }
+
+  /* Flow Arrow */
+  .flow-row { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+  .flow-box { padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; }
+  .flow-arrow { font-size: 20px; color: #ced4da; flex-shrink: 0; }
+
+  /* Decision Table */
+  .decision-table { width: 100%; border-collapse: collapse; }
+  .decision-table th { background: #212529; color: white; padding: 10px 14px; font-size: 12px; text-align: center; }
+  .decision-table th:first-child { text-align: left; }
+  .decision-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #e9ecef; background: white; text-align: center; }
+  .decision-table td:first-child { text-align: left; font-weight: 600; }
+
+  /* Step Counter */
+  .step-indicator { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding: 16px 20px; background: #fff; border-radius: 10px; border: 1px solid #e9ecef; }
+  .step-dot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0; }
+  .step-dot.active { background: #228be6; color: white; }
+  .step-dot.done { background: #ebfbee; color: #2b8a3e; }
+  .step-dot.pending { background: #f1f3f5; color: #adb5bd; }
+  .step-line { width: 40px; height: 2px; background: #dee2e6; }
+  .step-line.active { background: #228be6; }
+
+  /* Navigation Mockup */
+  .nav-flow { display: flex; align-items: center; gap: 0; }
+  .nav-step { background: white; border: 1px solid #dee2e6; padding: 10px 16px; font-size: 12px; text-align: center; position: relative; }
+  .nav-step:not(:last-child)::after { content: '→'; position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: #ced4da; font-size: 16px; z-index: 1; }
+  .nav-step.highlight { background: #e7f5ff; border-color: #228be6; color: #1971c2; font-weight: 600; }
+  .nav-step .click-count { display: block; font-size: 10px; color: #fa5252; font-weight: 600; margin-top: 2px; }
+
+  /* Info Box */
+  .info-box { background: #e7f5ff; border: 1px solid #a5d8ff; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #1864ab; margin: 12px 0; }
+  .warning-box { background: #fff9db; border: 1px solid #ffd43b; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #e67700; margin: 12px 0; }
+
+  @media (max-width: 768px) {
+    .problem-grid, .compare-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Nav -->
+<nav class="topnav">
+  <a href="#problems">문제 파악</a>
+  <a href="#overview">해결 전략</a>
+  <a href="#step1">STEP 1: 점검 일정 설정</a>
+  <a href="#step2">STEP 2: TBM 반영</a>
+  <a href="#step3">STEP 3: 진행 이력</a>
+  <a href="#domains">다른 도메인은?</a>
+  <a href="#access">접근성 해결</a>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>체크리스트 반복 점검</h1>
+  <p>현재 문제 4가지를 정확히 파악하고, 설정 화면부터 TBM 반영까지 전체 흐름을 완벽하게 설계합니다.</p>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 1: PROBLEMS -->
+<!-- ============================================ -->
+<div id="problems" class="section">
+  <div class="section-header">
+    <div class="section-num">Part 1</div>
+    <div class="section-title">지금 뭐가 문제인가</div>
+    <div class="section-desc">현장에서 실제로 겪는 불편함 4가지를 정확히 짚습니다.</div>
+  </div>
+
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="pnum">문제 1</div>
+      <h4>체크리스트를 찾아가기 어렵다</h4>
+      <p>체크리스트를 보려면 <strong>사이드바 → 위험성평가 회의록 → 목록에서 해당 행 찾기 → "체크리스트 보기" 클릭</strong>까지 4단계를 거쳐야 합니다.</p>
+      <div style="margin-top:12px;">
+        <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+          <span style="background:#f1f3f5; padding:4px 10px; border-radius:4px; font-size:11px;">사이드바</span>
+          <span style="color:#ced4da;">→</span>
+          <span style="background:#f1f3f5; padding:4px 10px; border-radius:4px; font-size:11px;">회의록 메뉴</span>
+          <span style="color:#ced4da;">→</span>
+          <span style="background:#f1f3f5; padding:4px 10px; border-radius:4px; font-size:11px;">목록에서 찾기</span>
+          <span style="color:#ced4da;">→</span>
+          <span style="background:#fff5f5; padding:4px 10px; border-radius:4px; font-size:11px; color:#fa5252; font-weight:600;">체크리스트 보기</span>
+        </div>
+        <div style="font-size:11px; color:#fa5252; margin-top:6px; font-weight:600;">사이드바에 체크리스트 직접 메뉴가 없음</div>
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="pnum">문제 2</div>
+      <h4>TBM 작성 시 항목이 너무 많다</h4>
+      <p>자동선택이 <strong>모든 업체의 중점관리 항목</strong>을 보여줍니다. 10개 업체 현장이면 수십 개 항목이 한번에 나와서, 내 업체 것만 고르기 힘듭니다.</p>
+      <div style="margin-top:12px; background:#fff5f5; padding:10px 12px; border-radius:6px;">
+        <div style="font-size:11px; color:#e03131; font-weight:600;">현재 자동선택 필터:</div>
+        <code style="font-size:11px; color:#495057;">{ keyIssues: true, excludeCompleted: true }</code>
+        <div style="font-size:11px; color:#e03131; margin-top:4px;">← 업체(company) 필터가 없음!</div>
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="pnum">문제 3</div>
+      <h4>매일 같은 점검인데 매번 새로 해야 한다</h4>
+      <p>어제 TBM에서 선택한 체크리스트를 오늘 다시 쓰려면, 처음부터 다시 선택해야 합니다. <strong>"이전 복사"나 "반복" 기능이 없습니다.</strong></p>
+      <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+        <span style="background:#e7f5ff; padding:6px 10px; border-radius:6px; font-size:11px;">1/6(월) TBM</span>
+        <span style="color:#ced4da; font-size:16px;">→</span>
+        <span style="background:#e7f5ff; padding:6px 10px; border-radius:6px; font-size:11px;">1/7(화) TBM</span>
+        <span style="color:#ced4da; font-size:16px;">→</span>
+        <span style="background:#e7f5ff; padding:6px 10px; border-radius:6px; font-size:11px;">1/8(수) TBM</span>
+        <div style="font-size:10px; color:#fa5252; font-weight:600; margin-left:4px;">매번 처음부터!</div>
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="pnum">문제 4</div>
+      <h4>이번 주에 뭘 점검했는지 모른다</h4>
+      <p>체크리스트 상세 페이지에서는 <strong>조치 상태</strong>만 보입니다. "이번 주에 매일 이 항목을 점검했는가?"를 확인할 방법이 없습니다. 1:1 구조라 <strong>일자별 이력이 없습니다.</strong></p>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- SECTION 2: SOLUTION OVERVIEW -->
+<!-- ============================================ -->
+<div id="overview" class="section">
+  <div class="section-header">
+    <div class="section-num">Part 2</div>
+    <div class="section-title">해결 전략 — 3 STEP</div>
+    <div class="section-desc">설정 → 자동 반영 → 이력 확인. 이 흐름이 전부입니다.</div>
+  </div>
+
+  <!-- Step Overview -->
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+    <div style="background:#fff; border-radius:12px; padding:24px; text-align:center; border:1px solid #e9ecef;">
+      <div style="width:48px; height:48px; border-radius:50%; background:#e7f5ff; color:#228be6; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; margin:0 auto 12px;">1</div>
+      <h4 style="font-size:14px; font-weight:700; margin-bottom:6px;">점검 일정 설정</h4>
+      <p style="font-size:12px; color:#868e96;">체크리스트 상세 페이지에서<br>"이 체크리스트를 반복 사용하겠다"<br>설정을 켠다</p>
+      <div style="margin-top:10px; font-size:11px; color:#228be6; font-weight:600;">어디서? → 체크리스트 상세</div>
+    </div>
+    <div style="background:#fff; border-radius:12px; padding:24px; text-align:center; border:1px solid #e9ecef;">
+      <div style="width:48px; height:48px; border-radius:50%; background:#ebfbee; color:#2b8a3e; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; margin:0 auto 12px;">2</div>
+      <h4 style="font-size:14px; font-weight:700; margin-bottom:6px;">TBM/점검에 자동 반영</h4>
+      <p style="font-size:12px; color:#868e96;">TBM 일지 작성 시<br>설정된 체크리스트가<br>내 업체 항목만 자동 표시</p>
+      <div style="margin-top:10px; font-size:11px; color:#2b8a3e; font-weight:600;">어디서 보여? → TBM 작성</div>
+    </div>
+    <div style="background:#fff; border-radius:12px; padding:24px; text-align:center; border:1px solid #e9ecef;">
+      <div style="width:48px; height:48px; border-radius:50%; background:#f3f0ff; color:#7048e8; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; margin:0 auto 12px;">3</div>
+      <h4 style="font-size:14px; font-weight:700; margin-bottom:6px;">일자별 진행 이력</h4>
+      <p style="font-size:12px; color:#868e96;">체크리스트 상세에서<br>매일 뭘 점검했는지<br>캘린더로 한눈에 확인</p>
+      <div style="margin-top:10px; font-size:11px; color:#7048e8; font-weight:600;">어디서 확인? → 체크리스트 상세</div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:20px;">
+    <strong>핵심 원리:</strong> 체크리스트 상세 페이지 하나에서 설정하고, 설정 결과가 TBM/일일점검에 자동 반영됩니다. 새로운 메뉴나 페이지를 추가하지 않습니다.
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- SECTION 3: STEP 1 - SETTINGS -->
+<!-- ============================================ -->
+<div id="step1" class="section">
+  <div class="section-header">
+    <div class="section-num">STEP 1 — 설정</div>
+    <div class="section-title">체크리스트 상세에서 "점검 일정" 설정</div>
+    <div class="section-desc">기존 체크리스트 상세 페이지에 "점검 일정" 탭을 추가합니다. 여기서 반복 점검을 설정합니다.</div>
+  </div>
+
+  <!-- Current Page -->
+  <div style="margin-bottom: 32px;">
+    <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">현재 체크리스트 상세 페이지 (AS-IS)</h3>
+    <div class="app-frame">
+      <div class="app-topbar">
+        <h2>위험성평가 체크리스트</h2>
+        <div style="display:flex; gap:8px;">
+          <span class="mock-btn outline">목록</span>
+          <span class="mock-btn outline">인쇄하기</span>
+          <span class="mock-btn primary">수정</span>
+        </div>
+      </div>
+      <div class="app-content">
+        <div style="background:white; border-radius:8px; padding:16px; margin-bottom:12px; border:1px solid #e9ecef;">
+          <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:#495057;">기본정보</div>
+          <div style="font-size:12px; color:#868e96;">위험성평가 제목: 2025년 1월 정기 위험성평가</div>
+          <div style="font-size:12px; color:#868e96;">평가관리기간: 2025-01-06 ~ 2025-01-31</div>
+        </div>
+        <div class="mock-tabs">
+          <div class="mock-tab active">개요</div>
+          <div class="mock-tab">점검 항목</div>
+        </div>
+        <div style="background:white; border-radius:8px; padding:16px; border:1px solid #e9ecef;">
+          <div style="font-size:12px; color:#868e96; text-align:center; padding:20px;">
+            [업체별/작업별 탭] + [체크리스트 테이블: 순서, 구분, 점검내용, 조치담당자, 조치상태 ...]
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proposed Page -->
+  <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">변경된 체크리스트 상세 페이지 (TO-BE)</h3>
+  <div class="app-frame">
+    <div class="app-topbar">
+      <h2>위험성평가 체크리스트</h2>
+      <div style="display:flex; gap:8px;">
+        <span class="mock-btn outline">목록</span>
+        <span class="mock-btn outline">인쇄하기</span>
+        <span class="mock-btn primary">수정</span>
+      </div>
+    </div>
+    <div class="app-content">
+      <!-- 기본정보 -->
+      <div style="background:white; border-radius:8px; padding:16px; margin-bottom:12px; border:1px solid #e9ecef;">
+        <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:#495057;">기본정보</div>
+        <div style="font-size:12px; color:#868e96;">위험성평가 제목: 2025년 1월 정기 위험성평가</div>
+        <div style="font-size:12px; color:#868e96;">평가관리기간: 2025-01-06 ~ 2025-01-31</div>
+      </div>
+
+      <!-- Tabs with NEW -->
+      <div class="annotation blue" style="margin-bottom:0; padding-bottom:0;">
+        <div class="annotation-label">NEW — 탭 추가</div>
+        <div class="mock-tabs" style="margin-bottom:0;">
+          <div class="mock-tab">개요</div>
+          <div class="mock-tab">점검 항목</div>
+          <div class="mock-tab active new" style="color:#228be6; border-bottom-color:#228be6;">점검 일정</div>
+        </div>
+      </div>
+
+      <!-- Settings Content -->
+      <div class="annotation green" style="margin-top:16px;">
+        <div class="annotation-label">점검 일정 설정 화면</div>
+
+        <div class="settings-panel">
+          <!-- Toggle -->
+          <div class="settings-row">
+            <div class="settings-label">반복 점검</div>
+            <div class="settings-value" style="display:flex; align-items:center; gap:12px;">
+              <div class="toggle on"><div class="knob"></div></div>
+              <span style="font-size:13px; color:#228be6; font-weight:600;">사용</span>
+            </div>
+          </div>
+
+          <!-- Period -->
+          <div class="settings-row">
+            <div class="settings-label">점검 기간</div>
+            <div class="settings-value" style="display:flex; align-items:center; gap:8px;">
+              <input type="text" class="mock-input" value="2025-01-06" style="width:140px;" readonly>
+              <span style="color:#868e96;">~</span>
+              <input type="text" class="mock-input" value="2025-01-31" style="width:140px;" readonly>
+              <span style="font-size:11px; color:#868e96; margin-left:8px;">이 기간 동안 매일 자동 연결됩니다</span>
+            </div>
+          </div>
+
+          <!-- 연결 대상 -->
+          <div class="settings-row">
+            <div class="settings-label">자동 연결 대상</div>
+            <div class="settings-value">
+              <div style="display:flex; gap:24px; flex-wrap:wrap;">
+                <div class="mock-checkbox">
+                  <div class="box checked">✓</div>
+                  <span><strong>TBM 일지</strong></span>
+                  <span style="font-size:11px; color:#868e96;">— 매일 작성 시 자동 연결</span>
+                </div>
+                <div class="mock-checkbox">
+                  <div class="box checked">✓</div>
+                  <span><strong>일일점검</strong></span>
+                  <span style="font-size:11px; color:#868e96;">— 매일 작성 시 자동 연결</span>
+                </div>
+                <div class="mock-checkbox">
+                  <div class="box unchecked"></div>
+                  <span style="color:#adb5bd;">주간점검</span>
+                  <span style="font-size:11px; color:#ced4da;">— 선택 안 함</span>
+                </div>
+              </div>
+              <div style="font-size:11px; color:#868e96; margin-top:8px;">* 체크한 도메인에서 이 기간 내 작성 시, 이 체크리스트 항목이 자동으로 표시됩니다.</div>
+            </div>
+          </div>
+
+          <!-- 업체 필터 -->
+          <div class="settings-row">
+            <div class="settings-label">업체 자동 필터</div>
+            <div class="settings-value" style="display:flex; align-items:center; gap:12px;">
+              <div class="toggle on"><div class="knob"></div></div>
+              <span style="font-size:13px;">작성자의 소속 업체 항목만 자동 선택</span>
+              <span style="font-size:11px; color:#868e96;">— 다른 업체 항목은 표시되지 않음</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div style="text-align:right; margin-top:16px;">
+          <span class="mock-btn primary" style="padding:10px 32px; font-size:14px;">설정 저장</span>
+        </div>
+      </div>
+
+      <!-- Explanation -->
+      <div class="info-box" style="margin-top:16px;">
+        <strong>이 설정을 저장하면:</strong><br>
+        1월 6일~31일 사이에 TBM 일지나 일일점검을 작성할 때,<br>
+        이 체크리스트의 항목이 자동으로 표시됩니다. (작성자 소속 업체 항목만)<br>
+        매일 따로 체크리스트를 선택할 필요가 없어집니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- What each setting means -->
+  <div style="margin-top:32px;">
+    <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">각 설정이 하는 일</h3>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div style="background:#fff; border-radius:10px; padding:16px; border:1px solid #e9ecef;">
+        <div style="font-size:13px; font-weight:700; color:#228be6; margin-bottom:6px;">반복 점검 ON/OFF</div>
+        <div style="font-size:12px; color:#666;">OFF면 현재와 동일하게 동작합니다. ON으로 켜야 아래 설정이 활성화됩니다.</div>
+      </div>
+      <div style="background:#fff; border-radius:10px; padding:16px; border:1px solid #e9ecef;">
+        <div style="font-size:13px; font-weight:700; color:#228be6; margin-bottom:6px;">점검 기간</div>
+        <div style="font-size:12px; color:#666;">이 기간 동안만 자동 연결됩니다. 기간이 지나면 자동으로 비활성화됩니다. 기본값: 위험성평가 관리기간과 동일.</div>
+      </div>
+      <div style="background:#fff; border-radius:10px; padding:16px; border:1px solid #e9ecef;">
+        <div style="font-size:13px; font-weight:700; color:#228be6; margin-bottom:6px;">자동 연결 대상</div>
+        <div style="font-size:12px; color:#666;">TBM 일지, 일일점검, 주간점검 중 <strong>어디에서 이 체크리스트를 사용할지</strong> 선택합니다. 필요 없는 곳은 체크 해제하면 됩니다.</div>
+      </div>
+      <div style="background:#fff; border-radius:10px; padding:16px; border:1px solid #e9ecef;">
+        <div style="font-size:13px; font-weight:700; color:#228be6; margin-bottom:6px;">업체 자동 필터</div>
+        <div style="font-size:12px; color:#666;">ON이면 TBM 작성자의 소속 업체 항목만 보여줍니다. 10개 업체 현장에서도 내 업체 3~5개 항목만 자동 선택됩니다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- SECTION 4: STEP 2 - TBM REFLECTION -->
+<!-- ============================================ -->
+<div id="step2" class="section">
+  <div class="section-header">
+    <div class="section-num">STEP 2 — TBM 반영</div>
+    <div class="section-title">설정 후 TBM 작성할 때 이렇게 바뀝니다</div>
+    <div class="section-desc">점검 일정을 설정한 후, TBM 일지를 작성하면 어떻게 달라지는지 비교합니다.</div>
+  </div>
+
+  <!-- Flow -->
+  <div style="background:#fff; border-radius:12px; padding:20px; border:1px solid #e9ecef; margin-bottom:24px;">
+    <div style="font-size:13px; font-weight:700; margin-bottom:12px;">TBM 작성 시 자동 연결 흐름</div>
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <div style="background:#e7f5ff; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; color:#1971c2;">1. 날짜 선택<br><span style="font-weight:400; color:#868e96;">2025-01-08</span></div>
+      <span style="font-size:18px; color:#ced4da;">→</span>
+      <div style="background:#fff9db; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; color:#e67700;">2. 활성 점검 일정 확인<br><span style="font-weight:400; color:#868e96;">1/6~1/31 활성 → 매칭!</span></div>
+      <span style="font-size:18px; color:#ced4da;">→</span>
+      <div style="background:#ebfbee; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; color:#2b8a3e;">3. 내 업체 항목만 자동 표시<br><span style="font-weight:400; color:#868e96;">(주)한국건설 3개 항목</span></div>
+    </div>
+  </div>
+
+  <!-- Before / After Comparison -->
+  <div class="compare-grid">
+    <!-- BEFORE -->
+    <div class="compare-card before">
+      <div class="compare-header">BEFORE — 현재 TBM 작성</div>
+      <div class="compare-body">
+        <div style="font-size:11px; color:#868e96; margin-bottom:8px;">체크리스트 (자동선택: 12개 — 전체 업체)</div>
+        <div class="cl-item">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)한국건설</span>
+          <span class="cl-task">가설공사</span>
+          <span class="cl-text">비계 설치 전 지반 확인</span>
+        </div>
+        <div class="cl-item">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)한국건설</span>
+          <span class="cl-task">철근공사</span>
+          <span class="cl-text">철근 결속 상태 확인</span>
+        </div>
+        <div class="cl-item">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)한국건설</span>
+          <span class="cl-task">가설공사</span>
+          <span class="cl-text">안전난간 설치 상태</span>
+        </div>
+        <div class="cl-item" style="background:#fff5f5;">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)대한전기</span>
+          <span class="cl-task">전기공사</span>
+          <span class="cl-text">접지저항 측정</span>
+        </div>
+        <div class="cl-item" style="background:#fff5f5;">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)대한전기</span>
+          <span class="cl-task">전기공사</span>
+          <span class="cl-text">분전반 점검</span>
+        </div>
+        <div class="cl-item" style="background:#fff5f5;">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)미래설비</span>
+          <span class="cl-task">배관공사</span>
+          <span class="cl-text">배관 누수 검사</span>
+        </div>
+        <div class="cl-item" style="background:#fff5f5;">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)미래설비</span>
+          <span class="cl-task">설비공사</span>
+          <span class="cl-text">펌프 가동 상태 확인</span>
+        </div>
+        <div style="text-align:center; padding:6px; color:#ced4da; font-size:11px;">... 외 5개 더</div>
+        <div style="background:#fff5f5; border-radius:6px; padding:8px 10px; margin-top:8px;">
+          <div style="font-size:11px; color:#e03131; font-weight:600;">다른 업체 항목을 일일이 빼야 함</div>
+          <div style="font-size:10px; color:#868e96;">→ 편집 버튼 → 하나씩 선택 해제 → 5~10분 소요</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="compare-card after">
+      <div class="compare-header">AFTER — 점검 일정 설정 후 TBM 작성</div>
+      <div class="compare-body">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:11px; color:#868e96;">체크리스트 (자동연결: 3개 — 내 업체만)</span>
+          <span class="mock-badge" style="background:#ebfbee; color:#2b8a3e;">점검 일정 연결됨</span>
+        </div>
+        <div style="background:#ebfbee; border:1px solid #b2f2bb; border-radius:6px; padding:6px 10px; margin-bottom:8px; font-size:11px; color:#2b8a3e;">
+          연결된 체크리스트: <strong>2025년 1월 정기 위험성평가</strong>
+          <a href="#" style="color:#228be6; margin-left:8px;">상세보기 →</a>
+        </div>
+        <div class="cl-item">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)한국건설</span>
+          <span class="cl-task">가설공사</span>
+          <span class="cl-text">비계 설치 전 지반 확인</span>
+        </div>
+        <div class="cl-item">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)한국건설</span>
+          <span class="cl-task">철근공사</span>
+          <span class="cl-text">철근 결속 상태 확인</span>
+        </div>
+        <div class="cl-item">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)한국건설</span>
+          <span class="cl-task">가설공사</span>
+          <span class="cl-text">안전난간 설치 상태</span>
+        </div>
+        <div style="background:#ebfbee; border-radius:6px; padding:8px 10px; margin-top:12px;">
+          <div style="font-size:11px; color:#2b8a3e; font-weight:600;">내 업체 항목만 자동 표시됨</div>
+          <div style="font-size:10px; color:#868e96;">→ 편집 없이 바로 점검 시작 가능</div>
+        </div>
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid #e9ecef;">
+          <div style="font-size:11px; color:#868e96;">* 필요 시 "편집" 버튼으로 항목 추가/제거 가능</div>
+          <div style="font-size:11px; color:#868e96;">* 다른 업체 항목도 수동으로 추가 가능</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- What happens when TBM is saved -->
+  <div class="new-feature" style="margin-top:24px;">
+    <h4>TBM 저장할 때 일어나는 일</h4>
+    <div style="font-size:13px; color:#664d03;">
+      TBM을 저장하면, 어떤 항목을 점검했는지가 체크리스트 상세의 <strong>"점검 일정"</strong> 탭에 자동으로 기록됩니다.<br>
+      → 나중에 체크리스트 상세에서 "1월 8일에 TBM에서 3개 항목 중 3개 완료" 같은 이력을 볼 수 있습니다.<br>
+      → 이것이 <strong>STEP 3: 일자별 진행 이력</strong>입니다.
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- SECTION 5: OTHER DOMAINS -->
+<!-- ============================================ -->
+<div id="domains" class="section">
+  <div class="section-header">
+    <div class="section-num">판단 기준</div>
+    <div class="section-title">다른 도메인에도 필요한가?</div>
+    <div class="section-desc">점검 일정 설정의 "자동 연결 대상" 체크박스에서 선택하면 됩니다. 강제가 아닙니다.</div>
+  </div>
+
+  <table class="decision-table">
+    <thead>
+      <tr>
+        <th style="width:140px;">도메인</th>
+        <th style="width:100px;">작성 빈도</th>
+        <th>왜 필요한가 / 왜 불필요한가</th>
+        <th style="width:100px;">필요도</th>
+        <th style="width:120px;">기본 설정</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:700; color:#228be6;">TBM 일지</td>
+        <td>매일</td>
+        <td style="text-align:left;">
+          <strong style="color:#2b8a3e;">필수.</strong> 매일 작성하는데 매번 체크리스트를 새로 선택해야 함.
+          반복 설정이 가장 절실한 곳.
+        </td>
+        <td><span style="color:#2b8a3e; font-weight:700; font-size:16px;">★★★</span></td>
+        <td><span class="mock-badge" style="background:#ebfbee; color:#2b8a3e;">기본 체크</span></td>
+      </tr>
+      <tr>
+        <td style="font-weight:700; color:#40c057;">일일점검</td>
+        <td>매일</td>
+        <td style="text-align:left;">
+          <strong style="color:#e67700;">유용함.</strong> 매일 작성하므로 TBM과 같은 이유로 유용.
+          participatingCompanies(참여업체)로 더 정확한 필터 가능.
+        </td>
+        <td><span style="color:#e67700; font-weight:700; font-size:16px;">★★☆</span></td>
+        <td><span class="mock-badge" style="background:#ebfbee; color:#2b8a3e;">기본 체크</span></td>
+      </tr>
+      <tr>
+        <td style="font-weight:700; color:#7048e8;">주간점검</td>
+        <td>주 1회</td>
+        <td style="text-align:left;">
+          <strong style="color:#868e96;">선택적.</strong> 주 1회라 반복 필요성 낮음.
+          대신 해당 주의 TBM/일일점검 진행 이력을 합산해서 보여주면 더 유용.
+        </td>
+        <td><span style="color:#868e96; font-weight:700; font-size:16px;">★☆☆</span></td>
+        <td><span class="mock-badge" style="background:#f1f3f5; color:#868e96;">기본 해제</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="warning-box" style="margin-top:16px;">
+    <strong>결론:</strong> 다른 도메인에서 isDaily가 "필요한지" 고민할 필요가 없습니다.<br>
+    점검 일정 설정의 <strong>"자동 연결 대상"</strong>에서 체크/해제로 선택하면 됩니다.<br>
+    TBM은 기본 체크, 주간점검은 기본 해제. 현장 상황에 따라 관리자가 조절합니다.
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- SECTION 6: STEP 3 - PROGRESS HISTORY -->
+<!-- ============================================ -->
+<div id="step3" class="section">
+  <div class="section-header">
+    <div class="section-num">STEP 3 — 진행 이력</div>
+    <div class="section-title">체크리스트 상세에서 일자별 점검 현황 확인</div>
+    <div class="section-desc">점검 일정 탭에서 매일의 점검 결과를 캘린더로 한눈에 확인합니다.</div>
+  </div>
+
+  <!-- Mockup: Detail Page with Calendar -->
+  <div class="app-frame">
+    <div class="app-topbar">
+      <h2>위험성평가 체크리스트</h2>
+      <div style="display:flex; gap:8px;">
+        <span class="mock-btn outline">목록</span>
+        <span class="mock-btn primary">수정</span>
+      </div>
+    </div>
+    <div class="app-content">
+      <div style="background:white; border-radius:8px; padding:16px; margin-bottom:12px; border:1px solid #e9ecef;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:14px; font-weight:700;">2025년 1월 정기 위험성평가</div>
+            <div style="font-size:12px; color:#868e96;">평가관리기간: 2025-01-06 ~ 2025-01-31</div>
+          </div>
+          <span class="mock-badge" style="background:#ebfbee; color:#2b8a3e; font-size:11px;">반복 점검 활성</span>
+        </div>
+      </div>
+
+      <div class="mock-tabs">
+        <div class="mock-tab">개요</div>
+        <div class="mock-tab">점검 항목</div>
+        <div class="mock-tab active" style="color:#228be6; border-bottom-color:#228be6;">점검 일정</div>
+      </div>
+
+      <!-- Calendar Section -->
+      <div class="annotation green" style="margin-top:0;">
+        <div class="annotation-label">일자별 점검 현황</div>
+
+        <!-- Stats Row -->
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:20px;">
+          <div style="background:#fff; border-radius:8px; padding:12px; text-align:center; border:1px solid #e9ecef;">
+            <div style="font-size:10px; color:#868e96;">점검 일수</div>
+            <div style="font-size:24px; font-weight:800; color:#228be6;">8<span style="font-size:12px; font-weight:400; color:#868e96;">/19일</span></div>
+          </div>
+          <div style="background:#fff; border-radius:8px; padding:12px; text-align:center; border:1px solid #e9ecef;">
+            <div style="font-size:10px; color:#868e96;">평균 점검률</div>
+            <div style="font-size:24px; font-weight:800; color:#2b8a3e;">89%</div>
+          </div>
+          <div style="background:#fff; border-radius:8px; padding:12px; text-align:center; border:1px solid #e9ecef;">
+            <div style="font-size:10px; color:#868e96;">TBM 연결</div>
+            <div style="font-size:24px; font-weight:800; color:#228be6;">12건</div>
+          </div>
+          <div style="background:#fff; border-radius:8px; padding:12px; text-align:center; border:1px solid #e9ecef;">
+            <div style="font-size:10px; color:#868e96;">일일점검 연결</div>
+            <div style="font-size:24px; font-weight:800; color:#40c057;">7건</div>
+          </div>
+        </div>
+
+        <!-- Calendar -->
+        <div style="background:#fff; border-radius:10px; padding:16px; border:1px solid #e9ecef;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-size:14px; font-weight:700;">2025년 1월</span>
+            <div style="display:flex; gap:12px; font-size:10px; color:#868e96;">
+              <span><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:#ebfbee; margin-right:4px; vertical-align:middle;"></span>100%</span>
+              <span><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:#fff9db; margin-right:4px; vertical-align:middle;"></span>50~99%</span>
+              <span><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:#fff5f5; margin-right:4px; vertical-align:middle;"></span>50% 미만</span>
+              <span><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:#f8f9fa; margin-right:4px; vertical-align:middle;"></span>미점검</span>
+            </div>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-header">월</div>
+            <div class="cal-header">화</div>
+            <div class="cal-header">수</div>
+            <div class="cal-header">목</div>
+            <div class="cal-header">금</div>
+            <div class="cal-header">토</div>
+            <div class="cal-header">일</div>
+            <!-- Week 1 -->
+            <div class="cal-day done"><div class="day-num">6</div><div class="day-pct">100%</div></div>
+            <div class="cal-day done"><div class="day-num">7</div><div class="day-pct">100%</div></div>
+            <div class="cal-day partial"><div class="day-num">8</div><div class="day-pct">67%</div></div>
+            <div class="cal-day done"><div class="day-num">9</div><div class="day-pct">100%</div></div>
+            <div class="cal-day done"><div class="day-num">10</div><div class="day-pct">100%</div></div>
+            <div class="cal-day future"><div class="day-num">11</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">12</div><div class="day-pct">—</div></div>
+            <!-- Week 2 -->
+            <div class="cal-day done"><div class="day-num">13</div><div class="day-pct">100%</div></div>
+            <div class="cal-day partial"><div class="day-num">14</div><div class="day-pct">83%</div></div>
+            <div class="cal-day today"><div class="day-num">15</div><div class="day-pct" style="color:#228be6;">오늘</div></div>
+            <div class="cal-day future"><div class="day-num">16</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">17</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">18</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">19</div><div class="day-pct">—</div></div>
+            <!-- Week 3 -->
+            <div class="cal-day future"><div class="day-num">20</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">21</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">22</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">23</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">24</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">25</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">26</div><div class="day-pct">—</div></div>
+            <!-- Week 4 -->
+            <div class="cal-day future"><div class="day-num">27</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">28</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">29</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">30</div><div class="day-pct">—</div></div>
+            <div class="cal-day future"><div class="day-num">31</div><div class="day-pct">—</div></div>
+            <div class="cal-day" style="background:transparent;"></div>
+            <div class="cal-day" style="background:transparent;"></div>
+          </div>
+        </div>
+
+        <!-- Day Detail (when clicking a day) -->
+        <div style="background:#fff; border-radius:10px; padding:16px; border:1px solid #e9ecef; margin-top:12px;">
+          <div style="font-size:13px; font-weight:700; margin-bottom:12px;">1월 8일 (수) 점검 내역 — <span style="color:#e67700;">67% (2/3 항목)</span></div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div style="border:1px solid #e9ecef; border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:600; color:#228be6; margin-bottom:6px;">TBM 일지 (오전 가설공사)</div>
+              <div style="font-size:11px; color:#495057;">
+                <div style="display:flex; gap:6px; align-items:center; padding:3px 0;"><span style="color:#2b8a3e;">✓</span> 비계 설치 전 지반 확인</div>
+                <div style="display:flex; gap:6px; align-items:center; padding:3px 0;"><span style="color:#2b8a3e;">✓</span> 안전난간 설치 상태</div>
+                <div style="display:flex; gap:6px; align-items:center; padding:3px 0; color:#e03131;"><span>✗</span> 철근 결속 상태 확인</div>
+              </div>
+              <div style="font-size:10px; color:#868e96; margin-top:6px;">작성자: 김안전 | 10:30 AM</div>
+            </div>
+            <div style="border:1px solid #e9ecef; border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:600; color:#40c057; margin-bottom:6px;">일일점검</div>
+              <div style="font-size:11px; color:#868e96; text-align:center; padding:10px;">이 날짜에 일일점검 기록 없음</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- SECTION 7: ACCESS -->
+<!-- ============================================ -->
+<div id="access" class="section">
+  <div class="section-header">
+    <div class="section-num">접근성 해결</div>
+    <div class="section-title">체크리스트를 쉽게 찾아가는 방법</div>
+    <div class="section-desc">"회의록에서 찾아가야 하는" 문제를 2가지 방법으로 해결합니다.</div>
+  </div>
+
+  <!-- Current Navigation Problem -->
+  <h3 style="font-size:15px; font-weight:700; margin-bottom:12px; color:#e03131;">현재: 체크리스트까지 4단계</h3>
+  <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:24px; background:#fff5f5; padding:14px 16px; border-radius:8px; border:1px solid #ffc9c9;">
+    <div style="background:#fff; padding:8px 14px; border-radius:6px; font-size:12px; border:1px solid #e9ecef;">
+      <strong>사이드바</strong>
+      <div style="font-size:10px; color:#fa5252;">CLICK 1</div>
+    </div>
+    <span style="color:#ced4da; font-size:16px;">→</span>
+    <div style="background:#fff; padding:8px 14px; border-radius:6px; font-size:12px; border:1px solid #e9ecef;">
+      <strong>위험성평가 회의록</strong>
+      <div style="font-size:10px; color:#fa5252;">CLICK 2</div>
+    </div>
+    <span style="color:#ced4da; font-size:16px;">→</span>
+    <div style="background:#fff; padding:8px 14px; border-radius:6px; font-size:12px; border:1px solid #e9ecef;">
+      <strong>목록에서 해당 행 찾기</strong>
+      <div style="font-size:10px; color:#fa5252;">스크롤 + 탐색</div>
+    </div>
+    <span style="color:#ced4da; font-size:16px;">→</span>
+    <div style="background:#fff; padding:8px 14px; border-radius:6px; font-size:12px; border:1px solid #e9ecef;">
+      <strong>"체크리스트 보기" 클릭</strong>
+      <div style="font-size:10px; color:#fa5252;">CLICK 3~4</div>
+    </div>
+  </div>
+
+  <!-- Solution 1: Direct Link from TBM -->
+  <h3 style="font-size:15px; font-weight:700; margin-bottom:12px; color:#2b8a3e;">해결 1: TBM 화면에서 체크리스트로 바로 이동</h3>
+  <div class="app-frame" style="margin-bottom:24px;">
+    <div class="app-content" style="padding:16px;">
+      <div style="font-size:13px; font-weight:600; margin-bottom:8px;">체크리스트</div>
+      <div class="annotation green" style="margin:0;">
+        <div class="annotation-label">NEW — 바로가기 링크</div>
+        <div style="background:#ebfbee; border:1px solid #b2f2bb; border-radius:6px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:12px;">
+            <span style="font-weight:600;">연결됨:</span> 2025년 1월 정기 위험성평가
+            <span class="mock-badge" style="background:#d3f9d8; color:#2b8a3e; margin-left:6px;">반복 점검</span>
+          </div>
+          <a href="#" style="font-size:12px; color:#228be6; font-weight:600; text-decoration:none;">체크리스트 상세 →</a>
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="cl-item">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)한국건설</span>
+          비계 설치 전 지반 확인
+        </div>
+        <div class="cl-item">
+          <div class="cl-check"></div>
+          <span class="cl-company">(주)한국건설</span>
+          안전난간 설치 상태
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Solution 2: Sidebar shortcut -->
+  <h3 style="font-size:15px; font-weight:700; margin-bottom:12px; color:#2b8a3e;">해결 2: 사이드바에 "활성 체크리스트" 바로가기</h3>
+  <div style="display:grid; grid-template-columns: 200px 1fr; gap:0;">
+    <div style="background:#1B2A4A; border-radius:12px 0 0 12px; padding:16px 0;">
+      <div style="padding:12px 16px 4px; font-size:10px; font-weight:700; color:#6c7a8d; letter-spacing:1px;">위험성평가</div>
+      <div style="padding:8px 16px; font-size:12px; color:#adb5bd; border-left:3px solid transparent;">위험성평가 작성</div>
+      <div style="padding:8px 16px; font-size:12px; color:#adb5bd; border-left:3px solid transparent;">위험성평가 회의록</div>
+      <div class="annotation" style="border-color:#ffd43b; margin:4px 8px; padding:6px 8px; border-radius:6px; border-width:1px; border-style:dashed;">
+        <div style="padding:6px 8px; font-size:12px; color:#fff; font-weight:600; background:rgba(255,255,255,.1); border-radius:4px; border-left:3px solid #ffd43b;">
+          활성 체크리스트
+          <span style="font-size:9px; background:#fa5252; color:#fff; padding:1px 4px; border-radius:3px; margin-left:4px;">NEW</span>
+        </div>
+      </div>
+      <div style="padding:8px 16px; font-size:12px; color:#adb5bd; border-left:3px solid transparent;">위험성평가 설정</div>
+      <div style="padding:12px 16px 4px; font-size:10px; font-weight:700; color:#6c7a8d; letter-spacing:1px; margin-top:8px;">안전점검 및 교육</div>
+      <div style="padding:8px 16px; font-size:12px; color:#adb5bd;">일일안전보건점검</div>
+      <div style="padding:8px 16px; font-size:12px; color:#adb5bd;">TBM기록</div>
+    </div>
+    <div style="background:#f8f9fa; border-radius:0 12px 12px 0; padding:20px; border:1px solid #dee2e6; border-left:none;">
+      <div style="font-size:14px; font-weight:700; margin-bottom:16px;">활성 체크리스트</div>
+      <div style="background:#fff; border-radius:8px; padding:12px; border:1px solid #e9ecef; margin-bottom:8px; cursor:pointer;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:13px; font-weight:600;">2025년 1월 정기 위험성평가</div>
+            <div style="font-size:11px; color:#868e96;">1/6 ~ 1/31 | TBM, 일일점검 연결</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:18px; font-weight:800; color:#228be6;">89%</div>
+            <div style="font-size:10px; color:#868e96;">이번 주 평균</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:#fff; border-radius:8px; padding:12px; border:1px solid #e9ecef; opacity:0.7;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:13px; font-weight:600;">고소작업 특별점검</div>
+            <div style="font-size:11px; color:#868e96;">1/10 ~ 1/17 | TBM 연결</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:18px; font-weight:800; color:#2b8a3e;">100%</div>
+            <div style="font-size:10px; color:#868e96;">완료</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px; color:#868e96; margin-top:12px;">클릭하면 체크리스트 상세 → 점검 일정 탭으로 바로 이동합니다.</div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:16px;">
+    <strong>결과:</strong> 체크리스트를 찾기 위해 회의록을 거칠 필요가 없어집니다.<br>
+    1) TBM 작성 화면에서 "체크리스트 상세 →" 링크로 바로 이동<br>
+    2) 사이드바 "활성 체크리스트"에서 현재 활성화된 체크리스트 목록을 바로 확인
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- SECTION 8: FULL USER JOURNEY -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">전체 흐름</div>
+    <div class="section-title">처음부터 끝까지 — 전체 사용자 여정</div>
+  </div>
+
+  <div style="background:#fff; border-radius:12px; padding:24px; border:1px solid #e9ecef;">
+    <!-- Journey Steps -->
+    <div style="position:relative; padding-left:40px;">
+      <!-- Line -->
+      <div style="position:absolute; left:15px; top:0; bottom:0; width:2px; background:#e9ecef;"></div>
+
+      <!-- Step 1 -->
+      <div style="position:relative; margin-bottom:28px;">
+        <div style="position:absolute; left:-32px; top:2px; width:24px; height:24px; border-radius:50%; background:#228be6; color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">1</div>
+        <div style="font-size:14px; font-weight:700; margin-bottom:4px;">위험성평가 회의록에서 체크리스트 생성</div>
+        <div style="font-size:12px; color:#868e96;">기존과 동일. 위험요인 기반으로 체크리스트를 생성합니다.</div>
+        <div style="font-size:11px; color:#ced4da; margin-top:4px;">경로: 위험성평가 회의록 → 체크리스트 작성</div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="position:relative; margin-bottom:28px;">
+        <div style="position:absolute; left:-32px; top:2px; width:24px; height:24px; border-radius:50%; background:#228be6; color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">2</div>
+        <div style="font-size:14px; font-weight:700; margin-bottom:4px; color:#228be6;">체크리스트 상세 → "점검 일정" 탭에서 반복 설정 <span class="mock-badge" style="background:#fff5f5; color:#fa5252;">NEW</span></div>
+        <div style="font-size:12px; color:#868e96;">반복 점검 ON → 기간 설정 → TBM/일일점검 체크 → 업체 필터 ON → 저장</div>
+        <div style="font-size:11px; color:#228be6; margin-top:4px;">이 단계는 한 번만 하면 됩니다. 이후 자동.</div>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="position:relative; margin-bottom:28px;">
+        <div style="position:absolute; left:-32px; top:2px; width:24px; height:24px; border-radius:50%; background:#40c057; color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">3</div>
+        <div style="font-size:14px; font-weight:700; margin-bottom:4px;">매일: TBM 일지 작성</div>
+        <div style="font-size:12px; color:#868e96;">날짜 선택 → 설정된 체크리스트의 내 업체 항목이 자동 표시 → 점검 → 저장</div>
+        <div style="font-size:11px; color:#2b8a3e; margin-top:4px;">매번 체크리스트를 선택하거나 편집할 필요 없음</div>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="position:relative; margin-bottom:28px;">
+        <div style="position:absolute; left:-32px; top:2px; width:24px; height:24px; border-radius:50%; background:#40c057; color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">4</div>
+        <div style="font-size:14px; font-weight:700; margin-bottom:4px;">매일: 일일점검 작성 (선택)</div>
+        <div style="font-size:12px; color:#868e96;">일일점검에서도 동일한 체크리스트가 자동 연결됩니다. (설정에서 체크한 경우)</div>
+      </div>
+
+      <!-- Step 5 -->
+      <div style="position:relative;">
+        <div style="position:absolute; left:-32px; top:2px; width:24px; height:24px; border-radius:50%; background:#7048e8; color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">5</div>
+        <div style="font-size:14px; font-weight:700; margin-bottom:4px;">수시: 체크리스트 상세에서 진행 이력 확인</div>
+        <div style="font-size:12px; color:#868e96;">점검 일정 탭 → 캘린더에서 일자별 점검률 확인 → 날짜 클릭 시 상세 내역</div>
+        <div style="font-size:11px; color:#7048e8; margin-top:4px;">TBM 화면의 "체크리스트 상세 →" 링크 또는 사이드바 "활성 체크리스트"에서 바로 접근</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- Summary -->
+<div class="section" style="padding-bottom:32px;">
+  <div class="section-header">
+    <div class="section-num">요약</div>
+    <div class="section-title">문제 → 해결 매핑</div>
+  </div>
+  <table class="decision-table">
+    <thead>
+      <tr>
+        <th style="text-align:left;">문제</th>
+        <th style="text-align:left;">해결</th>
+        <th style="width:100px;">어디서</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>체크리스트 찾아가기 어려움</td>
+        <td style="text-align:left;">TBM에 바로가기 링크 + 사이드바 "활성 체크리스트" 메뉴 추가</td>
+        <td>사이드바, TBM</td>
+      </tr>
+      <tr>
+        <td>TBM에서 모든 업체 항목이 나옴</td>
+        <td style="text-align:left;">점검 일정 설정의 "업체 자동 필터" → 내 업체 항목만 표시</td>
+        <td>체크리스트 상세</td>
+      </tr>
+      <tr>
+        <td>매일 같은 체크리스트를 새로 선택</td>
+        <td style="text-align:left;">"반복 점검" 설정 + 기간 → 해당 기간 내 매일 자동 연결</td>
+        <td>체크리스트 상세</td>
+      </tr>
+      <tr>
+        <td>일자별 점검 이력을 볼 수 없음</td>
+        <td style="text-align:left;">점검 일정 탭 캘린더에 일자별 점검률 + TBM/일일점검 연결 내역 표시</td>
+        <td>체크리스트 상세</td>
+      </tr>
+      <tr>
+        <td>다른 도메인 필요성 불확실</td>
+        <td style="text-align:left;">"자동 연결 대상" 체크박스로 도메인별 선택. TBM 기본 ON, 주간점검 기본 OFF</td>
+        <td>체크리스트 상세</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Footer -->
+<div style="background:#212529; color:#868e96; padding:32px; text-align:center;">
+  <div style="font-size:12px; margin-bottom:4px;">체크리스트 반복 점검 솔루션 — 코드 레벨 분석 기반</div>
+  <div style="font-size:11px; color:#495057;">설정: 체크리스트 상세 → 점검 일정 탭 | 사용: TBM/일일점검 자동 연결 | 확인: 캘린더 진행 이력</div>
+</div>
+
+</body>
+</html>

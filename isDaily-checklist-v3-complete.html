@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>isDaily 체크리스트 전체 도메인 분석 & 솔루션 v3</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Pretendard', -apple-system, sans-serif; background: #F8F9FA; color: #1a1a2e; line-height: 1.6; }
+
+  /* Navigation */
+  .nav { position: fixed; top: 0; left: 0; right: 0; background: #1a1a2e; z-index: 100; padding: 12px 32px; display: flex; gap: 8px; overflow-x: auto; }
+  .nav a { color: #8892b0; text-decoration: none; font-size: 13px; padding: 6px 14px; border-radius: 6px; white-space: nowrap; transition: all .2s; }
+  .nav a:hover, .nav a.active { background: rgba(100,255,218,.1); color: #64ffda; }
+
+  /* Hero */
+  .hero { margin-top: 60px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 80px 32px 60px; text-align: center; }
+  .hero h1 { font-size: 42px; font-weight: 800; margin-bottom: 16px; }
+  .hero .subtitle { font-size: 18px; color: #8892b0; max-width: 700px; margin: 0 auto 32px; }
+  .hero .version { display: inline-block; background: rgba(100,255,218,.15); color: #64ffda; padding: 4px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+
+  /* Section */
+  .section { max-width: 1200px; margin: 0 auto; padding: 60px 32px; }
+  .section-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  .section-title .num { background: #1a1a2e; color: #64ffda; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; }
+  .section-desc { color: #666; font-size: 15px; margin-bottom: 32px; }
+  .divider { height: 1px; background: #e0e0e0; margin: 0; }
+
+  /* Architecture Diagram */
+  .arch-container { background: white; border-radius: 16px; padding: 40px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .arch-layer { margin-bottom: 24px; }
+  .arch-layer-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #999; margin-bottom: 12px; }
+  .arch-boxes { display: flex; gap: 16px; flex-wrap: wrap; }
+  .arch-box { flex: 1; min-width: 200px; padding: 20px; border-radius: 12px; border: 2px solid; }
+  .arch-box.tbm { border-color: #3B82F6; background: #EFF6FF; }
+  .arch-box.daily { border-color: #10B981; background: #ECFDF5; }
+  .arch-box.weekly { border-color: #8B5CF6; background: #F5F3FF; }
+  .arch-box.shared { border-color: #F59E0B; background: #FFFBEB; }
+  .arch-box h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .arch-box .file { font-size: 11px; color: #666; font-family: 'SF Mono', monospace; padding: 2px 6px; background: rgba(0,0,0,.05); border-radius: 4px; display: inline-block; margin: 2px 0; }
+  .arch-arrow { text-align: center; font-size: 24px; color: #ccc; margin: 8px 0; }
+
+  /* Domain Comparison Table */
+  .comp-table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .comp-table th { background: #1a1a2e; color: white; padding: 14px 16px; font-size: 13px; text-align: left; font-weight: 600; }
+  .comp-table td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table .label { font-weight: 600; background: #FAFAFA; min-width: 160px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge.same { background: #DBEAFE; color: #1D4ED8; }
+  .badge.diff { background: #FEE2E2; color: #DC2626; }
+  .badge.unused { background: #FEF3C7; color: #D97706; }
+  .badge.new { background: #D1FAE5; color: #059669; }
+
+  /* Code Block */
+  .code-block { background: #1E293B; color: #E2E8F0; padding: 20px; border-radius: 10px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; line-height: 1.8; overflow-x: auto; margin: 12px 0; position: relative; }
+  .code-block .filename { position: absolute; top: 8px; right: 12px; font-size: 10px; color: #64748B; }
+  .code-block .highlight { background: rgba(100,255,218,.15); display: inline; padding: 1px 4px; border-radius: 3px; }
+  .code-block .comment { color: #64748B; }
+  .code-block .keyword { color: #C084FC; }
+  .code-block .string { color: #34D399; }
+  .code-block .unused { color: #F87171; text-decoration: line-through; opacity: 0.6; }
+  .code-block .added { color: #34D399; background: rgba(52,211,153,.1); display: block; padding: 0 4px; border-left: 3px solid #34D399; margin: 2px 0; }
+
+  /* Problem Cards */
+  .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+  .problem-card { background: white; border-radius: 12px; padding: 24px; border-left: 4px solid; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .problem-card.critical { border-left-color: #EF4444; }
+  .problem-card.warning { border-left-color: #F59E0B; }
+  .problem-card.info { border-left-color: #3B82F6; }
+  .problem-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .problem-card p { font-size: 13px; color: #666; }
+  .problem-card .impact { margin-top: 12px; padding: 8px 12px; background: #FFF5F5; border-radius: 8px; font-size: 12px; color: #C53030; }
+  .problem-card.warning .impact { background: #FFFBEB; color: #D97706; }
+
+  /* Flow Diagram */
+  .flow { display: flex; align-items: stretch; gap: 0; margin: 24px 0; overflow-x: auto; padding: 8px 0; }
+  .flow-step { flex: 1; min-width: 160px; padding: 16px; text-align: center; position: relative; }
+  .flow-step .flow-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 22px; }
+  .flow-step .flow-label { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .flow-step .flow-detail { font-size: 11px; color: #888; }
+  .flow-arrow { display: flex; align-items: center; font-size: 24px; color: #CBD5E1; padding: 0 4px; }
+
+  /* Solution Cards */
+  .solution-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+  .solution-card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,.08); border: 2px solid transparent; transition: all .3s; }
+  .solution-card:hover { border-color: #64ffda; transform: translateY(-2px); }
+  .solution-card .phase-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 12px; }
+  .solution-card .phase-badge.p1 { background: #DBEAFE; color: #1D4ED8; }
+  .solution-card .phase-badge.p2 { background: #D1FAE5; color: #059669; }
+  .solution-card .phase-badge.p3 { background: #EDE9FE; color: #7C3AED; }
+  .solution-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .solution-card .desc { font-size: 13px; color: #666; margin-bottom: 16px; }
+  .solution-card .change-list { list-style: none; }
+  .solution-card .change-list li { font-size: 12px; padding: 6px 0; border-bottom: 1px solid #f5f5f5; display: flex; gap: 8px; }
+  .solution-card .change-list li:last-child { border-bottom: none; }
+  .solution-card .change-list .tag { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; flex-shrink: 0; }
+  .solution-card .change-list .tag.shared { background: #FEF3C7; color: #D97706; }
+  .solution-card .change-list .tag.tbm { background: #DBEAFE; color: #1D4ED8; }
+  .solution-card .change-list .tag.daily { background: #D1FAE5; color: #059669; }
+  .solution-card .change-list .tag.weekly { background: #EDE9FE; color: #7C3AED; }
+  .solution-card .change-list .tag.model { background: #FCE7F3; color: #DB2777; }
+
+  /* UI Mockup */
+  .mockup-container { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,.08); margin: 24px 0; }
+  .mockup-container h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .mockup-domain { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .mockup-domain.tbm { background: #DBEAFE; color: #1D4ED8; }
+  .mockup-domain.daily { background: #D1FAE5; color: #059669; }
+  .mockup-domain.weekly { background: #EDE9FE; color: #7C3AED; }
+  .mockup-domain.shared { background: #FEF3C7; color: #D97706; }
+  .mockup { border: 2px solid #E5E7EB; border-radius: 12px; overflow: hidden; }
+  .mockup-header { background: #F9FAFB; padding: 12px 16px; border-bottom: 1px solid #E5E7EB; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .mockup-body { padding: 20px; }
+  .mockup-field { margin-bottom: 16px; }
+  .mockup-field label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 6px; }
+  .mockup-input { width: 100%; padding: 10px 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 13px; background: #F9FAFB; }
+  .mockup-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mockup-chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid; transition: all .2s; }
+  .mockup-chip.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+  .mockup-chip.inactive { background: white; color: #666; border-color: #D1D5DB; }
+  .mockup-toggle { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #F0FDF4; border-radius: 10px; border: 1px solid #BBF7D0; }
+  .mockup-toggle .switch { width: 44px; height: 24px; border-radius: 12px; background: #22C55E; position: relative; flex-shrink: 0; }
+  .mockup-toggle .switch .knob { width: 20px; height: 20px; border-radius: 50%; background: white; position: absolute; top: 2px; right: 2px; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .mockup-toggle .toggle-label { font-size: 13px; font-weight: 600; }
+  .mockup-toggle .toggle-desc { font-size: 11px; color: #666; }
+
+  /* Checklist Preview */
+  .checklist-preview { border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; margin-top: 12px; }
+  .checklist-header { background: #F1F5F9; padding: 8px 12px; font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; }
+  .checklist-item { padding: 8px 12px; border-bottom: 1px solid #F0F0F0; font-size: 12px; display: flex; align-items: center; gap: 8px; }
+  .checklist-item:last-child { border-bottom: none; }
+  .checklist-item .ci-check { width: 16px; height: 16px; border: 2px solid #D1D5DB; border-radius: 4px; flex-shrink: 0; }
+  .checklist-item .ci-check.checked { background: #3B82F6; border-color: #3B82F6; }
+  .checklist-item .ci-company { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: #F3F4F6; color: #666; }
+  .checklist-item .ci-task { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: #EFF6FF; color: #3B82F6; }
+  .checklist-item.filtered { opacity: 0.3; text-decoration: line-through; }
+
+  /* Data Model */
+  .model-box { background: #1E293B; border-radius: 12px; padding: 24px; color: #E2E8F0; font-family: 'SF Mono', monospace; font-size: 12px; line-height: 2; margin: 12px 0; }
+  .model-box .type-name { color: #C084FC; font-weight: 700; }
+  .model-box .field { padding-left: 24px; }
+  .model-box .field-name { color: #93C5FD; }
+  .model-box .field-type { color: #34D399; }
+  .model-box .field-new { background: rgba(52,211,153,.1); display: block; padding: 0 4px; border-left: 3px solid #34D399; }
+  .model-box .field-comment { color: #64748B; }
+
+  /* Impact Matrix */
+  .impact-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .impact-table th { background: #1a1a2e; color: white; padding: 12px 16px; font-size: 12px; text-align: center; }
+  .impact-table td { padding: 10px 16px; font-size: 12px; text-align: center; border-bottom: 1px solid #f0f0f0; background: white; }
+  .impact-table .row-label { text-align: left; font-weight: 600; background: #FAFAFA; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot.green { background: #22C55E; }
+  .dot.yellow { background: #F59E0B; }
+  .dot.red { background: #EF4444; }
+  .dot.gray { background: #D1D5DB; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 32px; }
+  .timeline::before { content: ''; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: #E5E7EB; }
+  .timeline-item { position: relative; margin-bottom: 32px; }
+  .timeline-item::before { content: ''; position: absolute; left: -26px; top: 4px; width: 14px; height: 14px; border-radius: 50%; border: 3px solid; background: white; }
+  .timeline-item.p1::before { border-color: #3B82F6; }
+  .timeline-item.p2::before { border-color: #10B981; }
+  .timeline-item.p3::before { border-color: #8B5CF6; }
+  .timeline-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .timeline-item .time { font-size: 12px; color: #999; margin-bottom: 8px; }
+  .timeline-item .detail { font-size: 13px; color: #555; background: white; padding: 16px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .timeline-item .detail ul { list-style: none; margin-top: 8px; }
+  .timeline-item .detail ul li { padding: 4px 0; font-size: 12px; display: flex; gap: 8px; align-items: flex-start; }
+  .timeline-item .detail ul li::before { content: '→'; color: #999; flex-shrink: 0; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 28px; }
+    .section { padding: 40px 16px; }
+    .arch-boxes { flex-direction: column; }
+    .flow { flex-direction: column; align-items: center; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+  <a href="#architecture">아키텍처</a>
+  <a href="#current-flow">현재 흐름</a>
+  <a href="#domain-comparison">도메인 비교</a>
+  <a href="#problems">문제점</a>
+  <a href="#unused-code">미사용 코드</a>
+  <a href="#solution">솔루션</a>
+  <a href="#data-model">데이터 모델</a>
+  <a href="#ui-mockup">UI 설계</a>
+  <a href="#impact">영향 범위</a>
+  <a href="#roadmap">로드맵</a>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="version">v3.0 — 전체 도메인 정밀 분석</div>
+  <h1>isDaily 체크리스트 솔루션</h1>
+  <p class="subtitle">TBM 일지 · 일일점검 · 주간점검 — 3개 도메인의 체크리스트 활용을 코드 레벨로 분석하고, 공유 레이어 기반의 통합 솔루션을 정의합니다.</p>
+</div>
+
+<!-- Section 1: Architecture -->
+<div id="architecture" class="section">
+  <div class="section-title"><span class="num">1</span> 공유 아키텍처 구조</div>
+  <p class="section-desc">3개 도메인이 동일한 공유 레이어를 사용합니다. 이것이 솔루션의 핵심 — 공유 레이어 1곳만 수정하면 3개 도메인에 적용됩니다.</p>
+
+  <div class="arch-container">
+    <!-- Domain Layer -->
+    <div class="arch-layer">
+      <div class="arch-layer-title">도메인 레이어 (Domain Layer)</div>
+      <div class="arch-boxes">
+        <div class="arch-box tbm">
+          <h4>TBM 일지</h4>
+          <div><span class="file">useTbmLogCreate.ts</span></div>
+          <div><span class="file">useTbmLogCreateMobile.ts</span></div>
+          <div><span class="file">useTbmLogEdit.ts</span></div>
+          <div style="margin-top:8px; font-size:12px; color:#3B82F6;">일자: 단일 날짜 (date)</div>
+          <div style="font-size:12px; color:#3B82F6;">workType: 자유 텍스트 입력</div>
+        </div>
+        <div class="arch-box daily">
+          <h4>일일점검(현장점검)</h4>
+          <div><span class="file">useDailyInspectionCreate.ts</span></div>
+          <div><span class="file">useDailyInspectionCreateMobile.ts</span></div>
+          <div><span class="file">useDailyInspectionEdit.tsx</span></div>
+          <div style="margin-top:8px; font-size:12px; color:#10B981;">일자: 단일 날짜 (date)</div>
+          <div style="font-size:12px; color:#10B981;">participatingCompanies: 자동 세팅</div>
+        </div>
+        <div class="arch-box weekly">
+          <h4>주간점검</h4>
+          <div><span class="file">useWeeklyInspectionCreate.ts</span></div>
+          <div><span class="file">useWeeklyInspectionEdit.tsx</span></div>
+          <div style="margin-top:8px; font-size:12px; color:#8B5CF6;">일자: 날짜 범위 (startDate ~ endDate)</div>
+          <div style="font-size:12px; color:#8B5CF6;">모바일 별도 없음</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">▼ ▼ ▼ 모두 동일한 호출 ▼ ▼ ▼</div>
+
+    <!-- Shared Layer -->
+    <div class="arch-layer">
+      <div class="arch-layer-title">공유 레이어 (Shared Layer) — risk-assessment-checklist/shared/</div>
+      <div class="arch-boxes">
+        <div class="arch-box shared">
+          <h4>checklistUtils.ts</h4>
+          <div style="font-size:12px; color:#D97706;">queryChecklistItems()</div>
+          <div style="font-size:12px; color:#D97706;">queryChecklistItemsByIdList()</div>
+          <div style="font-size:12px; color:#D97706;">belongsToCompanies() <span class="badge unused">미사용</span></div>
+        </div>
+        <div class="arch-box shared">
+          <h4>SelectChecklistModal.tsx</h4>
+          <div style="font-size:12px; color:#D97706;">CompanyTaskFilter 타입</div>
+          <div style="font-size:12px; color:#D97706;">업체별 / 작업별 필터</div>
+          <div style="font-size:12px; color:#D97706;">선택 항목 순서 변경</div>
+        </div>
+        <div class="arch-box shared">
+          <h4>Hooks</h4>
+          <div style="font-size:12px; color:#D97706;">useChecklistByDateRange()</div>
+          <div style="font-size:12px; color:#D97706;">useChecklistByDate()</div>
+          <div style="font-size:12px; color:#D97706;">useChecklistManager()</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">▼</div>
+
+    <!-- Data Layer -->
+    <div class="arch-layer">
+      <div class="arch-layer-title">데이터 레이어 (Data Layer)</div>
+      <div class="arch-boxes">
+        <div class="arch-box" style="border-color: #6B7280; background: #F9FAFB;">
+          <h4>RiskAssessmentGroup (위험성평가 그룹)</h4>
+          <div style="font-size:12px; color:#666;">날짜별 그룹 → 1:1 관계 → RiskAssessmentChecklist</div>
+        </div>
+        <div class="arch-box" style="border-color: #6B7280; background: #F9FAFB;">
+          <h4>ChecklistItemReference</h4>
+          <div style="font-size:12px; color:#666;">저장 구조: { step: number, id: string }</div>
+          <div style="font-size:12px; color:#666;">3개 도메인 동일한 구조로 저장</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Section 2: Current Flow -->
+<div id="current-flow" class="section">
+  <div class="section-title"><span class="num">2</span> 현재 자동선택 흐름 (AS-IS)</div>
+  <p class="section-desc">3개 도메인 모두 동일한 흐름입니다. 날짜 선택 → 체크리스트 그룹 로드 → 자동선택이 동일한 필터로 실행됩니다.</p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-icon" style="background:#EFF6FF; color:#3B82F6;">📅</div>
+      <div class="flow-label">날짜 선택</div>
+      <div class="flow-detail">TBM/일일: 단일 날짜<br>주간: 시작~종료일</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:#FEF3C7; color:#D97706;">🔍</div>
+      <div class="flow-label">그룹 로드</div>
+      <div class="flow-detail">useChecklistByDate()<br>or useChecklistByDateRange()</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:#FEE2E2; color:#DC2626;">⚡</div>
+      <div class="flow-label">자동선택 필터</div>
+      <div class="flow-detail" style="color:#DC2626; font-weight:700;">{ keyIssues: true,<br>excludeCompleted: true }<br><strong>업체 필터 없음!</strong></div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:#ECFDF5; color:#10B981;">📋</div>
+      <div class="flow-label">전체 항목 표시</div>
+      <div class="flow-detail">모든 업체의<br>중점관리 항목 ALL 표시</div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="filename">3개 도메인 공통 — 자동선택 코드 (100% 동일)</div>
+<span class="comment">// useTbmLogCreate.ts / useDailyInspectionCreate.ts / useWeeklyInspectionCreate.ts</span>
+<span class="keyword">const</span> autoSelectedItems = checklistUtils.queryChecklistItems({
+  checklistGroups,
+  riskAssessmentGroup,
+  filter: {
+    <span class="highlight">keyIssues: <span class="keyword">true</span>,</span>        <span class="comment">// 중점관리 항목만</span>
+    <span class="highlight">excludeCompleted: <span class="keyword">true</span>,</span>  <span class="comment">// 완료항목 제외</span>
+    <span class="unused">// companies: ???  ← 이 파라미터는 존재하지만 아무도 사용하지 않음!</span>
+  },
+});
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Section 3: Domain Comparison -->
+<div id="domain-comparison" class="section">
+  <div class="section-title"><span class="num">3</span> 3개 도메인 상세 비교</div>
+  <p class="section-desc">체크리스트 관련 기능의 도메인별 차이점을 정확히 비교합니다.</p>
+
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th>항목</th>
+        <th>TBM 일지</th>
+        <th>일일점검(현장점검)</th>
+        <th>주간점검</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="label">날짜 방식</td>
+        <td>단일 날짜 <span class="badge same">동일</span></td>
+        <td>단일 날짜 <span class="badge same">동일</span></td>
+        <td>날짜 범위 (startDate~endDate) <span class="badge diff">다름</span></td>
+      </tr>
+      <tr>
+        <td class="label">체크리스트 훅</td>
+        <td>useChecklistByDate()</td>
+        <td>useChecklistByDate()</td>
+        <td>useChecklistByDateRange()</td>
+      </tr>
+      <tr>
+        <td class="label">자동선택 필터</td>
+        <td>{ keyIssues, excludeCompleted } <span class="badge same">동일</span></td>
+        <td>{ keyIssues, excludeCompleted } <span class="badge same">동일</span></td>
+        <td>{ keyIssues, excludeCompleted } <span class="badge same">동일</span></td>
+      </tr>
+      <tr>
+        <td class="label">업체(company) 필터</td>
+        <td style="color:#DC2626; font-weight:600;">없음 <span class="badge unused">미사용</span></td>
+        <td style="color:#DC2626; font-weight:600;">없음 <span class="badge unused">미사용</span></td>
+        <td style="color:#DC2626; font-weight:600;">없음 <span class="badge unused">미사용</span></td>
+      </tr>
+      <tr>
+        <td class="label">업체 정보 보유</td>
+        <td>currentCompany (로그인 업체)</td>
+        <td>participatingCompanies (참여 업체 목록)</td>
+        <td>currentCompany (로그인 업체)</td>
+      </tr>
+      <tr>
+        <td class="label">작업 유형 입력</td>
+        <td>workType: 자유 텍스트 <span class="badge diff">다름</span></td>
+        <td>없음</td>
+        <td>없음</td>
+      </tr>
+      <tr>
+        <td class="label">수동 편집</td>
+        <td>SelectChecklistModal <span class="badge same">동일</span></td>
+        <td>SelectChecklistModal <span class="badge same">동일</span></td>
+        <td>SelectChecklistModal <span class="badge same">동일</span></td>
+      </tr>
+      <tr>
+        <td class="label">모바일 버전</td>
+        <td>있음 (데스크톱과 동일 로직)</td>
+        <td>있음 (데스크톱과 동일 로직)</td>
+        <td>없음</td>
+      </tr>
+      <tr>
+        <td class="label">저장 구조</td>
+        <td>ChecklistItemReference[] <span class="badge same">동일</span></td>
+        <td>ChecklistItemReference[] <span class="badge same">동일</span></td>
+        <td>ChecklistItemReference[] <span class="badge same">동일</span></td>
+      </tr>
+      <tr>
+        <td class="label">날짜 변경 시</td>
+        <td>shouldUseNewChecklist 감지 <span class="badge same">동일</span></td>
+        <td>shouldUseNewChecklist 감지 <span class="badge same">동일</span></td>
+        <td>shouldUseNewChecklist 감지 <span class="badge same">동일</span></td>
+      </tr>
+      <tr>
+        <td class="label">isDaily 필요도</td>
+        <td style="font-weight:700; color:#DC2626;">★★★ 매우 높음</td>
+        <td style="font-weight:700; color:#F59E0B;">★★☆ 높음</td>
+        <td style="font-weight:700; color:#3B82F6;">★☆☆ 보통 (주간 범위)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="divider"></div>
+
+<!-- Section 4: Problems -->
+<div id="problems" class="section">
+  <div class="section-title"><span class="num">4</span> 현재 문제점 (Pain Points)</div>
+  <p class="section-desc">3개 도메인에서 공통으로 발생하는 문제와 도메인 특화 문제를 구분합니다.</p>
+
+  <h3 style="font-size:16px; font-weight:700; margin-bottom:16px; color:#DC2626;">공통 문제 (3개 도메인 모두 해당)</h3>
+  <div class="problem-grid">
+    <div class="problem-card critical">
+      <h4>업체 필터 미적용</h4>
+      <p><code>queryChecklistItems</code>에 <code>companies</code> 파라미터가 있지만, <strong>3개 도메인 모두 사용하지 않음</strong>. 모든 업체의 체크리스트가 한꺼번에 표시됩니다.</p>
+      <div class="impact">영향: 대형 현장(10+ 업체)에서 100개 이상의 불필요한 항목이 자동선택됨</div>
+    </div>
+    <div class="problem-card critical">
+      <h4>1:1 구조 한계</h4>
+      <p>RiskAssessmentGroup → Checklist가 1:1. isDaily로 매일 같은 체크리스트를 사용할 경우, 동일 체크리스트에 매일 새로운 점검 결과를 연결할 수 없음.</p>
+      <div class="impact">영향: 매일 체크리스트를 새로 생성해야 하거나, 이전 결과가 덮어쓰기 됨</div>
+    </div>
+    <div class="problem-card warning">
+      <h4>수동 편집의 비효율</h4>
+      <p>SelectChecklistModal에서 업체/작업별 필터는 있지만, 자동선택 시에는 적용되지 않음. 사용자가 매번 수동으로 불필요한 항목을 제거해야 함.</p>
+      <div class="impact">영향: 매 작성마다 5~10분의 체크리스트 편집 시간 소요</div>
+    </div>
+  </div>
+
+  <h3 style="font-size:16px; font-weight:700; margin: 32px 0 16px; color:#F59E0B;">도메인 특화 문제</h3>
+  <div class="problem-grid">
+    <div class="problem-card warning">
+      <h4>TBM: workType 단절</h4>
+      <p><code>workType</code>(작업명)이 자유 텍스트여서 체크리스트의 작업(공종) 분류와 연결이 없음. "가설공사"라고 입력해도 가설공사 체크리스트만 필터되지 않음.</p>
+      <div class="impact">영향: 작업명을 입력해도 관련 체크리스트만 보는 것이 불가능</div>
+    </div>
+    <div class="problem-card info">
+      <h4>일일점검: participatingCompanies 미활용</h4>
+      <p>일일점검은 <code>participatingCompanies</code>(참여업체 목록)를 입력받지만, 이를 체크리스트 필터에 활용하지 않음. 데이터가 있는데 사용하지 않는 상태.</p>
+      <div class="impact">영향: 참여업체만의 체크리스트를 보여줄 수 있지만 안 하고 있음</div>
+    </div>
+    <div class="problem-card info">
+      <h4>주간점검: 날짜 범위 복잡성</h4>
+      <p>주간점검은 날짜 범위를 사용하므로, 여러 그룹이 매칭될 수 있음. 복수 그룹 시 사용자 선택을 요구하는 추가 UX가 존재.</p>
+      <div class="impact">영향: isDaily 적용 시 날짜 범위 내 매일의 진행 이력을 합산하는 로직 필요</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Section 5: Unused Code Discovery -->
+<div id="unused-code" class="section">
+  <div class="section-title"><span class="num">5</span> 발견된 미사용 인프라 (이미 구현되어 있지만 사용 안 됨)</div>
+  <p class="section-desc">솔루션의 핵심 발견 — 체크리스트 업체 필터링은 <strong>이미 구현되어 있습니다</strong>. 누군가 만들어두고 연결하지 않은 상태입니다.</p>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div>
+      <h4 style="font-size:15px; font-weight:700; margin-bottom:12px; color:#D97706;">1. companies 파라미터 (구현됨, 미연결)</h4>
+      <div class="code-block">
+        <div class="filename">checklistUtils.ts</div>
+<span class="keyword">type</span> QueryChecklistItemsParams = {
+  checklistGroups: ChecklistGroup[];
+  riskAssessmentGroup: RiskAssessmentGroup;
+  filter?: {
+    <span class="highlight">companies?: <span class="field-type">string[]</span>,</span>  <span class="comment">// ← 존재하지만 아무도 안 씀!</span>
+    keyIssues?: boolean,
+    excludeCompleted?: boolean,
+  };
+};
+
+<span class="keyword">const</span> queryChecklistItems = (params) => {
+  <span class="comment">// ✅ 업체 필터 로직이 이미 구현되어 있음:</span>
+  <span class="keyword">const</span> filteredGroups = filter?.companies
+    ? checklistGroups.<span class="highlight">filter(group =>
+        filter.companies!.includes(group.company.id)
+      )</span>
+    : checklistGroups;
+  <span class="comment">// ... 이후 keyIssues, excludeCompleted 처리</span>
+};
+      </div>
+    </div>
+    <div>
+      <h4 style="font-size:15px; font-weight:700; margin-bottom:12px; color:#D97706;">2. belongsToCompanies 헬퍼 (구현됨, 미호출)</h4>
+      <div class="code-block">
+        <div class="filename">checklistUtils.ts</div>
+<span class="comment">// ✅ 이 함수도 이미 존재하지만 아무도 호출하지 않음:</span>
+<span class="keyword">const</span> belongsToCompanies = (
+  item: ChecklistItem,
+  companyIds: string[]
+): <span class="field-type">boolean</span> => {
+  <span class="keyword">return</span> companyIds.includes(
+    item.company.id
+  );
+};
+
+<span class="comment">// 예: 현재 로그인한 업체의 항목만 필터</span>
+<span class="comment">// belongsToCompanies(item, [currentCompany.id])</span>
+<span class="comment">// → 이 한 줄이면 업체 필터 완성인데 안 쓰고 있음</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: #FEF3C7; border: 2px solid #F59E0B; border-radius: 12px; padding: 24px; margin-top: 24px;">
+    <h4 style="font-size:16px; font-weight:700; color:#D97706; margin-bottom:8px;">핵심 인사이트</h4>
+    <p style="font-size:14px; color:#92400E;">
+      업체 필터링을 위한 인프라가 <strong>이미 100% 구현</strong>되어 있습니다.<br>
+      3개 도메인의 자동선택 호출에 <code>companies: [currentCompany.id]</code>를 추가하기만 하면 즉시 동작합니다.<br>
+      <strong>실제 코드 변경량: 각 도메인 create 훅에서 1줄 추가</strong>
+    </p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Section 6: Solution -->
+<div id="solution" class="section">
+  <div class="section-title"><span class="num">6</span> TO-BE 솔루션 설계 (3-Phase)</div>
+  <p class="section-desc">현실적인 단계별 접근. Phase 1만으로도 즉시 효과. Phase 2~3는 점진적 개선.</p>
+
+  <div class="solution-grid">
+    <!-- Phase 1 -->
+    <div class="solution-card">
+      <div class="phase-badge p1">PHASE 1 — 즉시 적용 가능</div>
+      <h3>업체 자동 필터</h3>
+      <p class="desc">이미 존재하는 companies 파라미터를 활성화. 로그인 업체의 체크리스트만 자동선택되도록 변경. 코드 변경 최소.</p>
+      <ul class="change-list">
+        <li><span class="tag shared">SHARED</span>checklistUtils — 변경 없음 (이미 구현됨)</li>
+        <li><span class="tag tbm">TBM</span>useTbmLogCreate — filter에 companies 추가 (1줄)</li>
+        <li><span class="tag tbm">TBM</span>useTbmLogCreateMobile — 동일 (1줄)</li>
+        <li><span class="tag daily">일일</span>useDailyInspectionCreate — filter에 companies 추가 (1줄)</li>
+        <li><span class="tag daily">일일</span>useDailyInspectionCreateMobile — 동일 (1줄)</li>
+        <li><span class="tag weekly">주간</span>useWeeklyInspectionCreate — filter에 companies 추가 (1줄)</li>
+      </ul>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="solution-card">
+      <div class="phase-badge p2">PHASE 2 — isDaily 핵심</div>
+      <h3>isDaily 플래그 + 1:N 구조</h3>
+      <p class="desc">체크리스트에 isDaily 속성 추가. 1:N 관계로 하나의 체크리스트에 매일의 점검 결과를 연결. 진행 이력 추적 가능.</p>
+      <ul class="change-list">
+        <li><span class="tag model">MODEL</span>RiskAssessmentChecklist — isDaily: boolean 추가</li>
+        <li><span class="tag model">MODEL</span>ChecklistProgress — 새 모델 (일자별 진행 기록)</li>
+        <li><span class="tag shared">SHARED</span>체크리스트 생성 페이지 — isDaily 토글 UI 추가</li>
+        <li><span class="tag shared">SHARED</span>체크리스트 상세 페이지 — 일자별 진행 이력 표시</li>
+        <li><span class="tag shared">SHARED</span>useChecklistByDate — isDaily 체크리스트 자동 연결</li>
+        <li><span class="tag tbm">TBM</span>저장 시 ChecklistProgress에 일자별 기록</li>
+        <li><span class="tag daily">일일</span>저장 시 ChecklistProgress에 일자별 기록</li>
+        <li><span class="tag weekly">주간</span>날짜 범위 내 ChecklistProgress 합산 표시</li>
+      </ul>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="solution-card">
+      <div class="phase-badge p3">PHASE 3 — UX 최적화</div>
+      <h3>스마트 작업 연결 + 이력</h3>
+      <p class="desc">TBM의 workType을 체크리스트 작업(공종)과 연결. 이전 작성 이력 기반 빠른 시작. 대시보드 통합.</p>
+      <ul class="change-list">
+        <li><span class="tag tbm">TBM</span>workType → 칩 선택 UI (체크리스트 공종 기반)</li>
+        <li><span class="tag daily">일일</span>participatingCompanies → 체크리스트 필터 연결</li>
+        <li><span class="tag shared">SHARED</span>이전 작성 이력 기반 "빠른 복사" 기능</li>
+        <li><span class="tag shared">SHARED</span>체크리스트 상세 — 도메인별 사용 통계</li>
+        <li><span class="tag shared">SHARED</span>isDaily 대시보드 — 일자별 진행률 시각화</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Section 7: Data Model -->
+<div id="data-model" class="section">
+  <div class="section-title"><span class="num">7</span> 데이터 모델 변경</div>
+  <p class="section-desc">Phase 2에서 필요한 데이터 모델 변경을 정확히 정의합니다.</p>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div>
+      <h4 style="margin-bottom:12px; font-size:15px;">AS-IS: 현재 모델 (1:1 구조)</h4>
+      <div class="model-box">
+<span class="type-name">RiskAssessmentChecklist</span> {
+<span class="field">  <span class="field-name">id</span>: <span class="field-type">string</span></span>
+<span class="field">  <span class="field-name">title</span>: <span class="field-type">string</span></span>
+<span class="field">  <span class="field-name">groups</span>: <span class="field-type">ChecklistGroup[]</span></span>
+<span class="field">  <span class="field-name">riskAssessmentGroupId</span>: <span class="field-type">string</span>  <span class="field-comment">// 1:1 연결</span></span>
+}
+
+<span class="type-name">SVCTbmLog</span> {  <span class="field-comment">// 3개 도메인 동일 구조</span>
+<span class="field">  <span class="field-name">checklist</span>: <span class="field-type">ChecklistItemReference[]</span></span>
+<span class="field">  <span class="field-name">riskAssessmentGroupId</span>: <span class="field-type">string</span></span>
+<span class="field">  <span class="field-name">riskAssessmentChecklistId</span>: <span class="field-type">string</span></span>
+}
+
+<span class="type-name">ChecklistItemReference</span> {
+<span class="field">  <span class="field-name">step</span>: <span class="field-type">number</span></span>
+<span class="field">  <span class="field-name">id</span>: <span class="field-type">string</span></span>
+}
+      </div>
+    </div>
+    <div>
+      <h4 style="margin-bottom:12px; font-size:15px;">TO-BE: 변경 모델 (1:N 구조)</h4>
+      <div class="model-box">
+<span class="type-name">RiskAssessmentChecklist</span> {
+<span class="field">  <span class="field-name">id</span>: <span class="field-type">string</span></span>
+<span class="field">  <span class="field-name">title</span>: <span class="field-type">string</span></span>
+<span class="field">  <span class="field-name">groups</span>: <span class="field-type">ChecklistGroup[]</span></span>
+<span class="field">  <span class="field-name">riskAssessmentGroupId</span>: <span class="field-type">string</span></span>
+<span class="field-new">  <span class="field-name">isDaily</span>: <span class="field-type">boolean</span>  <span class="field-comment">// NEW — 매일 반복 여부</span></span>
+<span class="field-new">  <span class="field-name">activePeriod</span>?: <span class="field-type">{ start: Date, end?: Date }</span>  <span class="field-comment">// NEW — 활성 기간</span></span>
+}
+
+<span class="type-name">ChecklistProgress</span> {  <span class="field-comment">// NEW — 일자별 진행 기록</span>
+<span class="field-new">  <span class="field-name">id</span>: <span class="field-type">string</span></span>
+<span class="field-new">  <span class="field-name">checklistId</span>: <span class="field-type">string</span>  <span class="field-comment">// → RiskAssessmentChecklist</span></span>
+<span class="field-new">  <span class="field-name">date</span>: <span class="field-type">Date</span>  <span class="field-comment">// 점검 일자</span></span>
+<span class="field-new">  <span class="field-name">domain</span>: <span class="field-type">'tbm' | 'daily' | 'weekly'</span></span>
+<span class="field-new">  <span class="field-name">domainDocId</span>: <span class="field-type">string</span>  <span class="field-comment">// TBM/일일/주간 문서 ID</span></span>
+<span class="field-new">  <span class="field-name">completedItems</span>: <span class="field-type">ChecklistItemReference[]</span></span>
+<span class="field-new">  <span class="field-name">totalItems</span>: <span class="field-type">number</span></span>
+<span class="field-new">  <span class="field-name">progressRate</span>: <span class="field-type">number</span>  <span class="field-comment">// 0~100%</span></span>
+}
+      </div>
+    </div>
+  </div>
+
+  <div style="background: white; border-radius: 12px; padding: 24px; margin-top: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06);">
+    <h4 style="font-size:15px; font-weight:700; margin-bottom:16px;">관계 다이어그램</h4>
+    <div style="text-align:center; font-family: 'SF Mono', monospace; font-size: 13px; line-height: 2.2; color: #333;">
+      <div style="display:inline-block; text-align:left; background:#F8FAFC; padding:24px 40px; border-radius:12px; border:1px solid #E2E8F0;">
+        <div><strong style="color:#8B5CF6;">RiskAssessmentChecklist</strong> (isDaily: true)</div>
+        <div style="color:#999;">　　│</div>
+        <div style="color:#999;">　　├── 1:N ──┐</div>
+        <div style="color:#999;">　　│　　　　　│</div>
+        <div>　　│　　<strong style="color:#22C55E;">ChecklistProgress</strong> [2025-01-06, tbm, doc123]</div>
+        <div>　　│　　<strong style="color:#22C55E;">ChecklistProgress</strong> [2025-01-06, daily, doc456]</div>
+        <div>　　│　　<strong style="color:#22C55E;">ChecklistProgress</strong> [2025-01-07, tbm, doc789]</div>
+        <div>　　│　　<strong style="color:#22C55E;">ChecklistProgress</strong> [2025-01-07, daily, doc012]</div>
+        <div>　　│　　<strong style="color:#22C55E;">ChecklistProgress</strong> [2025-01-08, tbm, doc345]</div>
+        <div style="color:#999;">　　│　　　　　...</div>
+        <div style="color:#999;">　　│</div>
+        <div style="color:#999;">　　├── ref by ── <strong style="color:#3B82F6;">TBM 일지</strong> (checklist: ItemRef[])</div>
+        <div style="color:#999;">　　├── ref by ── <strong style="color:#10B981;">일일점검</strong> (checklist: ItemRef[])</div>
+        <div style="color:#999;">　　└── ref by ── <strong style="color:#8B5CF6;">주간점검</strong> (checklist: ItemRef[])</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Section 8: UI Mockup -->
+<div id="ui-mockup" class="section">
+  <div class="section-title"><span class="num">8</span> UI 설계 — 도메인별 적용</div>
+  <p class="section-desc">각 도메인에서 isDaily가 어떻게 적용되는지 구체적인 UI를 보여줍니다.</p>
+
+  <!-- 8-1: Checklist Creation -->
+  <div class="mockup-container">
+    <h3><span class="mockup-domain shared">공유</span> 체크리스트 생성 페이지 — isDaily 토글</h3>
+    <div class="mockup">
+      <div class="mockup-header">
+        위험성평가 체크리스트 생성
+        <span style="font-size:11px; color:#999;">risk-assessment-checklist/create</span>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-field">
+          <label>체크리스트 제목</label>
+          <div class="mockup-input">2025년 1월 현장 체크리스트</div>
+        </div>
+        <div class="mockup-toggle" style="margin-bottom:20px;">
+          <div class="switch"><div class="knob"></div></div>
+          <div>
+            <div class="toggle-label">매일 반복 체크리스트 (isDaily)</div>
+            <div class="toggle-desc">활성화하면 이 체크리스트가 매일 자동으로 TBM/일일점검/주간점검에 연결됩니다. 일자별 진행 이력이 기록됩니다.</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div class="mockup-field">
+            <label>활성 시작일</label>
+            <div class="mockup-input">2025-01-06</div>
+          </div>
+          <div class="mockup-field">
+            <label>활성 종료일 (선택)</label>
+            <div class="mockup-input" style="color:#999;">미설정 시 계속 활성</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8-2: TBM -->
+  <div class="mockup-container">
+    <h3><span class="mockup-domain tbm">TBM</span> TBM 일지 작성 — Phase 1 + Phase 3 적용 후</h3>
+    <div class="mockup">
+      <div class="mockup-header">
+        TBM 일지 작성
+        <span style="font-size:11px; color:#999;">tbm-log/create</span>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-field">
+          <label>일자</label>
+          <div class="mockup-input">2025-01-08</div>
+        </div>
+        <div class="mockup-field">
+          <label>작업(공종)명 — Phase 3: 칩 선택으로 변경</label>
+          <div class="mockup-chips">
+            <div class="mockup-chip active">가설공사</div>
+            <div class="mockup-chip active">철근공사</div>
+            <div class="mockup-chip inactive">콘크리트공사</div>
+            <div class="mockup-chip inactive">토공사</div>
+            <div class="mockup-chip inactive">방수공사</div>
+            <div class="mockup-chip inactive" style="border-style:dashed;">+ 직접입력</div>
+          </div>
+        </div>
+        <div class="mockup-field">
+          <label>체크리스트 — Phase 1 업체 필터 적용 (내 업체 항목만)</label>
+          <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+            <span style="font-size:12px; font-weight:600; color:#3B82F6; background:#EFF6FF; padding:4px 10px; border-radius:6px;">자동필터: (주)한국건설</span>
+            <span style="font-size:11px; color:#999;">← currentCompany 기반</span>
+          </div>
+          <div class="checklist-preview">
+            <div class="checklist-header">
+              <span>체크리스트 항목 (3/12 — 내 업체만)</span>
+              <span style="color:#3B82F6; cursor:pointer; font-size:11px;">편집</span>
+            </div>
+            <div class="checklist-item">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)한국건설</span>
+              <span class="ci-task">가설공사</span>
+              비계 설치 전 지반 확인
+            </div>
+            <div class="checklist-item">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)한국건설</span>
+              <span class="ci-task">가설공사</span>
+              안전난간 설치 상태 점검
+            </div>
+            <div class="checklist-item">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)한국건설</span>
+              <span class="ci-task">철근공사</span>
+              철근 결속 상태 확인
+            </div>
+            <div class="checklist-item filtered">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)대한전기</span>
+              <span class="ci-task">전기공사</span>
+              <span style="color:#999;">접지저항 측정 (다른 업체 — 자동 제외)</span>
+            </div>
+            <div class="checklist-item filtered">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)미래설비</span>
+              <span class="ci-task">배관공사</span>
+              <span style="color:#999;">배관 누수 검사 (다른 업체 — 자동 제외)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8-3: Daily Inspection -->
+  <div class="mockup-container">
+    <h3><span class="mockup-domain daily">일일점검</span> 일일점검 작성 — Phase 1 + Phase 3 적용 후</h3>
+    <div class="mockup">
+      <div class="mockup-header">
+        현장점검 작성
+        <span style="font-size:11px; color:#999;">daily-inspection/create</span>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-field">
+          <label>점검일자</label>
+          <div class="mockup-input">2025-01-08</div>
+        </div>
+        <div class="mockup-field">
+          <label>참여업체 (이미 보유 중인 데이터 활용)</label>
+          <div class="mockup-chips">
+            <div class="mockup-chip active">(주)한국건설</div>
+            <div class="mockup-chip active">(주)대한전기</div>
+            <div class="mockup-chip inactive">(주)미래설비</div>
+          </div>
+        </div>
+        <div class="mockup-field">
+          <label>체크리스트 — Phase 3: participatingCompanies 기반 필터</label>
+          <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+            <span style="font-size:12px; font-weight:600; color:#10B981; background:#ECFDF5; padding:4px 10px; border-radius:6px;">참여업체 필터: 한국건설 + 대한전기</span>
+          </div>
+          <div class="checklist-preview">
+            <div class="checklist-header">
+              <span>체크리스트 항목 (6/12 — 참여업체만)</span>
+              <span style="color:#3B82F6; cursor:pointer; font-size:11px;">편집</span>
+            </div>
+            <div class="checklist-item">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)한국건설</span>
+              <span class="ci-task">가설공사</span>
+              비계 설치 전 지반 확인
+            </div>
+            <div class="checklist-item">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)한국건설</span>
+              <span class="ci-task">가설공사</span>
+              안전난간 설치 상태 점검
+            </div>
+            <div class="checklist-item">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)대한전기</span>
+              <span class="ci-task">전기공사</span>
+              접지저항 측정
+            </div>
+            <div class="checklist-item">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)대한전기</span>
+              <span class="ci-task">전기공사</span>
+              분전반 점검
+            </div>
+            <div class="checklist-item filtered">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)미래설비</span>
+              <span class="ci-task">배관공사</span>
+              <span style="color:#999;">배관 누수 검사 (미참여 업체 — 자동 제외)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8-4: Weekly Inspection -->
+  <div class="mockup-container">
+    <h3><span class="mockup-domain weekly">주간점검</span> 주간점검 작성 — Phase 1 적용 후</h3>
+    <div class="mockup">
+      <div class="mockup-header">
+        주간점검 작성
+        <span style="font-size:11px; color:#999;">weekly-inspection/create</span>
+      </div>
+      <div class="mockup-body">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+          <div class="mockup-field">
+            <label>시작일</label>
+            <div class="mockup-input">2025-01-06 (월)</div>
+          </div>
+          <div class="mockup-field">
+            <label>종료일</label>
+            <div class="mockup-input">2025-01-10 (금)</div>
+          </div>
+        </div>
+        <div class="mockup-field">
+          <label>체크리스트 — Phase 1 업체 필터 적용 + isDaily 진행 이력 합산</label>
+          <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+            <span style="font-size:12px; font-weight:600; color:#8B5CF6; background:#F5F3FF; padding:4px 10px; border-radius:6px;">자동필터: (주)한국건설</span>
+            <span style="font-size:12px; font-weight:600; color:#22C55E; background:#F0FDF4; padding:4px 10px; border-radius:6px;">isDaily 이력 포함</span>
+          </div>
+          <div class="checklist-preview">
+            <div class="checklist-header">
+              <span>체크리스트 항목 (주간 합산)</span>
+              <span style="color:#3B82F6; cursor:pointer; font-size:11px;">편집</span>
+            </div>
+            <div class="checklist-item">
+              <div class="ci-check checked"></div>
+              <span class="ci-company">(주)한국건설</span>
+              비계 설치 전 지반 확인
+              <span style="margin-left:auto; font-size:10px; color:#22C55E; font-weight:600;">5/5일 완료</span>
+            </div>
+            <div class="checklist-item">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)한국건설</span>
+              안전난간 설치 상태 점검
+              <span style="margin-left:auto; font-size:10px; color:#F59E0B; font-weight:600;">3/5일 완료</span>
+            </div>
+            <div class="checklist-item">
+              <div class="ci-check"></div>
+              <span class="ci-company">(주)한국건설</span>
+              철근 결속 상태 확인
+              <span style="margin-left:auto; font-size:10px; color:#EF4444; font-weight:600;">1/5일 완료</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8-5: Checklist Detail Page -->
+  <div class="mockup-container">
+    <h3><span class="mockup-domain shared">공유</span> 체크리스트 상세 페이지 — isDaily 진행 이력 뷰</h3>
+    <div class="mockup">
+      <div class="mockup-header">
+        2025년 1월 현장 체크리스트 (isDaily)
+        <span style="font-size:11px; background:#D1FAE5; color:#059669; padding:2px 8px; border-radius:4px;">매일 반복</span>
+      </div>
+      <div class="mockup-body">
+        <div style="margin-bottom:20px;">
+          <div style="font-size:13px; font-weight:600; margin-bottom:12px;">일자별 진행 현황</div>
+          <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px; text-align:center;">
+            <div style="font-size:10px; color:#999;">월 1/6</div>
+            <div style="font-size:10px; color:#999;">화 1/7</div>
+            <div style="font-size:10px; color:#999;">수 1/8</div>
+            <div style="font-size:10px; color:#999;">목 1/9</div>
+            <div style="font-size:10px; color:#999;">금 1/10</div>
+            <div style="font-size:10px; color:#999;">토 1/11</div>
+            <div style="font-size:10px; color:#999;">일 1/12</div>
+
+            <div style="background:#22C55E; color:white; padding:12px 4px; border-radius:8px; font-size:11px; font-weight:600;">100%</div>
+            <div style="background:#22C55E; color:white; padding:12px 4px; border-radius:8px; font-size:11px; font-weight:600;">92%</div>
+            <div style="background:#F59E0B; color:white; padding:12px 4px; border-radius:8px; font-size:11px; font-weight:600;">75%</div>
+            <div style="background:#E5E7EB; color:#999; padding:12px 4px; border-radius:8px; font-size:11px;">오늘</div>
+            <div style="background:#F3F4F6; color:#ccc; padding:12px 4px; border-radius:8px; font-size:11px;">—</div>
+            <div style="background:#F3F4F6; color:#ccc; padding:12px 4px; border-radius:8px; font-size:11px;">—</div>
+            <div style="background:#F3F4F6; color:#ccc; padding:12px 4px; border-radius:8px; font-size:11px;">—</div>
+          </div>
+        </div>
+
+        <div style="font-size:13px; font-weight:600; margin-bottom:12px;">도메인별 활용 내역 (1/8 수요일)</div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+          <div style="padding:12px; background:#EFF6FF; border-radius:8px; border:1px solid #BFDBFE;">
+            <div style="font-size:11px; font-weight:700; color:#1D4ED8;">TBM 일지</div>
+            <div style="font-size:20px; font-weight:800; color:#1D4ED8; margin:4px 0;">3건</div>
+            <div style="font-size:10px; color:#666;">(주)한국건설 × 2, (주)대한전기 × 1</div>
+          </div>
+          <div style="padding:12px; background:#ECFDF5; border-radius:8px; border:1px solid #BBF7D0;">
+            <div style="font-size:11px; font-weight:700; color:#059669;">일일점검</div>
+            <div style="font-size:20px; font-weight:800; color:#059669; margin:4px 0;">1건</div>
+            <div style="font-size:10px; color:#666;">오전 현장 순회점검</div>
+          </div>
+          <div style="padding:12px; background:#F5F3FF; border-radius:8px; border:1px solid #DDD6FE;">
+            <div style="font-size:11px; font-weight:700; color:#7C3AED;">주간점검</div>
+            <div style="font-size:20px; font-weight:800; color:#7C3AED; margin:4px 0;">—</div>
+            <div style="font-size:10px; color:#666;">금요일에 합산 반영 예정</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Section 9: Impact Matrix -->
+<div id="impact" class="section">
+  <div class="section-title"><span class="num">9</span> 영향 범위 & 변경 매트릭스</div>
+  <p class="section-desc">각 Phase에서 변경되는 파일과 영향 범위를 정확히 매핑합니다.</p>
+
+  <table class="impact-table">
+    <thead>
+      <tr>
+        <th style="text-align:left;">파일 / 모듈</th>
+        <th>Phase 1<br><span style="font-weight:400; font-size:10px;">업체 필터</span></th>
+        <th>Phase 2<br><span style="font-weight:400; font-size:10px;">isDaily</span></th>
+        <th>Phase 3<br><span style="font-weight:400; font-size:10px;">UX 최적화</span></th>
+        <th>변경 규모</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="5" style="background:#FEF3C7; font-weight:700; color:#92400E; text-align:center;">SHARED LAYER</td></tr>
+      <tr>
+        <td class="row-label">checklistUtils.ts</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot yellow"></span> isDaily 쿼리</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>소</td>
+      </tr>
+      <tr>
+        <td class="row-label">SelectChecklistModal.tsx</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot yellow"></span> 필터 개선</td>
+        <td>중</td>
+      </tr>
+      <tr>
+        <td class="row-label">useChecklistByDate.ts</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot yellow"></span> isDaily 연결</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>중</td>
+      </tr>
+      <tr>
+        <td class="row-label">useChecklistByDateRange.ts</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot yellow"></span> isDaily 합산</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>중</td>
+      </tr>
+      <tr>
+        <td class="row-label">useChecklistManager.ts</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot yellow"></span> Progress 연동</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>중</td>
+      </tr>
+      <tr>
+        <td class="row-label">체크리스트 생성 페이지</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot red"></span> isDaily UI</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>대</td>
+      </tr>
+      <tr>
+        <td class="row-label">체크리스트 상세 페이지</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot red"></span> 진행이력 뷰</td>
+        <td><span class="dot yellow"></span> 통계 대시보드</td>
+        <td>대</td>
+      </tr>
+      <tr><td colspan="5" style="background:#DBEAFE; font-weight:700; color:#1D4ED8; text-align:center;">TBM 일지</td></tr>
+      <tr>
+        <td class="row-label">useTbmLogCreate.ts</td>
+        <td><span class="dot green"></span> +1줄</td>
+        <td><span class="dot yellow"></span> Progress 저장</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>소</td>
+      </tr>
+      <tr>
+        <td class="row-label">useTbmLogCreateMobile.ts</td>
+        <td><span class="dot green"></span> +1줄</td>
+        <td><span class="dot yellow"></span> Progress 저장</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>소</td>
+      </tr>
+      <tr>
+        <td class="row-label">useTbmLogEdit.ts</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot yellow"></span> Progress 업데이트</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>소</td>
+      </tr>
+      <tr>
+        <td class="row-label">TbmLogWorkTypeInput.tsx</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot red"></span> 칩 선택 UI</td>
+        <td>대</td>
+      </tr>
+      <tr><td colspan="5" style="background:#D1FAE5; font-weight:700; color:#059669; text-align:center;">일일점검</td></tr>
+      <tr>
+        <td class="row-label">useDailyInspectionCreate.ts</td>
+        <td><span class="dot green"></span> +1줄</td>
+        <td><span class="dot yellow"></span> Progress 저장</td>
+        <td><span class="dot yellow"></span> 참여업체 연결</td>
+        <td>소~중</td>
+      </tr>
+      <tr>
+        <td class="row-label">useDailyInspectionCreateMobile.ts</td>
+        <td><span class="dot green"></span> +1줄</td>
+        <td><span class="dot yellow"></span> Progress 저장</td>
+        <td><span class="dot yellow"></span> 참여업체 연결</td>
+        <td>소~중</td>
+      </tr>
+      <tr><td colspan="5" style="background:#EDE9FE; font-weight:700; color:#7C3AED; text-align:center;">주간점검</td></tr>
+      <tr>
+        <td class="row-label">useWeeklyInspectionCreate.ts</td>
+        <td><span class="dot green"></span> +1줄</td>
+        <td><span class="dot red"></span> 범위 합산</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>중~대</td>
+      </tr>
+      <tr>
+        <td class="row-label">useWeeklyInspectionEdit.tsx</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot yellow"></span> Progress 업데이트</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>중</td>
+      </tr>
+      <tr><td colspan="5" style="background:#FCE7F3; font-weight:700; color:#DB2777; text-align:center;">데이터 모델</td></tr>
+      <tr>
+        <td class="row-label">RiskAssessmentChecklist 타입</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td><span class="dot red"></span> isDaily + activePeriod</td>
+        <td><span class="dot gray"></span> 변경없음</td>
+        <td>중</td>
+      </tr>
+      <tr>
+        <td class="row-label">ChecklistProgress (NEW)</td>
+        <td><span class="dot gray"></span> —</td>
+        <td><span class="dot red"></span> 신규 모델</td>
+        <td><span class="dot yellow"></span> 통계 쿼리</td>
+        <td>대</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="display:flex; gap:24px; margin-top:16px; justify-content:center;">
+    <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><span class="dot green"></span> 1줄 변경</div>
+    <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><span class="dot yellow"></span> 소~중 변경</div>
+    <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><span class="dot red"></span> 대 변경 / 신규</div>
+    <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><span class="dot gray"></span> 변경없음</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Section 10: Roadmap -->
+<div id="roadmap" class="section">
+  <div class="section-title"><span class="num">10</span> 구현 로드맵</div>
+  <p class="section-desc">Phase 1은 즉시 적용 가능합니다. Phase 2~3는 점진적으로 진행합니다.</p>
+
+  <div class="timeline">
+    <div class="timeline-item p1">
+      <h4 style="color:#1D4ED8;">Phase 1: 업체 자동 필터 활성화</h4>
+      <div class="time">난이도: ★☆☆ | 코드 변경: 5줄 | 영향: 즉시 체감</div>
+      <div class="detail">
+        <strong>이미 구현된 인프라를 연결만 하면 됩니다.</strong>
+        <ul>
+          <li>useTbmLogCreate.ts — filter에 <code>companies: [currentCompany?.id]</code> 추가</li>
+          <li>useTbmLogCreateMobile.ts — 동일</li>
+          <li>useDailyInspectionCreate.ts — 동일</li>
+          <li>useDailyInspectionCreateMobile.ts — 동일</li>
+          <li>useWeeklyInspectionCreate.ts — 동일</li>
+          <li>테스트: 대형 현장에서 자동선택 항목 수 확인 (전체 vs 내 업체만)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item p2">
+      <h4 style="color:#059669;">Phase 2: isDaily 플래그 + 1:N 진행 기록</h4>
+      <div class="time">난이도: ★★★ | 주요 변경 | 핵심 기능</div>
+      <div class="detail">
+        <strong>체크리스트의 1:1 → 1:N 구조 전환이 핵심입니다.</strong>
+        <ul>
+          <li>RiskAssessmentChecklist 모델에 isDaily, activePeriod 필드 추가</li>
+          <li>ChecklistProgress 모델 신규 생성 (일자별 진행 기록)</li>
+          <li>체크리스트 생성 페이지에 isDaily 토글 UI 추가</li>
+          <li>useChecklistByDate — isDaily 체크리스트 자동 감지 및 연결</li>
+          <li>3개 도메인 저장 시 ChecklistProgress 레코드 자동 생성</li>
+          <li>체크리스트 상세 페이지에 일자별 진행 이력 표시</li>
+          <li>주간점검: 날짜 범위 내 Progress 합산 로직</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item p3">
+      <h4 style="color:#7C3AED;">Phase 3: UX 최적화 & 스마트 연결</h4>
+      <div class="time">난이도: ★★☆ | UX 개선 | 부가 기능</div>
+      <div class="detail">
+        <strong>사용 편의성을 한 단계 높이는 부가 기능입니다.</strong>
+        <ul>
+          <li>TBM workType → 체크리스트 공종 기반 칩 선택 UI로 변경</li>
+          <li>일일점검 participatingCompanies → 체크리스트 필터에 자동 연결</li>
+          <li>이전 작성 이력 기반 "빠른 복사" 기능 (어제 TBM → 오늘 TBM)</li>
+          <li>체크리스트 상세 페이지에 도메인별 사용 통계</li>
+          <li>isDaily 대시보드 — 캘린더 형태 진행률 시각화</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Phase 1 Code Change -->
+<div class="section" style="padding-top:0;">
+  <h3 style="font-size:18px; font-weight:700; margin-bottom:16px;">Phase 1 실제 코드 변경 (Before → After)</h3>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <div>
+      <h4 style="font-size:13px; font-weight:600; margin-bottom:8px; color:#DC2626;">BEFORE (현재 — 3개 도메인 모두 동일)</h4>
+      <div class="code-block">
+<span class="keyword">const</span> autoSelectedItems =
+  checklistUtils.queryChecklistItems({
+    checklistGroups,
+    riskAssessmentGroup,
+    filter: {
+      keyIssues: <span class="keyword">true</span>,
+      excludeCompleted: <span class="keyword">true</span>,
+    },
+  });
+      </div>
+    </div>
+    <div>
+      <h4 style="font-size:13px; font-weight:600; margin-bottom:8px; color:#22C55E;">AFTER (1줄 추가)</h4>
+      <div class="code-block">
+<span class="keyword">const</span> autoSelectedItems =
+  checklistUtils.queryChecklistItems({
+    checklistGroups,
+    riskAssessmentGroup,
+    filter: {
+      keyIssues: <span class="keyword">true</span>,
+      excludeCompleted: <span class="keyword">true</span>,
+<span class="added">      companies: currentCompany ? [currentCompany.id] : undefined,</span>
+    },
+  });
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div style="background:#1a1a2e; color:#8892b0; padding:40px 32px; text-align:center;">
+  <div style="font-size:13px; margin-bottom:8px;">isDaily 체크리스트 솔루션 v3.0 — 전체 도메인 정밀 분석</div>
+  <div style="font-size:11px; color:#4a5568;">TBM 일지 · 일일점검(현장점검) · 주간점검 — 3개 도메인 통합 분석</div>
+  <div style="font-size:11px; color:#4a5568; margin-top:4px;">분석 기반: safe-u/apps/works/src/ 실제 코드 레벨 분석 (2025.01)</div>
+</div>
+
+</body>
+</html>

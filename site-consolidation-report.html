@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafeU Works 현장·회사 통합 정리 계획</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Pretendard', -apple-system, 'Noto Sans KR', sans-serif; background: #fff; color: #212529; line-height: 1.65; }
+
+  /* Nav */
+  .topnav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid #dee2e6; padding: 10px 24px; display: flex; gap: 6px; overflow-x: auto; }
+  .topnav a { font-size: 12px; color: #868e96; text-decoration: none; padding: 6px 12px; border-radius: 6px; white-space: nowrap; font-weight: 500; transition: all .2s; }
+  .topnav a:hover, .topnav a.active { background: #e7f5ff; color: #1971c2; }
+
+  /* Hero */
+  .hero { background: #212529; color: white; padding: 64px 32px 48px; text-align: center; }
+  .hero h1 { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .hero p { font-size: 16px; color: #adb5bd; max-width: 700px; margin: 0 auto; }
+  .hero .date { font-size: 13px; color: #868e96; margin-top: 16px; }
+
+  /* Sections */
+  .section { max-width: 960px; margin: 0 auto; padding: 56px 24px; }
+  .section-header { margin-bottom: 32px; }
+  .section-num { font-size: 11px; font-weight: 700; color: #868e96; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+  .section-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  .section-desc { font-size: 14px; color: #868e96; margin-top: 6px; }
+  .divider { border: none; height: 1px; background: #dee2e6; margin: 0; }
+
+  /* Problem Cards */
+  .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .problem-card { background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #e9ecef; }
+  .problem-card .pnum { font-size: 11px; font-weight: 700; color: #fa5252; background: #fff5f5; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; }
+  .problem-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .problem-card p { font-size: 13px; color: #666; line-height: 1.7; }
+  .problem-card .example { margin-top: 10px; background: #fff5f5; padding: 10px 12px; border-radius: 6px; font-size: 11px; color: #e03131; }
+
+  /* Dashboard Cards */
+  .dash-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .dash-card { background: #fff; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #e9ecef; }
+  .dash-card .dash-num { font-size: 36px; font-weight: 800; letter-spacing: -1px; }
+  .dash-card .dash-label { font-size: 12px; color: #868e96; margin-top: 4px; font-weight: 500; }
+  .dash-card.blue .dash-num { color: #228be6; }
+  .dash-card.green .dash-num { color: #2b8a3e; }
+  .dash-card.red .dash-num { color: #e03131; }
+  .dash-card.purple .dash-num { color: #7048e8; }
+
+  /* Bar Chart */
+  .bar-chart { background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #e9ecef; }
+  .bar-chart h4 { font-size: 14px; font-weight: 700; margin-bottom: 20px; }
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .bar-label { width: 120px; font-size: 12px; font-weight: 600; color: #495057; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 28px; background: #f1f3f5; border-radius: 6px; position: relative; overflow: hidden; display: flex; }
+  .bar-fill { height: 100%; border-radius: 6px 0 0 6px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 10px; font-weight: 700; color: white; transition: width .6s ease; }
+  .bar-fill.contract { background: #228be6; }
+  .bar-fill.duplicate { background: #fa5252; border-radius: 0; }
+  .bar-value { font-size: 11px; color: #868e96; margin-left: 8px; white-space: nowrap; }
+  .bar-legend { display: flex; gap: 16px; margin-top: 16px; justify-content: center; }
+  .bar-legend span { font-size: 11px; color: #868e96; display: flex; align-items: center; gap: 4px; }
+  .bar-legend .dot { width: 10px; height: 10px; border-radius: 3px; }
+  .bar-legend .dot.blue { background: #228be6; }
+  .bar-legend .dot.red { background: #fa5252; }
+
+  /* Tables */
+  .mock-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mock-table th { background: #f1f3f5; padding: 10px 12px; text-align: left; font-weight: 600; color: #495057; border-bottom: 1px solid #dee2e6; }
+  .mock-table td { padding: 10px 12px; border-bottom: 1px solid #f1f3f5; color: #495057; }
+  .mock-table tr.origin { background: #fff; }
+  .mock-table tr.origin td { font-weight: 600; color: #343a40; }
+  .mock-table tr.origin td:first-child { border-left: 3px solid #2b8a3e; }
+
+  /* Decision Table */
+  .decision-table { width: 100%; border-collapse: collapse; }
+  .decision-table th { background: #212529; color: white; padding: 10px 14px; font-size: 12px; text-align: center; }
+  .decision-table th:first-child { text-align: left; }
+  .decision-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #e9ecef; background: white; text-align: center; }
+  .decision-table td:first-child { text-align: left; font-weight: 600; }
+
+  /* Badges */
+  .mock-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+  .badge-origin { background: #2b8a3e; color: #fff; }
+  .badge-delete { background: #fff5f5; color: #e03131; }
+  .badge-blue { background: #e7f5ff; color: #1971c2; }
+  .badge-purple { background: #f3f0ff; color: #7048e8; }
+  .badge-yellow { background: #fff9db; color: #e67700; }
+  .badge-gray { background: #f1f3f5; color: #868e96; }
+
+  /* Corporation Tree */
+  .corp-card { background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #e9ecef; margin-bottom: 16px; }
+  .corp-card.main { border: 2px solid #228be6; }
+  .corp-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .corp-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: white; flex-shrink: 0; }
+  .corp-icon.blue { background: #228be6; }
+  .corp-icon.green { background: #40c057; }
+  .corp-icon.purple { background: #7048e8; }
+  .corp-icon.orange { background: #fd7e14; }
+  .corp-icon.teal { background: #20c997; }
+  .corp-icon.pink { background: #e64980; }
+  .corp-name { font-size: 16px; font-weight: 700; }
+  .corp-meta { font-size: 12px; color: #868e96; margin-top: 2px; }
+  .corp-tree { padding-left: 20px; border-left: 2px solid #e9ecef; }
+  .corp-tree .tree-item { padding: 8px 0 8px 16px; font-size: 13px; position: relative; }
+  .corp-tree .tree-item::before { content: ''; position: absolute; left: -2px; top: 16px; width: 14px; height: 0; border-top: 2px solid #e9ecef; }
+  .corp-tree .tree-item .site-name { font-weight: 600; }
+  .corp-tree .tree-item .site-manager { font-size: 11px; color: #868e96; margin-left: 8px; }
+  .corp-company { font-size: 12px; color: #228be6; font-weight: 600; margin-bottom: 8px; padding-left: 16px; }
+
+  /* Info / Warning Boxes */
+  .info-box { background: #e7f5ff; border: 1px solid #a5d8ff; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #1864ab; margin: 12px 0; line-height: 1.7; }
+  .warning-box { background: #fff9db; border: 1px solid #ffd43b; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #e67700; margin: 12px 0; line-height: 1.7; }
+  .danger-box { background: #fff5f5; border: 1px solid #ffc9c9; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #c92a2a; margin: 12px 0; line-height: 1.7; }
+
+  /* Annotation */
+  .annotation { position: relative; border: 1px solid #dee2e6; border-left: 4px solid #fa5252; border-radius: 8px; padding: 16px; margin: 12px 0; background: #fff5f5; }
+  .annotation-label { position: absolute; top: -10px; left: 12px; background: #fa5252; color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .annotation.blue { border-color: #dee2e6; border-left-color: #228be6; background: #e7f5ff; }
+  .annotation.blue .annotation-label { background: #228be6; }
+  .annotation.green { border-color: #dee2e6; border-left-color: #40c057; background: #ebfbee; }
+  .annotation.green .annotation-label { background: #40c057; }
+
+  /* Summary Card */
+  .summary-card { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #e9ecef; margin-bottom: 12px; }
+  .summary-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .summary-list { list-style: none; }
+  .summary-list li { font-size: 13px; padding: 4px 0; display: flex; justify-content: space-between; }
+  .summary-list li .count { font-weight: 700; }
+
+  /* Stat row */
+  .stat-row { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .stat-item { background: #f8f9fa; border-radius: 8px; padding: 8px 14px; font-size: 12px; color: #495057; }
+  .stat-item strong { font-weight: 700; color: #212529; }
+
+  /* Severity Section */
+  .severity-section { margin-bottom: 32px; }
+  .severity-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .severity-header h4 { font-size: 15px; font-weight: 700; }
+  .severity-tag { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 4px; }
+  .severity-tag.critical { background: #fff5f5; color: #e03131; }
+  .severity-tag.high { background: #fff9db; color: #e67700; }
+  .severity-tag.medium { background: #e7f5ff; color: #1971c2; }
+
+  /* Mini table wrapper */
+  .table-wrap { background: #fff; border-radius: 12px; border: 1px solid #e9ecef; overflow: hidden; margin-bottom: 8px; }
+
+  /* Total Summary */
+  .total-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+  .total-card { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #e9ecef; }
+  .total-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+
+  /* Print */
+  @media print {
+    .topnav { display: none; }
+    .hero { background: #212529 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section { page-break-inside: avoid; }
+    body { background: #fff; }
+    .dash-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .problem-grid { grid-template-columns: 1fr; }
+    .dash-grid { grid-template-columns: 1fr 1fr; }
+    .hero h1 { font-size: 24px; }
+    .hero p { font-size: 14px; }
+    .bar-label { width: 80px; font-size: 10px; }
+    .total-summary { grid-template-columns: 1fr; }
+    .decision-table { font-size: 11px; }
+    .decision-table th, .decision-table td { padding: 8px 6px; }
+    .corp-card { padding: 16px; }
+    .topnav { padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Nav -->
+<nav class="topnav" id="topnav">
+  <a href="#part1">Part 1: 문제 정의</a>
+  <a href="#part2">Part 2: 전체 현황</a>
+  <a href="#part3">Part 3: 중복 분석</a>
+  <a href="#part4">Part 4: TO-BE 구조</a>
+  <a href="#part5">Part 5: 대표관리자</a>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>SafeU Works 현장·회사 통합 정리 계획</h1>
+  <p>6개 고객사, 20개 계약 현장의 Corporation 통합과 35개 중복 현장 정리 계획서</p>
+  <div class="date">2026년 2월 11일</div>
+</div>
+
+<!-- ============================================ -->
+<!-- PART 1: 왜 정리가 필요한가 -->
+<!-- ============================================ -->
+<div id="part1" class="section">
+  <div class="section-header">
+    <div class="section-num">Part 1</div>
+    <div class="section-title">왜 정리가 필요한가</div>
+    <div class="section-desc">현재 SafeU Works DB에 존재하는 4가지 구조적 문제를 정의합니다.</div>
+  </div>
+
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="pnum">문제 1</div>
+      <h4>중복 현장 난립</h4>
+      <p>협력사가 원청 현장에 합류하지 않고 <strong>자체적으로 같은 현장을 새로 생성</strong>하고 있습니다. 같은 공사현장인데 회사마다 별도로 만들어서 데이터가 파편화됩니다.</p>
+      <div class="example">
+        <strong>예시:</strong> "쿠팡 제천 물류센터" → 13개 중복 현장 존재<br>
+        같은 현장인데 회사마다 별도 생성 → 데이터 파편화
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="pnum">문제 2</div>
+      <h4>Corporation 구조 부재</h4>
+      <p>v2 이전에 만들어진 현장은 <strong>현장소장/안전관리자 권한만</strong> 존재합니다. 하나의 회사(예: 보미건설)가 12개 현장을 운영하지만 통합 관리가 불가능합니다.</p>
+      <div class="example">
+        <strong>현상:</strong> 각 현장마다 company가 별도로 생성<br>
+        본사 차원의 통합 관리 불가
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="pnum">문제 3</div>
+      <h4>회사-현장 관계 미정리</h4>
+      <p>하나의 고객사가 여러 현장을 갖고 있지만 <strong>시스템적으로 연결되지 않습니다.</strong> 대표관리자가 모든 현장을 한눈에 볼 수 없는 구조입니다.</p>
+      <div class="example">
+        <strong>문제:</strong> 보미건설 12개 현장이 각각 독립 운영<br>
+        대표관리자 대시보드 구성 불가
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="pnum">문제 4</div>
+      <h4>데이터 정합성 문제</h4>
+      <p>협력사 참여자들이 중복 현장에 분산 등록됩니다. 원본 현장에는 참여자가 많지만, <strong>중복 현장에는 1명만 있는 경우가 대부분</strong>입니다.</p>
+      <div class="example">
+        <strong>결과:</strong> 통합 관리/통계가 불가능<br>
+        현장별 인원 현황 파악 불가
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- PART 2: 전체 현황 -->
+<!-- ============================================ -->
+<div id="part2" class="section">
+  <div class="section-header">
+    <div class="section-num">Part 2</div>
+    <div class="section-title">전체 현황 — 숫자로 보기</div>
+    <div class="section-desc">6개 고객사의 현장 운영 현황과 중복 현장 규모를 한눈에 파악합니다.</div>
+  </div>
+
+  <!-- Dashboard Cards -->
+  <div class="dash-grid">
+    <div class="dash-card blue">
+      <div class="dash-num">89</div>
+      <div class="dash-label">전체 운영 SITE</div>
+    </div>
+    <div class="dash-card green">
+      <div class="dash-num">20</div>
+      <div class="dash-label">계약 원본 SITE</div>
+    </div>
+    <div class="dash-card red">
+      <div class="dash-num">~35</div>
+      <div class="dash-label">삭제 대상 중복</div>
+    </div>
+    <div class="dash-card purple">
+      <div class="dash-num">6</div>
+      <div class="dash-label">Corporation 생성 대상</div>
+    </div>
+  </div>
+
+  <!-- Bar Chart -->
+  <div class="bar-chart">
+    <h4>고객사별 현장 수 &amp; 중복 현장 수</h4>
+
+    <div class="bar-row">
+      <div class="bar-label">보미건설</div>
+      <div class="bar-track">
+        <div class="bar-fill contract" style="width: 30%;">12</div>
+        <div class="bar-fill duplicate" style="width: 70%;">~28</div>
+      </div>
+      <div class="bar-value">총 ~40</div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-label">동인종합건설</div>
+      <div class="bar-track">
+        <div class="bar-fill contract" style="width: 87.5%;">7</div>
+        <div class="bar-fill duplicate" style="width: 12.5%;">1</div>
+      </div>
+      <div class="bar-value">총 8</div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-label">동서순환도로</div>
+      <div class="bar-track">
+        <div class="bar-fill contract" style="width: 66.7%;">2</div>
+        <div class="bar-fill duplicate" style="width: 33.3%;">1</div>
+      </div>
+      <div class="bar-value">총 3</div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-label">일성건설</div>
+      <div class="bar-track">
+        <div class="bar-fill contract" style="width: 100%;">1</div>
+      </div>
+      <div class="bar-value">총 1</div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-label">우림라이온3차</div>
+      <div class="bar-track">
+        <div class="bar-fill contract" style="width: 100%;">1</div>
+      </div>
+      <div class="bar-value">총 1</div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-label">경수제철건설</div>
+      <div class="bar-track">
+        <div class="bar-fill contract" style="width: 100%;">1</div>
+      </div>
+      <div class="bar-value">총 1</div>
+    </div>
+
+    <div class="bar-legend">
+      <span><span class="dot blue"></span> 계약 현장</span>
+      <span><span class="dot red"></span> 중복 현장</span>
+    </div>
+  </div>
+
+  <!-- Detail Table -->
+  <div class="table-wrap" style="margin-top: 24px;">
+    <table class="mock-table">
+      <thead>
+        <tr>
+          <th>고객사</th>
+          <th style="text-align:center;">계약 현장</th>
+          <th style="text-align:center;">중복 현장</th>
+          <th style="text-align:center;">총 DB 현장</th>
+          <th style="text-align:center;">중복률</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>보미건설</strong></td>
+          <td style="text-align:center;">12</td>
+          <td style="text-align:center;"><span class="mock-badge badge-delete">~28</span></td>
+          <td style="text-align:center;">~40</td>
+          <td style="text-align:center;"><span class="mock-badge badge-delete">70%</span></td>
+        </tr>
+        <tr>
+          <td><strong>동인종합건설</strong></td>
+          <td style="text-align:center;">7</td>
+          <td style="text-align:center;"><span class="mock-badge badge-yellow">1</span></td>
+          <td style="text-align:center;">8</td>
+          <td style="text-align:center;"><span class="mock-badge badge-yellow">12.5%</span></td>
+        </tr>
+        <tr>
+          <td><strong>동서순환도로</strong></td>
+          <td style="text-align:center;">2</td>
+          <td style="text-align:center;"><span class="mock-badge badge-yellow">1</span></td>
+          <td style="text-align:center;">3</td>
+          <td style="text-align:center;"><span class="mock-badge badge-yellow">33.3%</span></td>
+        </tr>
+        <tr>
+          <td><strong>일성건설</strong></td>
+          <td style="text-align:center;">1</td>
+          <td style="text-align:center;"><span class="mock-badge badge-gray">0</span></td>
+          <td style="text-align:center;">1</td>
+          <td style="text-align:center;"><span class="mock-badge badge-gray">0%</span></td>
+        </tr>
+        <tr>
+          <td><strong>우림라이온3차</strong></td>
+          <td style="text-align:center;">1</td>
+          <td style="text-align:center;"><span class="mock-badge badge-gray">0</span></td>
+          <td style="text-align:center;">1</td>
+          <td style="text-align:center;"><span class="mock-badge badge-gray">0%</span></td>
+        </tr>
+        <tr>
+          <td><strong>경수제철건설</strong></td>
+          <td style="text-align:center;">1</td>
+          <td style="text-align:center;"><span class="mock-badge badge-gray">0</span></td>
+          <td style="text-align:center;">1</td>
+          <td style="text-align:center;"><span class="mock-badge badge-gray">0%</span></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="background:#f8f9fa; font-weight:700;">
+          <td>합계</td>
+          <td style="text-align:center;">24</td>
+          <td style="text-align:center;"><span class="mock-badge badge-delete">~30</span></td>
+          <td style="text-align:center;">~54</td>
+          <td style="text-align:center;">-</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="warning-box">
+    <strong>핵심 수치:</strong> 보미건설 한 곳에서 전체 중복 현장의 약 93%가 발생하고 있습니다. 보미건설 현장 정리가 가장 시급합니다.
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- PART 3: 중복 현장 상세 분석 -->
+<!-- ============================================ -->
+<div id="part3" class="section">
+  <div class="section-header">
+    <div class="section-num">Part 3</div>
+    <div class="section-title">중복 현장 상세 분석</div>
+    <div class="section-desc">각 원본 현장별로 중복 생성된 현장을 표시하고 삭제 대상을 식별합니다. 모든 데이터는 실제 DB 기준입니다.</div>
+  </div>
+
+  <!-- 쿠팡 제천 -->
+  <div class="severity-section">
+    <div class="severity-header">
+      <span class="severity-tag critical">가장 심각</span>
+      <h4>쿠팡 제천 물류센터 — 13건</h4>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">총 13건 중 12건 삭제 대상</div>
+      <div class="table-wrap">
+        <table class="mock-table">
+          <thead>
+            <tr>
+              <th style="width:30px;">#</th>
+              <th>현장명</th>
+              <th>생성 회사</th>
+              <th style="text-align:center;">생성일</th>
+              <th style="text-align:center;">참여자수</th>
+              <th style="text-align:center;">상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="origin">
+              <td>1</td>
+              <td>쿠팡 제천 물류센터</td>
+              <td>(주)보미건설</td>
+              <td style="text-align:center;">2025-11-27</td>
+              <td style="text-align:center;">30명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>쿠팡 제천 물류센터</td>
+              <td>보미건설</td>
+              <td style="text-align:center;">2025-12-04</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>쿠팡 제천FC 물류센터 신축공사</td>
+              <td>(주)한국이엔씨</td>
+              <td style="text-align:center;">2025-12-05</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>쿠팡제천FC</td>
+              <td>주식회사 한국이엔씨</td>
+              <td style="text-align:center;">2025-12-12</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>쿠팡 제천 FC 물류센터 신축공사 중 도장공사</td>
+              <td>(주)보미건설</td>
+              <td style="text-align:center;">2025-12-17</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>쿠팡 제천 FC 물류센터 신축공사</td>
+              <td>성원이앤지</td>
+              <td style="text-align:center;">2025-12-18</td>
+              <td style="text-align:center;">3명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>쿠팡제천물류센터</td>
+              <td>주식회사 대호엔지니어링</td>
+              <td style="text-align:center;">2025-12-18</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td>쿠팡 제천 FC 물류센터 신축공사</td>
+              <td>주식회사 대호엔지니어링</td>
+              <td style="text-align:center;">2025-12-19</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td>제천쿠팡 FC물류센터조성 공사</td>
+              <td>선아아이엔디(주)</td>
+              <td style="text-align:center;">2025-12-20</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td>쿠팡 제천 FC물류센터 신축공사</td>
+              <td>동양윈스텍 주식회사</td>
+              <td style="text-align:center;">2025-12-22</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td>쿠팡 물류 제천센터</td>
+              <td>동양윈스텍</td>
+              <td style="text-align:center;">2025-12-22</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td>쿠팡 물류 제천센터</td>
+              <td>동양윈스텍</td>
+              <td style="text-align:center;">2025-12-22</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td>쿠팡 진천FC 물류창고 신축공사현장</td>
+              <td>주식회사 성원이앤지</td>
+              <td style="text-align:center;">2025-12-16</td>
+              <td style="text-align:center;">1명</td>
+              <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="danger-box">
+      <strong>12건 삭제 대상</strong> — 8개 협력사가 현장명을 제각각 입력하여 동일 현장이 13개로 분산. 원본 1건(30명 참여)만 유지합니다.
+    </div>
+  </div>
+
+  <!-- 평택 아디다스 -->
+  <div class="severity-section">
+    <div class="severity-header">
+      <span class="severity-tag critical">심각</span>
+      <h4>평택 아디다스 물류센터 — 5건</h4>
+    </div>
+    <div class="table-wrap">
+      <table class="mock-table">
+        <thead>
+          <tr>
+            <th style="width:30px;">#</th>
+            <th>현장명</th>
+            <th>생성 회사</th>
+            <th style="text-align:center;">생성일</th>
+            <th style="text-align:center;">참여자수</th>
+            <th style="text-align:center;">상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="origin">
+            <td>1</td>
+            <td>평택 아디다스 물류센터</td>
+            <td>(주)보미건설</td>
+            <td style="text-align:center;">2025-11-27</td>
+            <td style="text-align:center;">12명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>아디다스 물류 창고 부분천거 및 재촉 공사</td>
+            <td>성일시스템</td>
+            <td style="text-align:center;">2025-12-02</td>
+            <td style="text-align:center;">1명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>평택 아디다스 물류창고 부분철거 및 재건축공사</td>
+            <td>주식회사 하림이에스티</td>
+            <td style="text-align:center;">2025-12-11</td>
+            <td style="text-align:center;">1명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>평택아디다스물류센터</td>
+            <td>트라비스엘리베이터</td>
+            <td style="text-align:center;">2025-12-15</td>
+            <td style="text-align:center;">1명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>아디다스물류센타</td>
+            <td>(주)호담엔지니어링</td>
+            <td style="text-align:center;">2025-12-21</td>
+            <td style="text-align:center;">1명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="danger-box">
+      <strong>4건 삭제 대상</strong> — 4개 협력사가 각자 현장을 생성. 원본 1건(12명 참여)만 유지합니다.
+    </div>
+  </div>
+
+  <!-- 유한양행 -->
+  <div class="severity-section">
+    <div class="severity-header">
+      <span class="severity-tag critical">심각</span>
+      <h4>유한양행 Willow House — 5건</h4>
+    </div>
+    <div class="table-wrap">
+      <table class="mock-table">
+        <thead>
+          <tr>
+            <th style="width:30px;">#</th>
+            <th>현장명</th>
+            <th>생성 회사</th>
+            <th style="text-align:center;">생성일</th>
+            <th style="text-align:center;">참여자수</th>
+            <th style="text-align:center;">상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="origin">
+            <td>1</td>
+            <td>유한양행 Willow House 개발사업</td>
+            <td>(주)보미건설</td>
+            <td style="text-align:center;">2025-11-27</td>
+            <td style="text-align:center;">24명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>유한양행 Willow Haus 개발사업</td>
+            <td>성원종합설비 주식회사</td>
+            <td style="text-align:center;">2025-12-10</td>
+            <td style="text-align:center;">1명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>유한양행 윌로하우스 구사옥 리모델링</td>
+            <td>와이지건설 주식회사</td>
+            <td style="text-align:center;">2025-12-10</td>
+            <td style="text-align:center;">1명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>유한양행 리모델링</td>
+            <td>시공비얀</td>
+            <td style="text-align:center;">2025-12-10</td>
+            <td style="text-align:center;">1명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>유한양행본사 리모델링</td>
+            <td>오티스엘리베이터</td>
+            <td style="text-align:center;">2025-12-31</td>
+            <td style="text-align:center;">1명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="danger-box">
+      <strong>4건 삭제 대상</strong> — 4개 협력사가 각자 현장을 생성. 원본 1건(24명 참여)만 유지합니다.
+    </div>
+  </div>
+
+  <!-- 청주대 -->
+  <div class="severity-section">
+    <div class="severity-header">
+      <span class="severity-tag high">보통</span>
+      <h4>청주대학교 리모델링 — 3건</h4>
+    </div>
+    <div class="table-wrap">
+      <table class="mock-table">
+        <thead>
+          <tr>
+            <th style="width:30px;">#</th>
+            <th>현장명</th>
+            <th>생성 회사</th>
+            <th style="text-align:center;">생성일</th>
+            <th style="text-align:center;">참여자수</th>
+            <th style="text-align:center;">상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="origin">
+            <td>1</td>
+            <td>청주대학교 리모델링 공사</td>
+            <td>(주)보미건설</td>
+            <td style="text-align:center;">2025-11-27</td>
+            <td style="text-align:center;">15명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>청주대학교 항공ㆍ국방대학 리모델링 및 증축공사</td>
+            <td>(주)보미건설</td>
+            <td style="text-align:center;">2026-01-20</td>
+            <td style="text-align:center;">1명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>청주대학교 항공.국방대학 리모텔링 및 증축공사</td>
+            <td>디에이치산업안전(주)</td>
+            <td style="text-align:center;">2026-01-28</td>
+            <td style="text-align:center;">1명</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="danger-box">
+      <strong>2건 삭제 대상</strong> — 원본 1건(15명 참여)만 유지합니다.
+    </div>
+  </div>
+
+  <!-- 기타 각 2건 - 상세 테이블 -->
+  <div class="severity-section">
+    <div class="severity-header">
+      <span class="severity-tag medium">기타</span>
+      <h4>각 2건 중복 (원본 + 중복 1건) — 7개 현장</h4>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom: 12px;">
+      <table class="mock-table">
+        <thead>
+          <tr>
+            <th style="width:30px;">#</th>
+            <th>현장 그룹</th>
+            <th>현장명 (실제 DB)</th>
+            <th>생성 회사</th>
+            <th style="text-align:center;">생성일</th>
+            <th style="text-align:center;">상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 경인여대 -->
+          <tr class="origin">
+            <td>1</td>
+            <td rowspan="2" style="vertical-align:middle; font-weight:600;">경인여대 행복기숙사</td>
+            <td>경인여자대학교 행복기숙사</td>
+            <td>보미건설</td>
+            <td style="text-align:center;">—</td>
+            <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>경인여대신축현장</td>
+            <td>보미건설</td>
+            <td style="text-align:center;">2026-01-27</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <!-- 개운산마을 -->
+          <tr class="origin">
+            <td>2</td>
+            <td rowspan="2" style="vertical-align:middle; font-weight:600;">개운산마을 가로주택</td>
+            <td>개운산마을 가로주택 정비사업</td>
+            <td>보미건설</td>
+            <td style="text-align:center;">—</td>
+            <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>종암동개운산마을</td>
+            <td>보미건설</td>
+            <td style="text-align:center;">2026-01-27</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <!-- 인하대 -->
+          <tr class="origin">
+            <td>3</td>
+            <td rowspan="2" style="vertical-align:middle; font-weight:600;">인하대 반도체교육동</td>
+            <td>인하대학교 반도체교육동 신축공사</td>
+            <td>보미건설</td>
+            <td style="text-align:center;">—</td>
+            <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>인하대학교 산학협력단</td>
+            <td>보미건설</td>
+            <td style="text-align:center;">2026-01-05</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <!-- KB국민은행 -->
+          <tr class="origin">
+            <td>4</td>
+            <td rowspan="2" style="vertical-align:middle; font-weight:600;">KB 국민은행 개포</td>
+            <td>KB 국민은행 개포 업무시설 신축공사</td>
+            <td>보미건설</td>
+            <td style="text-align:center;">—</td>
+            <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>KB국민은행 업무시설 기계설비,소방설비</td>
+            <td>주식회사 탐진이엔지</td>
+            <td style="text-align:center;">2025-12-10</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <!-- 이천 켄달 -->
+          <tr class="origin">
+            <td>5</td>
+            <td rowspan="2" style="vertical-align:middle; font-weight:600;">이천 켄달 물류센터</td>
+            <td>이천 켄달 물류센터</td>
+            <td>보미건설</td>
+            <td style="text-align:center;">—</td>
+            <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>이천안평리물류센터신축공사현장</td>
+            <td>지피씨(주)</td>
+            <td style="text-align:center;">2025-12-10</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <!-- 울진 덕구온천 -->
+          <tr class="origin">
+            <td>6</td>
+            <td rowspan="2" style="vertical-align:middle; font-weight:600;">울진 덕구온천 가족호텔</td>
+            <td>울진 덕구온천 가족호텔 신축공사</td>
+            <td>동인종합건설</td>
+            <td style="text-align:center;">—</td>
+            <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>덕구온천 가족호텔 신축공사 (v2 기존)</td>
+            <td>동인종합건설</td>
+            <td style="text-align:center;">2025-08-12</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+          <!-- 봉담송산 -->
+          <tr class="origin">
+            <td>7</td>
+            <td rowspan="2" style="vertical-align:middle; font-weight:600;">봉담송산고속도로</td>
+            <td>봉담송산고속도로 (운영)</td>
+            <td>동서순환도로</td>
+            <td style="text-align:center;">—</td>
+            <td style="text-align:center;"><span class="mock-badge badge-origin">원본 유지</span></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>봉담송산고속도로 (테스트)</td>
+            <td>경기동서순환도로</td>
+            <td style="text-align:center;">2025-12-02</td>
+            <td style="text-align:center;"><span class="mock-badge badge-delete">삭제 대상</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="danger-box">
+      <strong>7건 삭제 대상</strong> — 7개 현장 각각 중복 1건씩. 원본만 유지합니다.
+    </div>
+  </div>
+
+  <!-- 삭제 대상 총 통계 -->
+  <div class="total-summary">
+    <div class="total-card">
+      <h4>삭제 대상 통계</h4>
+      <ul class="summary-list">
+        <li><span>쿠팡 제천 물류센터</span> <span class="count" style="color:#e03131;">12건</span></li>
+        <li><span>평택 아디다스 물류센터</span> <span class="count" style="color:#e03131;">4건</span></li>
+        <li><span>유한양행 Willow House 개발사업</span> <span class="count" style="color:#e03131;">4건</span></li>
+        <li><span>청주대학교 리모델링 공사</span> <span class="count" style="color:#e03131;">2건</span></li>
+        <li><span>경인여자대학교 행복기숙사</span> <span class="count" style="color:#e03131;">1건</span></li>
+        <li><span>개운산마을 가로주택 정비사업</span> <span class="count" style="color:#e03131;">1건</span></li>
+        <li><span>인하대학교 반도체교육동 신축공사</span> <span class="count" style="color:#e03131;">1건</span></li>
+        <li><span>KB 국민은행 개포 업무시설 신축공사</span> <span class="count" style="color:#e03131;">1건</span></li>
+        <li><span>이천 켄달 물류센터</span> <span class="count" style="color:#e03131;">1건</span></li>
+        <li><span>울진 덕구온천 가족호텔 신축공사</span> <span class="count" style="color:#e03131;">1건</span></li>
+        <li><span>봉담송산고속도로 (운영)</span> <span class="count" style="color:#e03131;">1건</span></li>
+      </ul>
+      <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid #e9ecef; display:flex; justify-content:space-between; font-weight: 700;">
+        <span>총 삭제 대상</span>
+        <span style="color:#e03131; font-size: 18px;">29건</span>
+      </div>
+    </div>
+    <div class="total-card">
+      <h4>정리 후 예상</h4>
+      <ul class="summary-list">
+        <li><span>정리 전 전체 SITE</span> <span class="count">89개</span></li>
+        <li><span>삭제 대상</span> <span class="count" style="color:#e03131;">-29개</span></li>
+        <li style="padding-top:8px; margin-top:8px; border-top: 2px solid #e9ecef;"><span><strong>정리 후 SITE</strong></span> <span class="count" style="color:#2b8a3e; font-size:18px;">60개</span></li>
+      </ul>
+      <div class="info-box" style="margin-top:12px;">
+        정리 후 모든 현장은 Corporation 아래 체계적으로 관리됩니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- 회사 이름 변형 섹션 -->
+  <div style="margin-top: 48px;">
+    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">추가 발견: 회사 이름 변형</h3>
+    <p style="font-size: 14px; color: #495057; margin-bottom: 20px;">같은 회사인데 다른 이름으로 등록된 경우입니다. Corporation 통합 시 이름 통일이 필요합니다.</p>
+
+    <div class="warning-box" style="margin-bottom: 32px;">
+      현장 중복 외에도, 같은 회사가 다른 이름으로 등록된 문제가 있습니다. Corporation 통합 시 반드시 이름을 통일해야 합니다.
+    </div>
+
+    <!-- 보미건설 -->
+    <div class="annotation blue" style="margin-bottom: 24px;">
+      <strong>보미건설 — 3가지 이름 변형</strong>
+    </div>
+    <table class="mock-table" style="margin-bottom: 32px;">
+      <thead>
+        <tr>
+          <th>등록된 이름</th>
+          <th>등록 수</th>
+          <th>사용 현장</th>
+          <th>통합 방향</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>(주)보미건설</td>
+          <td>14건</td>
+          <td>12개 계약 현장 (원본) + 2건</td>
+          <td><strong>기준명 유지</strong></td>
+        </tr>
+        <tr>
+          <td>보미건설</td>
+          <td>5건</td>
+          <td>체험계정, 중복현장 4건</td>
+          <td>→ (주)보미건설로 통합</td>
+        </tr>
+        <tr>
+          <td>㈜보미건설</td>
+          <td>1건</td>
+          <td>쿠팡 도장공사 (중복현장)</td>
+          <td>→ (주)보미건설로 통합</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 동서순환도로 -->
+    <div class="annotation blue" style="margin-bottom: 24px;">
+      <strong>동서순환도로 — 3가지 이름 변형</strong>
+    </div>
+    <table class="mock-table" style="margin-bottom: 32px;">
+      <thead>
+        <tr>
+          <th>등록된 이름</th>
+          <th>등록 현장</th>
+          <th>통합 방향</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>경기동서순환도로(주)</td>
+          <td>법인 현장 (신규)</td>
+          <td><strong>기준명 유지</strong></td>
+        </tr>
+        <tr>
+          <td>경기동서순환도로</td>
+          <td>봉담송산고속도로 (기존)</td>
+          <td>→ 경기동서순환도로(주)로 통합</td>
+        </tr>
+        <tr>
+          <td>동서순환고속도로</td>
+          <td>봉담송산고속도로 (기존)</td>
+          <td>→ 경기동서순환도로(주)로 통합</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 보미엔지니어링 -->
+    <div class="warning-box" style="margin-bottom: 24px;">
+      <strong>보미엔지니어링 — 확인 필요</strong>
+    </div>
+    <table class="mock-table" style="margin-bottom: 24px;">
+      <thead>
+        <tr>
+          <th>등록된 이름</th>
+          <th>등록 현장</th>
+          <th>역할</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>(주)보미엔지니어링</td>
+          <td>이천 켄달 물류센터</td>
+          <td>협력사</td>
+          <td>보미건설 계열사 추정</td>
+        </tr>
+        <tr>
+          <td>보미엔지니어링</td>
+          <td>안양 글로벌 샘병원, 경인여대</td>
+          <td>협력사</td>
+          <td>별도 유지 또는 통합 확인 필요</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="info-box">
+      나머지 4개 고객사(일성건설, 우림라이온3차, 경수제철건설, 동인종합건설)는 회사명이 모두 통일되어 있어 추가 조치가 필요 없습니다.
+    </div>
+  </div>
+
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- PART 4: Corporation 통합 구조 (TO-BE) -->
+<!-- ============================================ -->
+<div id="part4" class="section">
+  <div class="section-header">
+    <div class="section-num">Part 4</div>
+    <div class="section-title">Corporation 통합 구조 (TO-BE)</div>
+    <div class="section-desc">6개 Corporation을 생성하고 각 고객사의 현장을 연결하는 목표 구조입니다.</div>
+  </div>
+
+  <!-- 보미건설 -->
+  <div class="corp-card main">
+    <div class="corp-header">
+      <div class="corp-icon blue">B</div>
+      <div>
+        <div class="corp-name">보미건설</div>
+        <div class="corp-meta">대표관리자: 신상연 (010-4712-1366) &middot; 12개 현장</div>
+      </div>
+    </div>
+    <div class="corp-company">Company: (주)보미건설</div>
+    <div class="corp-tree">
+      <div class="tree-item">
+        <span class="site-name">KB 국민은행 개포</span>
+        <span class="site-manager">현장소장: 박정호</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">배곧 시니어타운</span>
+        <span class="site-manager">현장소장: 이종성</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">안양 글로벌 샘병원</span>
+        <span class="site-manager">현장소장: 김영균</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">쿠팡 제천 물류센터</span>
+        <span class="site-manager">현장소장: 홍영상</span>
+        <span class="mock-badge badge-delete" style="margin-left:6px; font-size:9px;">12건 중복 삭제</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">유한양행 Willow House</span>
+        <span class="site-manager">현장소장: 윤창현</span>
+        <span class="mock-badge badge-delete" style="margin-left:6px; font-size:9px;">4건 중복 삭제</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">이천 켄달 물류센터</span>
+        <span class="site-manager">현장소장: 황의석</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">해운대 우동 시니어</span>
+        <span class="site-manager">현장소장: 김주동</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">경인여자대학교 행복기숙사</span>
+        <span class="site-manager">현장소장: 채병민</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">개운산마을</span>
+        <span class="site-manager">현장소장: 이영준</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">평택 아디다스 물류센터</span>
+        <span class="site-manager">현장소장: 박광수</span>
+        <span class="mock-badge badge-delete" style="margin-left:6px; font-size:9px;">4건 중복 삭제</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">청주대학교 리모델링</span>
+        <span class="site-manager">현장소장: 주계근</span>
+        <span class="mock-badge badge-delete" style="margin-left:6px; font-size:9px;">2건 중복 삭제</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">인하대학교 반도체교육동</span>
+        <span class="site-manager">현장소장: 박태훈</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 일성건설 -->
+  <div class="corp-card">
+    <div class="corp-header">
+      <div class="corp-icon green">I</div>
+      <div>
+        <div class="corp-name">일성건설</div>
+        <div class="corp-meta">대표관리자: 한종호 (010-4932-3369) &middot; 1개 현장</div>
+      </div>
+    </div>
+    <div class="corp-tree">
+      <div class="tree-item">
+        <span class="site-name">안양천</span>
+        <span class="site-manager">현장소장: 윤희상</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 우림라이온3차 -->
+  <div class="corp-card">
+    <div class="corp-header">
+      <div class="corp-icon purple">W</div>
+      <div>
+        <div class="corp-name">우림라이온3차</div>
+        <div class="corp-meta">대표관리자: 송상욱 (010-4765-7550) &middot; 1개 현장</div>
+      </div>
+    </div>
+    <div class="corp-tree">
+      <div class="tree-item">
+        <span class="site-name">우림라이온스밸리3차</span>
+        <span class="site-manager">현장소장: 송상욱</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 경수제철건설 -->
+  <div class="corp-card">
+    <div class="corp-header">
+      <div class="corp-icon orange">K</div>
+      <div>
+        <div class="corp-name">경수제철건설</div>
+        <div class="corp-meta">대표관리자: 한진 (010-3015-9845) &middot; 1개 현장</div>
+      </div>
+    </div>
+    <div class="corp-tree">
+      <div class="tree-item">
+        <span class="site-name">파주 스튜디오시티</span>
+        <span class="site-manager">현장소장: 서동춘</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 동인종합건설 -->
+  <div class="corp-card">
+    <div class="corp-header">
+      <div class="corp-icon teal">D</div>
+      <div>
+        <div class="corp-name">동인종합건설</div>
+        <div class="corp-meta">대표관리자: 한진 (010-3015-9845) &middot; 7개 현장</div>
+      </div>
+    </div>
+    <div class="corp-tree">
+      <div class="tree-item">
+        <span class="site-name">미코세라믹스</span>
+        <span class="site-manager">현장소장: 유승영</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">울진 덕구온천</span>
+        <span class="site-manager">현장소장: 이영종</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">오뚜기 삼남</span>
+        <span class="site-manager">현장소장: 허용진</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">신림동</span>
+        <span class="site-manager">현장소장: 정성우</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">대효제약</span>
+        <span class="site-manager">현장소장: 정성우</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">평택 브레인시티</span>
+        <span class="site-manager">현장소장: 정성우</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">덕구온천 v2</span>
+        <span class="site-manager">통합 예정</span>
+        <span class="mock-badge badge-yellow" style="margin-left:6px; font-size:9px;">울진 덕구온천과 통합</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 동서순환도로 -->
+  <div class="corp-card">
+    <div class="corp-header">
+      <div class="corp-icon pink">S</div>
+      <div>
+        <div class="corp-name">동서순환도로</div>
+        <div class="corp-meta">대표관리자: 정종준 (010-9657-0038) &middot; 2개 현장</div>
+      </div>
+    </div>
+    <div class="corp-tree">
+      <div class="tree-item">
+        <span class="site-name">동서순환도로 법인</span>
+        <span class="site-manager">현장소장: 정종준</span>
+      </div>
+      <div class="tree-item">
+        <span class="site-name">봉담송산</span>
+        <span class="site-manager">현장소장: 이성덕</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 특이사항 -->
+  <div class="info-box" style="margin-top: 24px;">
+    <strong>특이사항:</strong> 한진(010-3015-9845)은 경수제철건설과 동인종합건설 모두의 대표관리자입니다. DB 확인 결과 동인종합건설 소속이며, 경수제철건설은 동인종합건설의 협력사 관계입니다.
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<!-- PART 5: 대표관리자 최종 정리 -->
+<!-- ============================================ -->
+<div id="part5" class="section">
+  <div class="section-header">
+    <div class="section-num">Part 5</div>
+    <div class="section-title">대표관리자 최종 정리</div>
+    <div class="section-desc">6개 Corporation의 대표관리자 선정 결과와 근거를 정리합니다.</div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="decision-table">
+      <thead>
+        <tr>
+          <th style="width:30px;">#</th>
+          <th style="text-align:left;">고객사 (Corporation)</th>
+          <th>대표관리자</th>
+          <th>전화번호</th>
+          <th>선정 근거</th>
+          <th>현장 수</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align:center;">1</td>
+          <td style="font-weight:700;">보미건설</td>
+          <td>신상연</td>
+          <td>010-4712-1366</td>
+          <td><span class="mock-badge badge-blue">본사 지정</span></td>
+          <td><strong>12</strong></td>
+        </tr>
+        <tr>
+          <td style="text-align:center;">2</td>
+          <td style="font-weight:700;">일성건설</td>
+          <td>한종호</td>
+          <td>010-4932-3369</td>
+          <td><span class="mock-badge badge-purple">현장 안전관리자</span></td>
+          <td><strong>1</strong></td>
+        </tr>
+        <tr>
+          <td style="text-align:center;">3</td>
+          <td style="font-weight:700;">우림라이온3차</td>
+          <td>송상욱</td>
+          <td>010-4765-7550</td>
+          <td><span class="mock-badge badge-yellow">현장 소장</span></td>
+          <td><strong>1</strong></td>
+        </tr>
+        <tr>
+          <td style="text-align:center;">4</td>
+          <td style="font-weight:700;">경수제철건설</td>
+          <td>한진</td>
+          <td>010-3015-9845</td>
+          <td><span class="mock-badge badge-blue">본사 지정</span></td>
+          <td><strong>1</strong></td>
+        </tr>
+        <tr>
+          <td style="text-align:center;">5</td>
+          <td style="font-weight:700;">동인종합건설</td>
+          <td>한진</td>
+          <td>010-3015-9845</td>
+          <td><span class="mock-badge badge-blue">본사 지정</span></td>
+          <td><strong>7</strong></td>
+        </tr>
+        <tr>
+          <td style="text-align:center;">6</td>
+          <td style="font-weight:700;">동서순환도로</td>
+          <td>정종준</td>
+          <td>010-9657-0038</td>
+          <td><span class="mock-badge badge-yellow">현장 소장</span></td>
+          <td><strong>2</strong></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="background:#f8f9fa;">
+          <td colspan="5" style="text-align:right; font-weight:700;">전체 관리 현장 합계</td>
+          <td style="font-weight:800; font-size:16px; color:#228be6;">24</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="annotation blue" style="margin-top: 24px;">
+    <div class="annotation-label">선정 근거 범례</div>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; padding-top: 4px;">
+      <div style="font-size: 12px; display:flex; align-items:center; gap:6px;">
+        <span class="mock-badge badge-blue">본사 지정</span>
+        <span style="color:#495057;">고객사 본사에서 직접 지정한 대표관리자</span>
+      </div>
+      <div style="font-size: 12px; display:flex; align-items:center; gap:6px;">
+        <span class="mock-badge badge-purple">현장 안전관리자</span>
+        <span style="color:#495057;">현장의 안전관리자가 대표관리자를 겸임</span>
+      </div>
+      <div style="font-size: 12px; display:flex; align-items:center; gap:6px;">
+        <span class="mock-badge badge-yellow">현장 소장</span>
+        <span style="color:#495057;">현장 소장이 대표관리자를 겸임</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="warning-box" style="margin-top: 16px;">
+    <strong>주의:</strong> 한진(010-3015-9845)은 경수제철건설(#4)과 동인종합건설(#5) 두 곳의 대표관리자를 겸임합니다. 시스템에서 한 계정으로 두 Corporation을 관리할 수 있도록 설정이 필요합니다.
+  </div>
+
+  <!-- 실행 요약 -->
+  <div style="margin-top: 32px; background: #212529; border-radius: 12px; padding: 28px; color: white;">
+    <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #fff;">실행 요약</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+      <div style="background: rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; text-align: center;">
+        <div style="font-size: 28px; font-weight: 800; color: #228be6;">6</div>
+        <div style="font-size: 11px; color: #adb5bd; margin-top: 4px;">Corporation 생성</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; text-align: center;">
+        <div style="font-size: 28px; font-weight: 800; color: #fa5252;">~29</div>
+        <div style="font-size: 11px; color: #adb5bd; margin-top: 4px;">중복 현장 삭제</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; text-align: center;">
+        <div style="font-size: 28px; font-weight: 800; color: #40c057;">24</div>
+        <div style="font-size: 11px; color: #adb5bd; margin-top: 4px;">원본 현장 유지</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center; padding: 32px 24px; font-size: 11px; color: #adb5bd;">
+  SafeU Works &middot; 현장·회사 통합 정리 계획서 &middot; 2026.02.11
+</div>
+
+<script>
+(function() {
+  const nav = document.getElementById('topnav');
+  const links = nav.querySelectorAll('a');
+  const sections = [];
+
+  links.forEach(function(link) {
+    const id = link.getAttribute('href').replace('#', '');
+    const el = document.getElementById(id);
+    if (el) sections.push({ id: id, el: el, link: link });
+  });
+
+  function onScroll() {
+    const scrollY = window.scrollY + 60;
+    let current = null;
+    for (let i = sections.length - 1; i >= 0; i--) {
+      if (scrollY >= sections[i].el.offsetTop) {
+        current = sections[i];
+        break;
+      }
+    }
+    links.forEach(function(l) { l.classList.remove('active'); });
+    if (current) current.link.classList.add('active');
+  }
+
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+
+  links.forEach(function(link) {
+    link.addEventListener('click', function(event) {
+      event.preventDefault();
+      const id = this.getAttribute('href').replace('#', '');
+      const target = document.getElementById(id);
+      if (target) {
+        window.scrollTo({ top: target.offsetTop - 50, behavior: 'smooth' });
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

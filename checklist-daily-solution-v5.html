@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<title>체크리스트 반복 점검 V5 — 운영 데이터 기반 설계</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,'Noto Sans KR',sans-serif;color:#212529;line-height:1.65;background:#fff;font-size:14px}
+.topnav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-bottom:1px solid #e9ecef;padding:10px 16px;display:flex;gap:6px;overflow-x:auto}
+.topnav a{font-size:12px;padding:5px 12px;border-radius:20px;text-decoration:none;color:#495057;background:#f1f3f5;white-space:nowrap;transition:.2s}
+.topnav a:hover,.topnav a.active{background:#228be6;color:#fff}
+.hero{background:#212529;color:#fff;padding:64px 32px;text-align:center}
+.hero h1{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:12px}
+.hero p{font-size:15px;color:#adb5bd;max-width:680px;margin:0 auto;line-height:1.7}
+.hero .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin:16px 4px 0}
+.section{max-width:960px;margin:0 auto;padding:56px 24px}
+.section-header{margin-bottom:32px}
+.section-num{font-size:12px;font-weight:700;color:#228be6;letter-spacing:1px;margin-bottom:6px}
+.section-title{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
+.section-desc{font-size:14px;color:#868e96;line-height:1.6}
+.divider{border:none;border-top:1px solid #e9ecef;margin:0}
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.problem-card{background:#fff;border-radius:12px;padding:24px;border:1px solid #e9ecef}
+.problem-card h4{font-size:15px;font-weight:700;margin-bottom:8px}
+.problem-card .num{font-size:32px;font-weight:800;margin-bottom:4px}
+.problem-card .num.red{color:#fa5252}
+.problem-card .num.orange{color:#e67700}
+.problem-card .num.blue{color:#228be6}
+.problem-card p{font-size:13px;color:#868e96}
+.data-highlight{background:#fff5f5;border:1px solid #ffc9c9;border-radius:8px;padding:16px;margin:16px 0}
+.data-highlight.blue{background:#e7f5ff;border-color:#a5d8ff}
+.data-highlight.green{background:#ebfbee;border-color:#b2f2bb}
+.data-highlight.yellow{background:#fff9db;border-color:#ffd43b}
+.info-box{background:#e7f5ff;border:1px solid #a5d8ff;border-radius:8px;padding:14px 16px;font-size:13px;color:#1864ab;margin:16px 0}
+.warning-box{background:#fff9db;border:1px solid #ffd43b;border-radius:8px;padding:14px 16px;font-size:13px;color:#e67700;margin:16px 0}
+.app-frame{background:#f1f3f5;border-radius:12px;overflow:hidden;border:1px solid #dee2e6}
+.app-topbar{background:#fff;padding:10px 16px;border-bottom:1px solid #dee2e6;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.app-content{background:#f8f9fa;padding:20px}
+.mock-tabs{display:flex;gap:0;border-bottom:1px solid #dee2e6;background:#fff;padding:0 16px}
+.mock-tab{padding:10px 16px;font-size:13px;color:#868e96;cursor:pointer;border-bottom:2px solid transparent;position:relative}
+.mock-tab.active{color:#228be6;border-bottom-color:#228be6;font-weight:600}
+.mock-tab.new::after{content:'NEW';position:absolute;top:2px;right:-4px;font-size:9px;background:#fa5252;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700}
+.mock-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer}
+.mock-btn.primary{background:#228be6;color:#fff}
+.mock-btn.outline{background:#fff;color:#495057;border:1px solid #dee2e6}
+.mock-btn.success{background:#ebfbee;color:#2b8a3e}
+.mock-btn.danger{background:#fff5f5;color:#fa5252}
+.mock-checkbox{display:inline-flex;align-items:center;gap:6px;font-size:12px}
+.mock-checkbox .box{width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+.mock-checkbox .box.checked{background:#228be6;color:#fff}
+.mock-checkbox .box.unchecked{background:#fff;border:1.5px solid #dee2e6}
+.mock-checkbox .box.na{background:#f1f3f5;color:#868e96;font-size:9px}
+.mock-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.toggle{width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;transition:.2s}
+.toggle.on{background:#228be6}
+.toggle.off{background:#ced4da}
+.toggle .knob{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on .knob{left:22px}
+.toggle.off .knob{left:2px}
+.annotation{border:2px dashed #fa5252;border-radius:8px;padding:12px;position:relative;margin:12px 0}
+.annotation-label{position:absolute;top:-10px;left:12px;background:#fa5252;color:#fff;font-size:10px;font-weight:700;padding:1px 8px;border-radius:3px}
+.annotation.blue{border-color:#228be6}
+.annotation.blue .annotation-label{background:#228be6}
+.annotation.green{border-color:#40c057}
+.annotation.green .annotation-label{background:#40c057}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0}
+.compare-card{border-radius:12px;padding:20px;border:2px solid}
+.compare-card.before{border-color:#ffc9c9;background:#fff5f5}
+.compare-card.after{border-color:#b2f2bb;background:#ebfbee}
+.compare-card h4{font-size:14px;font-weight:700;margin-bottom:12px}
+.settings-panel{background:#fff;border-radius:10px;padding:16px;border:1px solid #e9ecef}
+.settings-row{display:flex;align-items:center;gap:16px;padding:10px 0;border-bottom:1px solid #f1f3f5}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:13px;font-weight:600;min-width:140px}
+.settings-value{font-size:13px;color:#495057;flex:1}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
+.cal-header{text-align:center;font-size:11px;font-weight:600;color:#868e96;padding:4px}
+.cal-day{text-align:center;border-radius:8px;padding:6px 4px;font-size:12px;cursor:pointer;transition:.15s}
+.cal-day:hover{transform:scale(1.05)}
+.cal-day .day-num{font-weight:600;font-size:13px}
+.cal-day .day-pct{font-size:10px;margin-top:2px}
+.cal-day.done{background:#ebfbee;color:#2b8a3e}
+.cal-day.partial{background:#fff9db;color:#e67700}
+.cal-day.missed{background:#fff5f5;color:#fa5252}
+.cal-day.future{background:#f8f9fa;color:#ced4da}
+.cal-day.today{border:2px solid #228be6;background:#e7f5ff;color:#228be6}
+.step-flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}
+.step-flow .step-box{background:#fff;padding:8px 14px;border-radius:6px;font-size:12px;border:1px solid #e9ecef}
+.step-flow .step-arrow{color:#ced4da;font-size:16px}
+.accordion{border:1px solid #e9ecef;border-radius:10px;overflow:hidden;margin:12px 0}
+.accordion-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;cursor:pointer;border-bottom:1px solid #e9ecef}
+.accordion-header.open{background:#f8f9fa}
+.accordion-title{font-size:13px;font-weight:600}
+.accordion-progress{display:flex;align-items:center;gap:8px}
+.accordion-bar{width:80px;height:6px;border-radius:3px;background:#e9ecef;overflow:hidden}
+.accordion-bar-fill{height:100%;border-radius:3px;background:#228be6}
+.accordion-body{padding:12px 16px;background:#fff}
+.accordion-body.collapsed{display:none}
+.accordion-header .arrow{transition:transform .2s;display:inline-block}
+.accordion-header.open .arrow{transform:rotate(90deg)}
+.cl-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px;border-bottom:1px solid #f8f9fa}
+.cl-item:last-child{border-bottom:none}
+.cl-company{font-size:10px;padding:1px 6px;border-radius:3px;background:#f1f3f5;color:#495057}
+.progress-bar-container{background:#e9ecef;border-radius:6px;height:8px;overflow:hidden;margin:8px 0}
+.progress-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#228be6,#40c057);transition:width .3s}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.stat-card{background:#fff;border-radius:10px;padding:14px;text-align:center;border:1px solid #e9ecef}
+.stat-card .stat-num{font-size:24px;font-weight:800}
+.stat-card .stat-label{font-size:11px;color:#868e96;margin-top:2px}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:80px;margin-top:12px}
+.bar-chart .bar{flex:1;border-radius:3px 3px 0 0;min-height:4px;transition:.3s}
+.bar-chart .bar.green{background:#40c057}
+.bar-chart .bar.yellow{background:#fcc419}
+.bar-chart .bar.red{background:#fa5252}
+.bar-chart .bar.gray{background:#e9ecef}
+.decision-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.decision-table th{background:#212529;color:#fff;padding:10px 14px;text-align:center;font-weight:600}
+.decision-table td{padding:10px 14px;border-bottom:1px solid #e9ecef}
+.decision-table tr:nth-child(even){background:#f8f9fa}
+.new-feature{background:linear-gradient(135deg,#fff9db 0%,#fff3bf 100%);border:1px solid #ffd43b;border-radius:8px;padding:16px;margin:12px 0}
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+.site-chart{display:flex;align-items:flex-end;gap:6px;margin:16px 0;padding:16px;background:#fff;border-radius:10px;border:1px solid #e9ecef}
+.site-bar{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.site-bar .bar{width:100%;border-radius:4px 4px 0 0;transition:.3s}
+.site-bar .label{font-size:9px;color:#868e96;text-align:center;word-break:keep-all}
+.site-bar .value{font-size:11px;font-weight:700}
+@media(max-width:768px){
+.problem-grid,.compare-grid{grid-template-columns:1fr}
+.stat-grid{grid-template-columns:repeat(2,1fr)}
+.grid-3col{grid-template-columns:1fr !important}
+.hero h1{font-size:26px}
+.section{padding:32px 16px}
+.topnav{padding:8px 12px;gap:4px}
+.topnav a{font-size:11px;padding:4px 10px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+<a href="#problems">문제 분석</a>
+<a href="#data">데이터 근거</a>
+<a href="#overview">해결 전략</a>
+<a href="#step1">STEP 1: 설정</a>
+<a href="#step2">STEP 2: 자동 반영</a>
+<a href="#step3">STEP 3: 이력</a>
+<a href="#domains">적용 범위</a>
+<a href="#access">접근성</a>
+<a href="#tech">기술 가이드</a>
+<a href="#kpi">성공 지표</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+<h1>체크리스트 반복 점검 V5</h1>
+<p>운영 DB 데이터 분석 + 실제 화면 탐색 + 글로벌 베스트 프랙티스를 기반으로 설계한 체크리스트 반복 점검 솔루션</p>
+<div>
+<span class="badge" style="background:#fa5252;color:#fff">384개 → 공종별 아코디언 (섹션당 5~8개)</span>
+<span class="badge" style="background:#228be6;color:#fff">163개 → 매일 점검 ~127개 (아코디언)</span>
+<span class="badge" style="background:#40c057;color:#fff">30분+ → 5~10분</span>
+</div>
+<p style="font-size:12px;color:#495057;margin-top:16px">대상 현장: 경기동서순환도로(주)_법인 | 사이트 ID: 69897cc64cad5e23b4c5b03d</p>
+</div>
+
+<hr class="divider">
+
+<!-- ========== PART 1: PROBLEMS ========== -->
+<div id="problems" class="section fade-in">
+<div class="section-header">
+<div class="section-num">PART 1</div>
+<div class="section-title">문제 분석 — 운영 데이터가 말하는 현실</div>
+<div class="section-desc">경기동서순환도로 현장의 실제 데이터를 기반으로 5가지 핵심 문제를 식별했습니다.</div>
+</div>
+
+<div class="problem-grid">
+<!-- Problem 1 -->
+<div class="problem-card">
+<div class="num red">4단계</div>
+<h4>문제 1: 체크리스트 접근이 너무 어렵다</h4>
+<p>사이드바 → 회의록 메뉴 → 목록에서 찾기 → "체크리스트 보기" 클릭. 매일 쓰는 기능인데 4단계를 거쳐야 접근 가능.</p>
+<div style="margin-top:12px;display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+<div style="background:#fff5f5;padding:4px 8px;border-radius:4px;font-size:10px;border:1px solid #ffc9c9"><strong>CLICK 1</strong> 사이드바</div>
+<span style="color:#ced4da">→</span>
+<div style="background:#fff5f5;padding:4px 8px;border-radius:4px;font-size:10px;border:1px solid #ffc9c9"><strong>CLICK 2</strong> 회의록</div>
+<span style="color:#ced4da">→</span>
+<div style="background:#fff5f5;padding:4px 8px;border-radius:4px;font-size:10px;border:1px solid #ffc9c9"><strong>스크롤</strong> 목록 탐색</div>
+<span style="color:#ced4da">→</span>
+<div style="background:#fff5f5;padding:4px 8px;border-radius:4px;font-size:10px;border:1px solid #ffc9c9"><strong>CLICK 3~4</strong> 보기</div>
+</div>
+</div>
+
+<!-- Problem 2 -->
+<div class="problem-card">
+<div class="num red">384개</div>
+<h4>문제 2: 체크리스트 항목이 사용 불가 수준</h4>
+<p>20개 위험성평가에서 생성된 384개 항목이 3개 업체에 걸쳐 하나의 체크리스트에 담김. TBM에서 163개가 한 화면에 표시.</p>
+<div style="margin-top:8px;font-size:11px;color:#495057">
+<div>위험성평가: <strong>20개</strong> (교량보수, 아스팔트포장 등)</div>
+<div>업체: <strong>3개</strong> (경기동서순환도로, 유플리트, 봉담송산고속도로)</div>
+<div>TBM 연결 항목: <strong style="color:#fa5252">163개</strong></div>
+</div>
+</div>
+
+<!-- Problem 3 -->
+<div class="problem-card">
+<div class="num orange">163개</div>
+<h4>문제 3: 자동선택 필터가 여전히 무의미하다</h4>
+<p>현재 코드에서 keyIssue(중점관리) 항목만 자동선택. 실제 운영 데이터에서 384개 중 164개(42%)가 keyIssue로 설정됨. 필터 후에도 163개가 남아 여전히 사용 불가 수준.</p>
+<div class="data-highlight" style="margin-top:8px;padding:8px 12px;font-size:11px">
+<code>filter: { keyIssues: true, excludeCompleted: true }</code><br>
+→ 결과: <strong style="color:#fa5252">163개 (42%가 keyIssue)</strong><br>
+→ 필터는 작동하지만 여전히 사용 불가 수준
+</div>
+</div>
+
+<!-- Problem 4 -->
+<div class="problem-card">
+<div class="num orange">매일 반복</div>
+<h4>문제 4: 매일 같은 점검을 새로 해야 한다</h4>
+<p>월요일 TBM → 화요일 TBM → 수요일 TBM... 매일 같은 체크리스트를 새로 선택해야 함. 복사/반복 기능이 없음.</p>
+<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+<div style="background:#fff5f5;padding:6px 10px;border-radius:6px;font-size:11px;border:1px solid #ffc9c9">1/6(월) TBM<br><span style="color:#fa5252">처음부터!</span></div>
+<span style="color:#ced4da;align-self:center">→</span>
+<div style="background:#fff5f5;padding:6px 10px;border-radius:6px;font-size:11px;border:1px solid #ffc9c9">1/7(화) TBM<br><span style="color:#fa5252">처음부터!</span></div>
+<span style="color:#ced4da;align-self:center">→</span>
+<div style="background:#fff5f5;padding:6px 10px;border-radius:6px;font-size:11px;border:1px solid #ffc9c9">1/8(수) TBM<br><span style="color:#fa5252">처음부터!</span></div>
+</div>
+</div>
+</div>
+
+<!-- Problem 5 (NEW) -->
+<div class="new-feature fade-in">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+<span class="mock-badge" style="background:#fa5252;color:#fff">NEW</span>
+<h4 style="font-size:15px;font-weight:700">문제 5: 매일 반복 점검 항목 구분이 불가능하다</h4>
+</div>
+<p style="font-size:13px;color:#495057;margin-bottom:12px">19개 공종의 모든 항목이 하나의 리스트에 섞임. 매일 반복 점검해야 하는 항목(점검, 확인, 청소)과 비정기 항목(계절성, 작업 시만)이 구분 없이 표시됨.</p>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+<span class="mock-badge" style="background:#d3f9d8;color:#2b8a3e">매일 점검</span>
+<span class="mock-badge" style="background:#d3f9d8;color:#2b8a3e">안전 확인</span>
+<span class="mock-badge" style="background:#d3f9d8;color:#2b8a3e">청소</span>
+<span class="mock-badge" style="background:#d3f9d8;color:#2b8a3e">상태 확인</span>
+<span style="color:#ced4da;align-self:center;font-size:12px">vs</span>
+<span class="mock-badge" style="background:#fff5f5;color:#fa5252">계절성</span>
+<span class="mock-badge" style="background:#fff5f5;color:#fa5252">작업 시만</span>
+<span class="mock-badge" style="background:#fff5f5;color:#fa5252">비정기</span>
+</div>
+<p style="font-size:11px;color:#868e96">→ 매일 반복 점검 항목과 비정기 항목이 구분 없이 하나의 리스트에 혼재</p>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ========== DATA EVIDENCE ========== -->
+<div id="data" class="section fade-in">
+<div class="section-header">
+<div class="section-num">데이터 근거</div>
+<div class="section-title">전체 현장 비교 — 시스템적 문제</div>
+<div class="section-desc">100개 이상 체크리스트를 가진 현장들. 대규모 현장일수록 체크리스트가 사용 불가 수준으로 증가합니다.</div>
+</div>
+
+<div class="site-chart" style="height:200px;align-items:flex-end;padding-bottom:40px">
+<div class="site-bar"><div class="value" style="color:#fa5252">384</div><div class="bar" style="height:192px;background:linear-gradient(180deg,#fa5252,#ff8787)"></div><div class="label">경기동서<br>순환도로</div></div>
+<div class="site-bar"><div class="value">347</div><div class="bar" style="height:174px;background:linear-gradient(180deg,#e67700,#ffa94d)"></div><div class="label">쿠팡<br>제천</div></div>
+<div class="site-bar"><div class="value">324</div><div class="bar" style="height:162px;background:linear-gradient(180deg,#e67700,#ffa94d)"></div><div class="label">안양글로벌<br>샘병원</div></div>
+<div class="site-bar"><div class="value">279</div><div class="bar" style="height:140px;background:#fcc419"></div><div class="label">쿠팡<br>제천(2)</div></div>
+<div class="site-bar"><div class="value">264</div><div class="bar" style="height:132px;background:#fcc419"></div><div class="label">쿠팡<br>제천(3)</div></div>
+<div class="site-bar"><div class="value">250</div><div class="bar" style="height:125px;background:#fcc419"></div><div class="label">쿠팡<br>제천(4)</div></div>
+<div class="site-bar"><div class="value">197</div><div class="bar" style="height:99px;background:#a9e34b"></div><div class="label">오뚜기<br>삼남</div></div>
+<div class="site-bar"><div class="value">142</div><div class="bar" style="height:71px;background:#69db7c"></div><div class="label">평택브레인<br>시티</div></div>
+<div class="site-bar"><div class="value">104</div><div class="bar" style="height:52px;background:#69db7c"></div><div class="label">KB국민<br>개포</div></div>
+</div>
+
+<div class="warning-box">
+<strong>시스템적 문제:</strong> 이것은 하나의 현장만의 문제가 아닙니다. 8개 이상의 현장에서 100개 이상의 체크리스트 항목이 생성되며, 현장 규모가 클수록 문제가 심화됩니다.
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ========== PART 2: SOLUTION OVERVIEW ========== -->
+<div id="overview" class="section fade-in">
+<div class="section-header">
+<div class="section-num">PART 2</div>
+<div class="section-title">해결 전략 — 설정 → 자동 반영 → 이력 확인</div>
+<div class="section-desc">3단계 전략으로 체크리스트를 실제로 사용할 수 있게 만듭니다.</div>
+</div>
+
+<!-- Before vs After -->
+<div class="compare-grid">
+<div class="compare-card before">
+<h4 style="color:#e03131">현재 (Before)</h4>
+<table style="width:100%;font-size:12px;margin-top:8px">
+<tr><td>체크리스트 항목</td><td style="text-align:right"><strong>384개</strong></td></tr>
+<tr><td>TBM 표시 항목</td><td style="text-align:right"><strong>163개</strong></td></tr>
+<tr><td>자동선택 항목 (keyIssue)</td><td style="text-align:right"><strong style="color:#fa5252">163개 (여전히 과다)</strong></td></tr>
+<tr><td>업체 필터</td><td style="text-align:right"><strong style="color:#fa5252">없음</strong></td></tr>
+<tr><td>매일 점검 구분</td><td style="text-align:right"><strong style="color:#fa5252">없음</strong></td></tr>
+<tr><td>TBM 작성 시간</td><td style="text-align:right"><strong>30분+</strong></td></tr>
+<tr><td>점검 이력 확인</td><td style="text-align:right"><strong style="color:#fa5252">불가</strong></td></tr>
+</table>
+</div>
+<div class="compare-card after">
+<h4 style="color:#2b8a3e">개선 후 (After)</h4>
+<table style="width:100%;font-size:12px;margin-top:8px">
+<tr><td>표시 항목 (필터 후)</td><td style="text-align:right"><strong style="color:#2b8a3e">공종별 아코디언 (섹션당 5~8개)</strong></td></tr>
+<tr><td>TBM 표시 항목</td><td style="text-align:right"><strong style="color:#2b8a3e">매일 점검 ~127개 (아코디언)</strong></td></tr>
+<tr><td>자동선택</td><td style="text-align:right"><strong style="color:#2b8a3e">일정 기반 자동</strong></td></tr>
+<tr><td>업체 필터</td><td style="text-align:right"><strong style="color:#2b8a3e">내 업체만</strong></td></tr>
+<tr><td>매일 점검 구분</td><td style="text-align:right"><strong style="color:#2b8a3e">항목별 매일 점검 마킹</strong></td></tr>
+<tr><td>TBM 작성 시간</td><td style="text-align:right"><strong style="color:#2b8a3e">5~10분</strong></td></tr>
+<tr><td>점검 이력 확인</td><td style="text-align:right"><strong style="color:#2b8a3e">달력 뷰</strong></td></tr>
+</table>
+</div>
+</div>
+
+<!-- 3 Steps Overview -->
+<div class="grid-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px">
+<div style="background:#fff;border-radius:12px;padding:20px;border:2px solid #228be6;text-align:center">
+<div style="width:40px;height:40px;border-radius:50%;background:#228be6;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin-bottom:8px">1</div>
+<h4 style="font-size:14px;margin-bottom:4px">점검 일정 설정 + 매일 점검 마킹</h4>
+<p style="font-size:12px;color:#868e96">한 번 설정, AI 추천.<br>매일 점검 항목 자동 분류</p>
+</div>
+<div style="background:#fff;border-radius:12px;padding:20px;border:2px solid #40c057;text-align:center">
+<div style="width:40px;height:40px;border-radius:50%;background:#40c057;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin-bottom:8px">2</div>
+<h4 style="font-size:14px;margin-bottom:4px">TBM/일일점검 자동 반영</h4>
+<p style="font-size:12px;color:#868e96">매일 점검 항목만 공종별 아코디언.<br>내 업체 자동 필터</p>
+</div>
+<div style="background:#fff;border-radius:12px;padding:20px;border:2px solid #7048e8;text-align:center">
+<div style="width:40px;height:40px;border-radius:50%;background:#7048e8;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin-bottom:8px">3</div>
+<h4 style="font-size:14px;margin-bottom:4px">진행 이력 추적</h4>
+<p style="font-size:12px;color:#868e96">달력 뷰로 일자별 확인.<br>완료율, 통계, 미조치 추적</p>
+</div>
+</div>
+
+<!-- Best Practices -->
+<div class="info-box" style="margin-top:24px">
+<strong>베스트 프랙티스 근거:</strong><br>
+<strong>SafetyCulture</strong> — Logic Fields로 조건부 항목 표시 (관련 항목만 동적 노출)<br>
+<strong>Procore</strong> — 섹션 기반 체크리스트 분할 + Inspection Schedules (반복 점검)<br>
+<strong>Fieldwire</strong> — 완료/미완료/해당없음 3-State 체크 시스템
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ========== STEP 1: SETTINGS ========== -->
+<div id="step1" class="section fade-in">
+<div class="section-header">
+<div class="section-num">STEP 1</div>
+<div class="section-title">점검 일정 설정</div>
+<div class="section-desc">체크리스트 상세 페이지에 "점검 일정" 탭을 추가합니다. 한 번 설정하면 기간 동안 자동으로 적용됩니다.</div>
+</div>
+
+<!-- App Frame Mockup -->
+<div class="app-frame">
+<div class="app-topbar">
+<span style="color:#228be6">←</span>
+<span>체크리스트 상세</span>
+<span style="color:#868e96;font-weight:400;font-size:12px">| 2026년 1월 정기 위험성평가</span>
+</div>
+<div class="mock-tabs">
+<div class="mock-tab">체크리스트</div>
+<div class="mock-tab active new">점검 일정</div>
+</div>
+<div class="app-content">
+<div class="settings-panel">
+<!-- Toggle -->
+<div class="settings-row">
+<div class="settings-label">반복 점검</div>
+<div class="settings-value" style="display:flex;align-items:center;gap:8px">
+<div class="toggle on"><div class="knob"></div></div>
+<span style="font-size:12px;color:#228be6;font-weight:600">활성화</span>
+</div>
+</div>
+<!-- Period -->
+<div class="settings-row">
+<div class="settings-label">점검 기간</div>
+<div class="settings-value">
+<span style="background:#f1f3f5;padding:4px 10px;border-radius:4px;font-size:12px">2026.01.06</span>
+<span style="margin:0 6px;color:#868e96">~</span>
+<span style="background:#f1f3f5;padding:4px 10px;border-radius:4px;font-size:12px">2026.01.31</span>
+<span style="font-size:11px;color:#868e96;margin-left:8px">(위험성평가 기간 기본값)</span>
+</div>
+</div>
+<!-- Auto Link -->
+<div class="settings-row">
+<div class="settings-label">자동 연결 대상</div>
+<div class="settings-value" style="display:flex;gap:12px;flex-wrap:wrap">
+<label class="mock-checkbox"><span class="box checked">✓</span> TBM 일지</label>
+<label class="mock-checkbox"><span class="box checked">✓</span> 일일안전보건점검</label>
+<label class="mock-checkbox"><span class="box unchecked"></span> 주간안전보건점검</label>
+</div>
+</div>
+<!-- Company Filter -->
+<div class="settings-row">
+<div class="settings-label">업체 자동 필터</div>
+<div class="settings-value" style="display:flex;align-items:center;gap:8px">
+<div class="toggle on"><div class="knob"></div></div>
+<span style="font-size:12px;color:#495057">로그인한 사용자의 소속 업체 항목만 표시</span>
+</div>
+</div>
+</div>
+
+<!-- NEW: 매일 점검 항목 관리 -->
+<div class="annotation blue" style="margin-top:16px">
+<div class="annotation-label">NEW — 매일 점검 항목 관리</div>
+<div class="settings-panel" style="margin-top:4px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<div style="font-size:13px;font-weight:600">매일 점검 항목 관리</div>
+<div style="font-size:11px;color:#868e96">AI가 자동 분류한 매일 반복 점검 항목을 확인하고 조정합니다</div>
+</div>
+
+<!-- 통계 -->
+<div style="padding:10px;background:#e7f5ff;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+<div style="font-size:13px;color:#1864ab"><strong>전체 384개</strong> 중 매일 점검 <strong style="color:#228be6">127개</strong> (AI 추천)</div>
+<span class="mock-badge" style="background:#228be6;color:#fff">33% 자동 분류</span>
+</div>
+
+<!-- 공종별 아코디언 목록 -->
+<div class="accordion">
+<div class="accordion-header open">
+<div class="accordion-title">교량보수 <span style="color:#868e96;font-weight:400">— 19개 중 12개 매일 점검</span></div>
+<div class="accordion-progress">
+<span style="font-size:11px;color:#228be6">12/19</span>
+<div class="accordion-bar"><div class="accordion-bar-fill" style="width:63%"></div></div>
+<span class="arrow" style="font-size:11px">▶</span>
+</div>
+</div>
+<div class="accordion-body">
+<div class="cl-item" style="justify-content:space-between">
+<div style="display:flex;align-items:center;gap:8px"><div class="toggle on" style="width:36px;height:20px"><div class="knob" style="width:16px;height:16px;top:2px;left:18px"></div></div> 교량 받침 점검 상태 확인</div>
+<span class="mock-badge" style="background:#d3f9d8;color:#2b8a3e;font-size:10px">AI: 점검</span>
+</div>
+<div class="cl-item" style="justify-content:space-between">
+<div style="display:flex;align-items:center;gap:8px"><div class="toggle on" style="width:36px;height:20px"><div class="knob" style="width:16px;height:16px;top:2px;left:18px"></div></div> 신축이음장치 점검</div>
+<span class="mock-badge" style="background:#d3f9d8;color:#2b8a3e;font-size:10px">AI: 점검</span>
+</div>
+<div class="cl-item" style="justify-content:space-between">
+<div style="display:flex;align-items:center;gap:8px"><div class="toggle on" style="width:36px;height:20px"><div class="knob" style="width:16px;height:16px;top:2px;left:18px"></div></div> 안전 바리케이드 설치 확인</div>
+<span class="mock-badge" style="background:#d3f9d8;color:#2b8a3e;font-size:10px">AI: 안전</span>
+</div>
+<div class="cl-item" style="justify-content:space-between">
+<div style="display:flex;align-items:center;gap:8px"><div class="toggle off" style="width:36px;height:20px"><div class="knob" style="width:16px;height:16px;top:2px;left:2px"></div></div> <span style="color:#868e96">동절기 결빙 방지 조치</span></div>
+<span class="mock-badge" style="background:#fff5f5;color:#fa5252;font-size:10px">AI: 계절성</span>
+</div>
+</div>
+</div>
+
+<div class="accordion">
+<div class="accordion-header">
+<div class="accordion-title">아스팔트포장 <span style="color:#868e96;font-weight:400">— 20개 중 13개 매일 점검</span></div>
+<div class="accordion-progress">
+<span style="font-size:11px;color:#228be6">13/20</span>
+<div class="accordion-bar"><div class="accordion-bar-fill" style="width:65%"></div></div>
+<span class="arrow" style="font-size:11px">▶</span>
+</div>
+</div>
+<div class="accordion-body collapsed"></div>
+</div>
+
+<div class="accordion">
+<div class="accordion-header">
+<div class="accordion-title">콘크리트포장 <span style="color:#868e96;font-weight:400">— 24개 중 14개 매일 점검</span></div>
+<div class="accordion-progress">
+<span style="font-size:11px;color:#228be6">14/24</span>
+<div class="accordion-bar"><div class="accordion-bar-fill" style="width:58%"></div></div>
+<span class="arrow" style="font-size:11px">▶</span>
+</div>
+</div>
+<div class="accordion-body collapsed"></div>
+</div>
+
+<div class="accordion">
+<div class="accordion-header">
+<div class="accordion-title">터널관리 <span style="color:#868e96;font-weight:400">— 15개 중 10개 매일 점검</span></div>
+<div class="accordion-progress">
+<span style="font-size:11px;color:#228be6">10/15</span>
+<div class="accordion-bar"><div class="accordion-bar-fill" style="width:67%"></div></div>
+<span class="arrow" style="font-size:11px">▶</span>
+</div>
+</div>
+<div class="accordion-body collapsed"></div>
+</div>
+
+<div style="text-align:center;padding:8px;font-size:11px;color:#868e96">... 15개 공종 더 (비탈면관리, 조경관리, 노면관리 등)</div>
+
+<div style="margin-top:12px;padding:10px;background:#ebfbee;border-radius:6px;font-size:11px;color:#2b8a3e">
+<strong>필터 효과:</strong> 384개 → 매일 점검 <strong>127개</strong> → 업체 필터 → <strong>~127개</strong> (이 현장은 업체 1개)
+</div>
+</div>
+</div>
+
+<!-- Company Summary -->
+<div style="margin-top:16px;background:#fff;border-radius:10px;padding:16px;border:1px solid #e9ecef">
+<div style="font-size:13px;font-weight:600;margin-bottom:8px">업체별 항목 분포</div>
+<div class="grid-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+<div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:8px">
+<div style="font-size:20px;font-weight:800;color:#228be6">178</div>
+<div style="font-size:11px;color:#868e96">경기동서순환도로(주)</div>
+</div>
+<div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:8px">
+<div style="font-size:20px;font-weight:800;color:#40c057">75</div>
+<div style="font-size:11px;color:#868e96">유플리트</div>
+</div>
+<div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:8px">
+<div style="font-size:20px;font-weight:800;color:#7048e8">131</div>
+<div style="font-size:11px;color:#868e96">봉담송산고속도로</div>
+</div>
+</div>
+</div>
+
+<div style="margin-top:12px;text-align:right">
+<button class="mock-btn primary">저장</button>
+</div>
+</div>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ========== STEP 2: AUTO REFLECTION ========== -->
+<div id="step2" class="section fade-in">
+<div class="section-header">
+<div class="section-num">STEP 2</div>
+<div class="section-title">TBM/일일점검 자동 반영</div>
+<div class="section-desc">점검 일정 기간 내 날짜로 TBM을 작성하면, 설정한 필터가 자동 적용됩니다.</div>
+</div>
+
+<!-- Flow -->
+<div class="step-flow">
+<div class="step-box"><strong>1</strong> 날짜 선택</div>
+<span class="step-arrow">→</span>
+<div class="step-box"><strong>2</strong> 활성 일정 체크</div>
+<span class="step-arrow">→</span>
+<div class="step-box" style="border-color:#228be6;color:#228be6"><strong>3</strong> 업체 필터</div>
+<span class="step-arrow">→</span>
+<div class="step-box" style="border-color:#228be6;color:#228be6"><strong>4</strong> 매일 점검 필터</div>
+<span class="step-arrow">→</span>
+<div class="step-box" style="border-color:#40c057;color:#2b8a3e"><strong>5</strong> 섹션별 표시</div>
+</div>
+
+<!-- Before/After Comparison -->
+<div class="compare-grid">
+<div class="compare-card before">
+<h4 style="color:#e03131">Before: TBM 체크리스트 (163개)</h4>
+<div style="font-size:11px;color:#868e96;margin-bottom:8px">모든 업체 + 모든 작업 유형이 하나의 플랫 리스트</div>
+<div style="max-height:200px;overflow:hidden;position:relative">
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span><span class="cl-company">경기동서순환도로</span> 교량 보수 전 안전점검 실시</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span><span class="cl-company">유플리트</span> 요금소 전기설비 점검</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span><span class="cl-company">봉담송산고속도로</span> 노면 청소 장비 점검</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span><span class="cl-company">경기동서순환도로</span> 비계 설치 전 지반 확인</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span><span class="cl-company">유플리트</span> 소방설비 작동 확인</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span><span class="cl-company">봉담송산고속도로</span> 교통 통제 표지 설치 확인</div>
+<div class="cl-item" style="color:#ced4da">... 157개 항목 더 스크롤 ...</div>
+<div style="position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(transparent,#fff5f5)"></div>
+</div>
+<div style="margin-top:8px;text-align:center;font-size:11px;color:#fa5252;font-weight:600">스크롤해서 163개 항목을 모두 확인해야 함</div>
+</div>
+
+<div class="compare-card after">
+<h4 style="color:#2b8a3e">After: TBM 체크리스트 (32개)</h4>
+<div style="font-size:11px;color:#868e96;margin-bottom:8px">매일 점검 항목만 + 공종별 아코디언</div>
+
+<!-- Progress Bar -->
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+<div class="progress-bar-container" style="flex:1">
+<div class="progress-bar-fill" style="width:47%"></div>
+</div>
+<span style="font-size:12px;font-weight:600;color:#228be6">15/32 (47%)</span>
+</div>
+
+<!-- Accordion Sections - 매일 점검 항목만 -->
+<div class="accordion">
+<div class="accordion-header open">
+<div class="accordion-title">교량보수 <span style="color:#868e96;font-weight:400">(5개 - 매일 점검)</span></div>
+<div class="accordion-progress">
+<span style="font-size:11px;color:#2b8a3e">4/5</span>
+<div class="accordion-bar"><div class="accordion-bar-fill" style="width:80%;background:#40c057"></div></div>
+<span class="arrow" style="font-size:11px">▶</span>
+</div>
+</div>
+<div class="accordion-body">
+<div class="cl-item"><span class="mock-checkbox"><span class="box checked">✓</span></span> 교량 받침 점검 상태 확인</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box checked">✓</span></span> 신축이음장치 점검</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box checked">✓</span></span> 교량 난간 손상 여부</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box checked">✓</span></span> 안전 바리케이드 설치</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span> 교량 배수시설 확인</div>
+</div>
+</div>
+
+<div class="accordion">
+<div class="accordion-header">
+<div class="accordion-title">아스팔트포장 <span style="color:#868e96;font-weight:400">(4개 - 매일 점검)</span></div>
+<div class="accordion-progress">
+<span style="font-size:11px;color:#228be6">3/4</span>
+<div class="accordion-bar"><div class="accordion-bar-fill" style="width:75%"></div></div>
+<span class="arrow" style="font-size:11px">▶</span>
+</div>
+</div>
+<div class="accordion-body collapsed">
+<div class="cl-item"><span class="mock-checkbox"><span class="box checked">✓</span></span> 포장면 균열 및 침하 점검</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box checked">✓</span></span> 포트홀 발생 여부 확인</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box checked">✓</span></span> 안전 표지판 설치 상태</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span> 작업 구간 교통 통제</div>
+</div>
+</div>
+
+<div class="accordion">
+<div class="accordion-header">
+<div class="accordion-title">비탈면관리 <span style="color:#868e96;font-weight:400">(3개 - 매일 점검)</span></div>
+<div class="accordion-progress">
+<span style="font-size:11px;color:#228be6">2/3</span>
+<div class="accordion-bar"><div class="accordion-bar-fill" style="width:67%"></div></div>
+<span class="arrow" style="font-size:11px">▶</span>
+</div>
+</div>
+<div class="accordion-body collapsed">
+<div class="cl-item"><span class="mock-checkbox"><span class="box checked">✓</span></span> 비탈면 균열 및 변형 점검</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box checked">✓</span></span> 배수로 막힘 여부 확인</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span> 낙석 방지망 상태 확인</div>
+</div>
+</div>
+
+<div class="accordion">
+<div class="accordion-header">
+<div class="accordion-title">터널관리 <span style="color:#868e96;font-weight:400">(3개 - 매일 점검)</span></div>
+<div class="accordion-progress">
+<span style="font-size:11px;color:#2b8a3e">1/3</span>
+<div class="accordion-bar"><div class="accordion-bar-fill" style="width:33%"></div></div>
+<span class="arrow" style="font-size:11px">▶</span>
+</div>
+</div>
+<div class="accordion-body collapsed">
+<div class="cl-item"><span class="mock-checkbox"><span class="box checked">✓</span></span> 터널 조명 상태 확인</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span> 환기 시설 가동 점검</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span> 터널 내 누수 여부 확인</div>
+</div>
+</div>
+
+<div class="accordion">
+<div class="accordion-header">
+<div class="accordion-title">노면관리 <span style="color:#868e96;font-weight:400">(3개)</span></div>
+<div class="accordion-progress">
+<span style="font-size:11px;color:#868e96">0/3</span>
+<div class="accordion-bar"><div class="accordion-bar-fill" style="width:0%"></div></div>
+<span class="arrow" style="font-size:11px">▶</span>
+</div>
+</div>
+<div class="accordion-body collapsed">
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span> 노면 미끄럼 저항 측정</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span> 노면 표시 마모 점검</div>
+<div class="cl-item"><span class="mock-checkbox"><span class="box unchecked"></span></span> 과적 차량 단속 기록</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 3-State Check Explanation -->
+<div class="new-feature" style="margin-top:24px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+<span class="mock-badge" style="background:#228be6;color:#fff">NEW</span>
+<h4 style="font-size:14px;font-weight:700">3-State 체크 시스템 (Fieldwire 참조)</h4>
+</div>
+<div class="grid-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px">
+<div style="text-align:center;padding:12px;background:#fff;border-radius:8px;border:1px solid #e9ecef">
+<div class="mock-checkbox" style="justify-content:center;margin-bottom:4px"><span class="box checked" style="width:24px;height:24px;font-size:14px">✓</span></div>
+<div style="font-size:12px;font-weight:600;color:#2b8a3e">완료</div>
+<div style="font-size:11px;color:#868e96">점검 완료</div>
+</div>
+<div style="text-align:center;padding:12px;background:#fff;border-radius:8px;border:1px solid #e9ecef">
+<div class="mock-checkbox" style="justify-content:center;margin-bottom:4px"><span class="box unchecked" style="width:24px;height:24px"></span></div>
+<div style="font-size:12px;font-weight:600;color:#fa5252">미완료</div>
+<div style="font-size:11px;color:#868e96">아직 점검 안 함</div>
+</div>
+<div style="text-align:center;padding:12px;background:#fff;border-radius:8px;border:1px solid #e9ecef">
+<div class="mock-checkbox" style="justify-content:center;margin-bottom:4px"><span class="box na" style="width:24px;height:24px;font-size:11px">N/A</span></div>
+<div style="font-size:12px;font-weight:600;color:#868e96">해당없음</div>
+<div style="font-size:11px;color:#868e96">오늘 해당 안 됨</div>
+</div>
+</div>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ========== STEP 3: HISTORY ========== -->
+<div id="step3" class="section fade-in">
+<div class="section-header">
+<div class="section-num">STEP 3</div>
+<div class="section-title">점검 이력 추적</div>
+<div class="section-desc">체크리스트 상세의 "점검 일정" 탭에서 일자별 점검 현황을 달력으로 확인합니다.</div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stat-grid">
+<div class="stat-card">
+<div class="stat-num" style="color:#228be6">8<span style="font-size:14px;color:#868e96">/19일</span></div>
+<div class="stat-label">점검 일수</div>
+</div>
+<div class="stat-card">
+<div class="stat-num" style="color:#40c057">89%</div>
+<div class="stat-label">평균 완료율</div>
+</div>
+<div class="stat-card">
+<div class="stat-num" style="color:#228be6">12</div>
+<div class="stat-label">TBM 연결</div>
+</div>
+<div class="stat-card">
+<div class="stat-num" style="color:#7048e8">7</div>
+<div class="stat-label">일일점검 연결</div>
+</div>
+</div>
+
+<!-- Calendar App Frame -->
+<div class="app-frame">
+<div class="app-topbar">
+<span>체크리스트 상세 → 점검 일정</span>
+</div>
+<div class="app-content">
+<!-- Month Header -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<span style="font-size:14px;font-weight:700">2026년 1월</span>
+<div style="display:flex;gap:4px">
+<button class="mock-btn outline" style="padding:4px 8px;font-size:11px">◀</button>
+<button class="mock-btn outline" style="padding:4px 8px;font-size:11px">▶</button>
+</div>
+</div>
+
+<!-- Legend -->
+<div style="display:flex;gap:12px;margin-bottom:12px;font-size:11px">
+<div style="display:flex;align-items:center;gap:4px"><div style="width:12px;height:12px;border-radius:3px;background:#ebfbee;border:1px solid #b2f2bb"></div> 100%</div>
+<div style="display:flex;align-items:center;gap:4px"><div style="width:12px;height:12px;border-radius:3px;background:#fff9db;border:1px solid #ffd43b"></div> 50~99%</div>
+<div style="display:flex;align-items:center;gap:4px"><div style="width:12px;height:12px;border-radius:3px;background:#fff5f5;border:1px solid #ffc9c9"></div> &lt;50%</div>
+<div style="display:flex;align-items:center;gap:4px"><div style="width:12px;height:12px;border-radius:3px;background:#f8f9fa;border:1px solid #e9ecef"></div> 미점검</div>
+</div>
+
+<!-- Calendar Grid -->
+<div class="cal-grid">
+<div class="cal-header">월</div><div class="cal-header">화</div><div class="cal-header">수</div><div class="cal-header">목</div><div class="cal-header">금</div><div class="cal-header">토</div><div class="cal-header">일</div>
+<!-- Week 0: Jan 1(목)~4(일) — 점검 기간 전 -->
+<div class="cal-day" style="background:transparent"></div>
+<div class="cal-day" style="background:transparent"></div>
+<div class="cal-day" style="background:transparent"></div>
+<div class="cal-day" style="opacity:0.35"><div class="day-num">1</div><div class="day-pct">—</div></div>
+<div class="cal-day" style="opacity:0.35"><div class="day-num">2</div><div class="day-pct">—</div></div>
+<div class="cal-day" style="opacity:0.35"><div class="day-num">3</div><div class="day-pct">—</div></div>
+<div class="cal-day" style="opacity:0.35"><div class="day-num">4</div><div class="day-pct">—</div></div>
+<!-- Week 1: 5(월)~11(일) — 점검 시작: 6일(화) -->
+<div class="cal-day" style="opacity:0.35"><div class="day-num">5</div><div class="day-pct">—</div></div>
+<div class="cal-day done"><div class="day-num">6</div><div class="day-pct">100%</div></div>
+<div class="cal-day done"><div class="day-num">7</div><div class="day-pct">100%</div></div>
+<div class="cal-day partial"><div class="day-num">8</div><div class="day-pct">67%</div></div>
+<div class="cal-day done"><div class="day-num">9</div><div class="day-pct">100%</div></div>
+<div class="cal-day future"><div class="day-num">10</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">11</div><div class="day-pct">—</div></div>
+<!-- Week 2: 12(월)~18(일) -->
+<div class="cal-day done"><div class="day-num">12</div><div class="day-pct">100%</div></div>
+<div class="cal-day done"><div class="day-num">13</div><div class="day-pct">100%</div></div>
+<div class="cal-day partial"><div class="day-num">14</div><div class="day-pct">83%</div></div>
+<div class="cal-day today"><div class="day-num">15</div><div class="day-pct" style="color:#228be6">오늘</div></div>
+<div class="cal-day future"><div class="day-num">16</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">17</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">18</div><div class="day-pct">—</div></div>
+<!-- Week 3: 19(월)~25(일) -->
+<div class="cal-day future"><div class="day-num">19</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">20</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">21</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">22</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">23</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">24</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">25</div><div class="day-pct">—</div></div>
+<!-- Week 4: 26(월)~31(토) -->
+<div class="cal-day future"><div class="day-num">26</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">27</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">28</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">29</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">30</div><div class="day-pct">—</div></div>
+<div class="cal-day future"><div class="day-num">31</div><div class="day-pct">—</div></div>
+<div class="cal-day" style="background:transparent"></div>
+</div>
+
+<!-- Day Detail -->
+<div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e9ecef;margin-top:16px">
+<div style="font-size:13px;font-weight:700;margin-bottom:12px">1월 8일 (목) 점검 내역 — <span style="color:#e67700">67% (2/3 섹션 완료)</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div style="border:1px solid #e9ecef;border-radius:8px;padding:12px">
+<div style="font-size:11px;font-weight:600;color:#228be6;margin-bottom:6px">TBM 일지 (오전 교량보수)</div>
+<div style="font-size:11px;color:#495057">
+<div style="display:flex;gap:6px;align-items:center;padding:3px 0"><span style="color:#2b8a3e">✓</span> 교량 받침 점검 상태 확인</div>
+<div style="display:flex;gap:6px;align-items:center;padding:3px 0"><span style="color:#2b8a3e">✓</span> 신축이음장치 점검</div>
+<div style="display:flex;gap:6px;align-items:center;padding:3px 0;color:#e03131"><span>✗</span> 교량 상부 균열 점검</div>
+</div>
+<div style="font-size:10px;color:#868e96;margin-top:6px">작성자: 김안전 | 08:30 AM | 소요 7분</div>
+</div>
+<div style="border:1px solid #e9ecef;border-radius:8px;padding:12px">
+<div style="font-size:11px;font-weight:600;color:#40c057;margin-bottom:6px">일일점검</div>
+<div style="font-size:11px;color:#495057">
+<div style="display:flex;gap:6px;align-items:center;padding:3px 0"><span style="color:#2b8a3e">✓</span> 아스팔트포장 5개 항목 완료</div>
+<div style="display:flex;gap:6px;align-items:center;padding:3px 0"><span style="color:#868e96">N/A</span> 비탈면관리 (해당없음)</div>
+</div>
+<div style="font-size:10px;color:#868e96;margin-top:6px">작성자: 박현장 | 17:00 PM | 소요 5분</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Monthly Trend (NEW) -->
+<div class="new-feature" style="margin-top:24px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+<span class="mock-badge" style="background:#7048e8;color:#fff">NEW</span>
+<h4 style="font-size:14px;font-weight:700">주간 트렌드</h4>
+</div>
+<div style="display:flex;gap:16px">
+<div style="flex:1">
+<div style="font-size:12px;color:#868e96;margin-bottom:4px">1주차 (1/6~1/10)</div>
+<div class="progress-bar-container"><div class="progress-bar-fill" style="width:93%"></div></div>
+<div style="font-size:11px;text-align:right;color:#2b8a3e;font-weight:600">93%</div>
+</div>
+<div style="flex:1">
+<div style="font-size:12px;color:#868e96;margin-bottom:4px">2주차 (1/12~1/15)</div>
+<div class="progress-bar-container"><div class="progress-bar-fill" style="width:85%"></div></div>
+<div style="font-size:11px;text-align:right;color:#228be6;font-weight:600">85% (진행 중)</div>
+</div>
+</div>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ========== DOMAINS ========== -->
+<div id="domains" class="section fade-in">
+<div class="section-header">
+<div class="section-num">적용 범위</div>
+<div class="section-title">TBM, 일일점검, 주간점검 공통 적용</div>
+<div class="section-desc">동일한 메커니즘이 3개 도메인에 적용됩니다.</div>
+</div>
+
+<table class="decision-table">
+<thead>
+<tr><th>도메인</th><th>현재 항목 수</th><th>개선 후 항목 수</th><th>자동 연결</th><th>기본 설정</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>TBM 일지</strong></td><td style="color:#fa5252">163개</td><td style="color:#2b8a3e">매일 점검 ~32개 (아코디언)</td><td>체크리스트 → TBM</td><td>기본 ON</td></tr>
+<tr><td><strong>일일안전보건점검</strong></td><td style="color:#fa5252">163개</td><td style="color:#2b8a3e">매일 점검 ~32개 (아코디언)</td><td>체크리스트 → 일일점검</td><td>기본 ON</td></tr>
+<tr><td><strong>주간안전보건점검</strong></td><td style="color:#e67700">384개 전체</td><td style="color:#2b8a3e">공종별 아코디언 (섹션당 5~8개)</td><td>체크리스트 → 주간점검</td><td>기본 OFF</td></tr>
+</tbody>
+</table>
+
+<div class="info-box">
+<strong>코드 공유:</strong> 세 도메인 모두 동일한 <code>useChecklistByDate</code> + <code>checklistUtils.queryChecklistItems</code> + <code>useChecklistManager</code> 훅 조합을 사용합니다. 필터 조건만 점검 일정에서 가져오면 일관된 동작이 보장됩니다.
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ========== ACCESS ========== -->
+<div id="access" class="section fade-in">
+<div class="section-header">
+<div class="section-num">접근성 해결</div>
+<div class="section-title">체크리스트를 쉽게 찾아가는 방법</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<!-- Solution 1: TBM Link -->
+<div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e9ecef">
+<h4 style="font-size:14px;font-weight:700;color:#2b8a3e;margin-bottom:12px">해결 1: TBM에서 바로가기 링크</h4>
+<div class="annotation green" style="margin:0">
+<div class="annotation-label">NEW</div>
+<div style="background:#ebfbee;border:1px solid #b2f2bb;border-radius:6px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
+<div style="font-size:12px"><strong>연결됨:</strong> 2026년 1월 정기 위험성평가 <span class="mock-badge" style="background:#d3f9d8;color:#2b8a3e">반복 점검</span></div>
+<a href="#" style="font-size:12px;color:#228be6;font-weight:600;text-decoration:none">체크리스트 상세 →</a>
+</div>
+</div>
+<p style="font-size:12px;color:#868e96;margin-top:8px">TBM 작성 화면에서 한 클릭으로 체크리스트 상세로 이동</p>
+</div>
+
+<!-- Solution 2: Sidebar -->
+<div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e9ecef">
+<h4 style="font-size:14px;font-weight:700;color:#2b8a3e;margin-bottom:12px">해결 2: 사이드바 바로가기</h4>
+<div style="background:#1B2A4A;border-radius:8px;padding:12px">
+<div style="padding:6px 8px;font-size:11px;color:#6c7a8d;font-weight:700;letter-spacing:1px">위험성평가</div>
+<div style="padding:6px 8px;font-size:12px;color:#adb5bd">위험성평가 작성</div>
+<div style="padding:6px 8px;font-size:12px;color:#adb5bd">위험성평가 회의록</div>
+<div style="padding:6px 8px;font-size:12px;color:#fff;font-weight:600;background:rgba(255,255,255,.1);border-radius:4px;border-left:3px solid #ffd43b;margin:4px 0">
+활성 체크리스트 <span style="font-size:9px;background:#fa5252;color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px">NEW</span>
+</div>
+</div>
+<p style="font-size:12px;color:#868e96;margin-top:8px">사이드바에서 현재 활성화된 체크리스트 목록을 바로 확인</p>
+</div>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ========== TECH GUIDE ========== -->
+<div id="tech" class="section fade-in">
+<div class="section-header">
+<div class="section-num">PART 3</div>
+<div class="section-title">기술 구현 가이드</div>
+<div class="section-desc">핵심 파일 변경 사항과 데이터 모델을 요약합니다.</div>
+</div>
+
+<!-- Code Flow -->
+<div style="background:#212529;color:#e9ecef;border-radius:12px;padding:24px;font-family:monospace;font-size:12px;line-height:1.8;overflow-x:auto">
+<div style="color:#868e96">// 현재 코드 (useTbmLogCreate.ts:126-130)</div>
+<div><span style="color:#fa5252">const</span> initialChecklistItems = checklistUtils.queryChecklistItems({</div>
+<div style="padding-left:20px">checklistGroups,</div>
+<div style="padding-left:20px">riskAssessmentGroup,</div>
+<div style="padding-left:20px">filter: { <span style="color:#fcc419">keyIssues: true</span>, excludeCompleted: true }, <span style="color:#fa5252">// 163개 반환 (42% keyIssue)</span></div>
+<div>});</div>
+<br>
+<div style="color:#40c057">// 개선 코드 - dailyRecurring 필터 + AI 자동 분류</div>
+<div><span style="color:#40c057">const</span> { checklistFilter, hasActiveSchedule } = useActiveInspectionSchedule(date);</div>
+<div><span style="color:#40c057">const</span> initialChecklistItems = checklistUtils.queryChecklistItems({</div>
+<div style="padding-left:20px">checklistGroups,</div>
+<div style="padding-left:20px">riskAssessmentGroup,</div>
+<div style="padding-left:20px">filter: hasActiveSchedule ? { <span style="color:#40c057">dailyRecurring: true</span>, ...checklistFilter } : { keyIssues: true },</div>
+<div>});</div>
+</div>
+
+<!-- Key Files -->
+<div style="margin-top:24px">
+<h4 style="font-size:14px;font-weight:700;margin-bottom:12px">핵심 수정 파일</h4>
+<table class="decision-table">
+<thead><tr><th>파일</th><th>변경 내용</th><th>영향도</th></tr></thead>
+<tbody>
+<tr><td><code>checklistUtils.ts</code></td><td>filter에 dailyRecurring 파라미터 추가 + AI 자동 분류 로직</td><td><span class="mock-badge" style="background:#fff9db;color:#e67700">중</span></td></tr>
+<tr><td><code>useTbmLogCreate.ts</code></td><td>useActiveInspectionSchedule 훅 통합</td><td><span class="mock-badge" style="background:#fff5f5;color:#fa5252">높음</span></td></tr>
+<tr><td><code>useDailyInspectionCreate.ts</code></td><td>동일 변경 (TBM과 동일 패턴)</td><td><span class="mock-badge" style="background:#fff5f5;color:#fa5252">높음</span></td></tr>
+<tr><td><code>SelectChecklistModal.tsx</code></td><td>아코디언 UI, 진행률 바, 매일 점검 토글 추가</td><td><span class="mock-badge" style="background:#fff9db;color:#e67700">중</span></td></tr>
+<tr><td><code>SVC_TYPES (M6Keys.ts)</code></td><td>INSPECTION_SCHEDULE 타입 추가</td><td><span class="mock-badge" style="background:#ebfbee;color:#2b8a3e">낮음</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- Data Model -->
+<div style="margin-top:24px">
+<h4 style="font-size:14px;font-weight:700;margin-bottom:12px">새 데이터 모델</h4>
+<div style="background:#f8f9fa;border-radius:8px;padding:16px;font-family:monospace;font-size:11px;line-height:1.7">
+<div style="color:#228be6;font-weight:700">InspectionSchedule (M6Bucket)</div>
+<div style="padding-left:16px">
+isActive: boolean<br>
+startDate: string (ISO)<br>
+endDate: string (ISO)<br>
+targetDomains: ('TBM' | 'DAILY' | 'WEEKLY')[]<br>
+enableCompanyFilter: boolean<br>
+excludeCompleted: boolean
+</div>
+<br>
+<div style="color:#40c057;font-weight:700">ChecklistItem (dailyRecurring 필드 추가)</div>
+<div style="padding-left:16px">
+dailyRecurring: boolean <span style="color:#868e96">// AI 자동 분류 (점검, 확인, 청소 등)</span><br>
+dailyCategory: 'inspection' | 'safety' | 'cleaning' | 'status' | 'seasonal' | 'on-demand'
+</div>
+</div>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ========== KPI ========== -->
+<div id="kpi" class="section fade-in">
+<div class="section-header">
+<div class="section-num">PART 4</div>
+<div class="section-title">성공 지표</div>
+<div class="section-desc">Before → After 수치로 검증합니다.</div>
+</div>
+
+<table class="decision-table">
+<thead><tr><th>지표</th><th>현재</th><th>Phase 1 목표</th><th>Phase 3 목표</th></tr></thead>
+<tbody>
+<tr><td>TBM 작성 시간</td><td style="color:#fa5252"><strong>30분+</strong></td><td>10분 이내</td><td style="color:#2b8a3e"><strong>5분 이내</strong></td></tr>
+<tr><td>화면당 표시 항목</td><td style="color:#fa5252"><strong>163개</strong></td><td>공종별 아코디언 (섹션당 5~8개)</td><td style="color:#2b8a3e"><strong>섹션당 3~5개</strong></td></tr>
+<tr><td>매일 점검 자동 분류율</td><td style="color:#fa5252"><strong>0% (미분류)</strong></td><td>80%+ (AI 분류)</td><td style="color:#2b8a3e"><strong>95%+ (학습 반영)</strong></td></tr>
+<tr><td>점검 완료율</td><td>측정 불가</td><td>60%+</td><td style="color:#2b8a3e"><strong>80%+</strong></td></tr>
+<tr><td>체크리스트 접근 단계</td><td style="color:#fa5252"><strong>4단계</strong></td><td>2단계</td><td style="color:#2b8a3e"><strong>1단계</strong></td></tr>
+</tbody>
+</table>
+
+<!-- Roadmap -->
+<div style="margin-top:24px">
+<h4 style="font-size:14px;font-weight:700;margin-bottom:12px">구현 로드맵</h4>
+<div class="grid-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+<div style="background:#e7f5ff;border-radius:10px;padding:16px;border:2px solid #228be6">
+<div style="font-size:12px;font-weight:700;color:#228be6;margin-bottom:4px">Phase 1: MVP (2주)</div>
+<div style="font-size:11px;color:#495057;line-height:1.6">
+- checklistItem에 dailyRecurring 필드 추가<br>
+- AI 자동 분류 로직 구현<br>
+- 매일 점검 항목 관리 UI<br>
+- 아코디언 체크리스트 UI<br>
+- TBM/일일점검 자동 반영
+</div>
+</div>
+<div style="background:#ebfbee;border-radius:10px;padding:16px;border:2px solid #40c057">
+<div style="font-size:12px;font-weight:700;color:#2b8a3e;margin-bottom:4px">Phase 2: 고급 기능 (2주)</div>
+<div style="font-size:11px;color:#495057;line-height:1.6">
+- 3-State 체크 시스템<br>
+- 진행률 표시<br>
+- 달력 뷰 구현<br>
+- 일별 상세 기록<br>
+- 모바일 대응
+</div>
+</div>
+<div style="background:#f3f0ff;border-radius:10px;padding:16px;border:2px solid #7048e8">
+<div style="font-size:12px;font-weight:700;color:#7048e8;margin-bottom:4px">Phase 3: 폴리싱 (1주)</div>
+<div style="font-size:11px;color:#495057;line-height:1.6">
+- 주간/월간 통계<br>
+- 엣지 케이스 처리<br>
+- 성능 최적화<br>
+- QA + 배포 준비
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ========== FULL USER JOURNEY ========== -->
+<div class="section fade-in">
+<div class="section-header">
+<div class="section-num">전체 흐름</div>
+<div class="section-title">처음부터 끝까지 — 전체 사용자 여정</div>
+</div>
+
+<div style="background:#fff;border-radius:12px;padding:24px;border:1px solid #e9ecef">
+<div style="position:relative;padding-left:40px">
+<div style="position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e9ecef"></div>
+
+<div style="position:relative;margin-bottom:28px">
+<div style="position:absolute;left:-32px;top:2px;width:24px;height:24px;border-radius:50%;background:#228be6;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">1</div>
+<div style="font-size:14px;font-weight:700;margin-bottom:4px">위험성평가 회의록에서 체크리스트 생성</div>
+<div style="font-size:12px;color:#868e96">기존과 동일. AI가 384개 항목 자동 생성.</div>
+</div>
+
+<div style="position:relative;margin-bottom:28px">
+<div style="position:absolute;left:-32px;top:2px;width:24px;height:24px;border-radius:50%;background:#228be6;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">2</div>
+<div style="font-size:14px;font-weight:700;margin-bottom:4px;color:#228be6">"점검 일정" 탭에서 반복 설정 <span class="mock-badge" style="background:#fff5f5;color:#fa5252">NEW</span></div>
+<div style="font-size:12px;color:#868e96">반복 점검 ON → 기간 → TBM/일일점검 체크 → 매일 점검 항목 확인(AI 추천) → 업체 필터 ON</div>
+<div style="font-size:11px;color:#228be6;margin-top:4px">이 단계는 한 번만. 이후 자동.</div>
+</div>
+
+<div style="position:relative;margin-bottom:28px">
+<div style="position:absolute;left:-32px;top:2px;width:24px;height:24px;border-radius:50%;background:#40c057;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">3</div>
+<div style="font-size:14px;font-weight:700;margin-bottom:4px">매일: TBM 작성 → 자동 적용 → 5분 내 완료</div>
+<div style="font-size:12px;color:#868e96">384개 → 매일 점검 127개 → 공종별 아코디언으로 섹션별 점검.</div>
+</div>
+
+<div style="position:relative;margin-bottom:28px">
+<div style="position:absolute;left:-32px;top:2px;width:24px;height:24px;border-radius:50%;background:#40c057;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">4</div>
+<div style="font-size:14px;font-weight:700;margin-bottom:4px">매일: 일일점검 (선택)</div>
+<div style="font-size:12px;color:#868e96">동일 체크리스트 자동 연결. 설정에서 체크한 경우.</div>
+</div>
+
+<div style="position:relative">
+<div style="position:absolute;left:-32px;top:2px;width:24px;height:24px;border-radius:50%;background:#7048e8;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">5</div>
+<div style="font-size:14px;font-weight:700;margin-bottom:4px">수시: 달력에서 점검 이력 확인</div>
+<div style="font-size:12px;color:#868e96">사이드바 "활성 체크리스트" 또는 TBM의 바로가기 링크로 접근.</div>
+</div>
+</div>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- Summary Table -->
+<div class="section" style="padding-bottom:32px">
+<div class="section-header">
+<div class="section-num">요약</div>
+<div class="section-title">문제 → 해결 매핑</div>
+</div>
+<table class="decision-table">
+<thead><tr><th style="text-align:left">문제</th><th style="text-align:left">해결</th><th>STEP</th></tr></thead>
+<tbody>
+<tr><td>체크리스트 접근 어려움 (4단계)</td><td style="text-align:left">사이드바 "활성 체크리스트" + TBM 바로가기 링크</td><td>접근성</td></tr>
+<tr><td>TBM에서 163개 항목 표시</td><td style="text-align:left">업체 필터 + 매일 점검 필터 → 공종별 아코디언</td><td>STEP 1+2</td></tr>
+<tr><td>keyIssue 163개로 여전히 과다</td><td style="text-align:left">매일 점검 마킹 + AI 자동 분류로 대체</td><td>STEP 1+2</td></tr>
+<tr><td>매일 새로 선택해야 함</td><td style="text-align:left">반복 점검 설정 → 기간 내 자동 적용</td><td>STEP 1</td></tr>
+<tr><td>점검 이력 추적 불가</td><td style="text-align:left">달력 뷰 + 일별 상세 + 주간/월간 통계</td><td>STEP 3</td></tr>
+<tr><td>매일 반복 점검 구분 불가</td><td style="text-align:left">매일 점검 항목 마킹 + 공종별 아코디언 표시</td><td>STEP 1+2</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- Footer -->
+<div style="background:#212529;color:#868e96;padding:32px;text-align:center">
+<div style="font-size:13px;margin-bottom:4px;color:#fff;font-weight:600">체크리스트 반복 점검 솔루션 V5</div>
+<div style="font-size:12px;margin-bottom:8px">운영 DB 분석 + 코드베이스 분석 + 글로벌 베스트 프랙티스 기반</div>
+<div style="font-size:11px;color:#495057">
+설정: 체크리스트 상세 → 점검 일정 탭 | 사용: TBM/일일점검 자동 연결 | 확인: 달력 진행 이력<br>
+대상: 경기동서순환도로(주)_법인 | 384개→매일 점검 127개 (아코디언) | 163개→공종별 섹션당 5~8개 | 30분+→5~10분
+</div>
+</div>
+
+<!-- Scroll Animation Script -->
+<script>
+const observer = new IntersectionObserver((entries) => {
+entries.forEach(entry => {
+if (entry.isIntersecting) {
+entry.target.classList.add('visible');
+}
+});
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// Smooth scroll for nav + active state
+const navLinks = document.querySelectorAll('.topnav a');
+const sections = Array.from(navLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+navLinks.forEach(a => {
+a.addEventListener('click', e => {
+e.preventDefault();
+const target = document.querySelector(a.getAttribute('href'));
+if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+});
+
+// Nav active state on scroll
+const navObserver = new IntersectionObserver((entries) => {
+entries.forEach(entry => {
+if (entry.isIntersecting) {
+navLinks.forEach(a => a.classList.remove('active'));
+const activeLink = document.querySelector(`.topnav a[href="#${entry.target.id}"]`);
+if (activeLink) activeLink.classList.add('active');
+}
+});
+}, { threshold: 0.2, rootMargin: '-80px 0px -60% 0px' });
+sections.forEach(section => navObserver.observe(section));
+
+// Accordion toggle
+document.querySelectorAll('.accordion-header').forEach(header => {
+header.addEventListener('click', () => {
+const body = header.nextElementSibling;
+const isOpen = header.classList.contains('open');
+header.classList.toggle('open');
+if (isOpen) {
+body.classList.add('collapsed');
+} else {
+body.classList.remove('collapsed');
+}
+});
+});
+
+// 3-state check toggle (체크 → 해당없음 → 미체크 순환)
+document.querySelectorAll('.check-item').forEach(item => {
+item.addEventListener('click', () => {
+const indicator = item.querySelector('.check-indicator');
+if (!indicator) return;
+const current = indicator.textContent.trim();
+if (current === '✓') {
+indicator.textContent = '—';
+indicator.style.background = '#f1f3f5';
+indicator.style.color = '#868e96';
+item.style.opacity = '0.5';
+item.style.textDecoration = 'line-through';
+} else if (current === '—') {
+indicator.textContent = '';
+indicator.style.background = '#fff';
+indicator.style.color = '';
+item.style.opacity = '1';
+item.style.textDecoration = 'none';
+} else {
+indicator.textContent = '✓';
+indicator.style.background = '#d3f9d8';
+indicator.style.color = '#2b8a3e';
+item.style.opacity = '1';
+item.style.textDecoration = 'none';
+}
+});
+});
+</script>
+
+</body>
+</html>

@@ -168,6 +168,57 @@ body{font-family:'Pretendard',-apple-system,'Noto Sans KR',sans-serif;color:#212
 
 <hr class="divider">
 
+<!-- ========== SWD-336: contentLevel=simple ========== -->
+<div id="content-level" class="section fade-in">
+<div class="section-header">
+<div class="section-num">선행 조치 — SWD-336</div>
+<div class="section-title">contentLevel=simple 도입으로 항목 수 60% 감소</div>
+<div class="section-desc">위험성평가 AI 생성 시 simple 모드를 적용하면 단계 수와 위험요인 수가 줄어든다. 감소대책 수와 개별 항목의 내용 품질은 동일하게 유지된다.</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px">
+<!-- Standard -->
+<div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e9ecef">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+<span style="background:#868e96;color:#fff;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:700">STANDARD</span>
+<span style="font-size:12px;color:#868e96">현재 기본값</span>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+<div>단계 수</div><div style="font-weight:700">6~7개 <span style="font-size:11px;color:#868e96">(평균 6.3)</span></div>
+<div>단계별 위험요인</div><div style="font-weight:700">1~5개 <span style="font-size:11px;color:#868e96">(평균 3.2)</span></div>
+<div>감소대책</div><div style="font-weight:700">2~5개 <span style="font-size:11px;color:#868e96">(평균 3.2)</span></div>
+</div>
+<div style="margin-top:14px;padding-top:14px;border-top:1px solid #e9ecef;font-size:12px;color:#495057">
+<strong>동서순환도로 실측 합계</strong><br>
+단계 120개 / 위험요인 <strong style="color:#fa5252">386건</strong> / 중점관리 <strong style="color:#fa5252">164건</strong> / 감소대책 1,240건
+</div>
+</div>
+
+<!-- Simple -->
+<div style="background:#e7f5ff;border-radius:12px;padding:20px;border:1px solid #a5d8ff">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+<span style="background:#228be6;color:#fff;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:700">SIMPLE</span>
+<span style="font-size:12px;color:#1971c2;font-weight:600">신규 옵션</span>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+<div>단계 수</div><div style="font-weight:700">최대 4개</div>
+<div>단계별 위험요인</div><div style="font-weight:700">최대 2개</div>
+<div>감소대책</div><div style="font-weight:700">기존과 동일</div>
+</div>
+<div style="margin-top:14px;padding-top:14px;border-top:1px solid #a5d8ff;font-size:12px;color:#1971c2">
+<strong>적용 시 예상</strong><br>
+위험요인 <strong>120~150건</strong> <span style="font-size:11px">(60% ↓)</span> / 중점관리 <strong>50~60건</strong> <span style="font-size:11px">(65% ↓)</span>
+</div>
+</div>
+</div>
+
+<div style="margin-top:16px;background:#fff9db;border-radius:8px;padding:12px 16px;font-size:12px;color:#5c5f66;border:1px solid #ffe066">
+<strong>본 설계서와의 관계</strong>: simple은 <em>AI 생성 단계</em>에서 항목 수를 줄이는 접근이고, 반복 점검 기능(dailyRecurring 필터, 업체 필터, 아코디언 UI)은 <em>이미 생성된 체크리스트의 사용성</em>을 개선하는 접근이다. 두 기능은 상호 보완적이며 함께 적용 시 효과가 극대화된다.
+</div>
+</div>
+
+<hr class="divider">
+
 <!-- ========== PART 1: PROBLEMS ========== -->
 <div id="problems" class="section fade-in">
 <div class="section-header">

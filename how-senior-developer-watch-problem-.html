@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시니어 개발자는 어떻게 문제를 바라보는가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0e12;--surface:#16161d;--surface-light:#1e1e28;--accent:#f59e0b;--accent-dim:#b45309;--text:#e4e4e7;--text-dim:#9ca3af;--text-bright:#fff;--border:#2a2a35;--s1:#f59e0b;--s2:#10b981;--s3:#6366f1}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);line-height:1.85;font-size:16px;-webkit-font-smoothing:antialiased}
+
+/* Hero */
+.hero{min-height:80vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:4rem 2rem;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.08) 0%,transparent 60%)}
+.hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(245,158,11,.06) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+.hero-badge{display:inline-block;padding:.4rem 1.2rem;border:1px solid var(--accent-dim);border-radius:100px;font-size:.8rem;font-weight:500;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2rem;animation:fadeDown .8s ease}
+.hero h1{font-size:clamp(2.2rem,5vw,3.8rem);font-weight:900;color:var(--text-bright);line-height:1.3;margin-bottom:1.5rem;animation:fadeDown .8s ease .1s both}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero-meta{color:var(--text-dim);font-size:.9rem;animation:fadeDown .8s ease .2s both}
+.hero-meta span{margin:0 .5rem}
+.hero-link{display:inline-flex;align-items:center;gap:.5rem;margin-top:2rem;padding:.6rem 1.4rem;background:var(--surface);border:1px solid var(--border);border-radius:100px;color:var(--accent);text-decoration:none;font-size:.85rem;font-weight:500;transition:all .2s;animation:fadeDown .8s ease .25s both}
+.hero-link:hover{background:var(--surface-light);border-color:var(--accent-dim)}
+.hero-link svg{width:16px;height:16px;fill:currentColor}
+
+/* Speakers */
+.speakers{display:flex;justify-content:center;gap:1.5rem;margin-top:3rem;animation:fadeDown .8s ease .3s both;flex-wrap:wrap;max-width:900px}
+.speaker-card{display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.2rem 1.5rem;background:var(--surface);border-radius:16px;border:1px solid var(--border);min-width:220px;flex:1;max-width:280px}
+.speaker-role{font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.15rem .6rem;border-radius:4px}
+.speaker-role.mod{color:var(--s2);background:rgba(16,185,129,.1)}
+.speaker-role.p1{color:var(--s1);background:rgba(245,158,11,.1)}
+.speaker-role.p2{color:var(--s3);background:rgba(99,102,241,.1)}
+.speaker-name{font-size:1.15rem;font-weight:900;color:var(--text-bright)}
+.speaker-title{font-size:.8rem;color:var(--text-dim);text-align:center;line-height:1.5}
+.speaker-prev{font-size:.72rem;color:var(--text-dim);opacity:.7;text-align:center;line-height:1.6}
+
+/* TOC */
+.toc{max-width:720px;margin:0 auto;padding:3rem 2rem 4rem}
+.toc-label{font-size:.75rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:1.5rem}
+.toc-list{list-style:none}
+.toc-list a{display:flex;align-items:baseline;gap:1rem;padding:.9rem 0;text-decoration:none;color:var(--text);border-bottom:1px solid var(--border);transition:all .2s}
+.toc-list a:hover{color:var(--accent);padding-left:.5rem}
+.toc-num{font-size:.8rem;font-weight:700;color:var(--accent);min-width:1.6rem}
+.toc-title{font-weight:500;font-size:1rem}
+
+.divider{width:60px;height:3px;background:var(--accent);margin:0 auto;border-radius:3px}
+
+/* Content */
+.content{max-width:760px;margin:0 auto;padding:2rem 2rem 6rem}
+.section{margin-bottom:5rem;animation:fadeUp .6s ease both}
+.section-header{margin-bottom:2.5rem;padding-bottom:1.5rem;border-bottom:2px solid var(--accent)}
+.section-num{font-size:.75rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
+.section-title{font-size:1.6rem;font-weight:900;color:var(--text-bright);line-height:1.4}
+.ts{display:inline-block;font-size:.7rem;font-weight:600;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);padding:.1rem .5rem;border-radius:4px;margin-left:.4rem;vertical-align:middle}
+
+/* Insight */
+.key-insight{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.03));border-left:3px solid var(--accent);padding:1.4rem 1.6rem;border-radius:0 12px 12px 0;margin:1.8rem 0;font-weight:500;color:var(--text-bright);font-size:1.05rem;line-height:1.8}
+.key-insight::before{content:'💡';margin-right:.5rem}
+
+/* Point */
+.point{margin-bottom:1.8rem}
+.point-title{font-weight:700;color:var(--text-bright);margin-bottom:.4rem;font-size:1.05rem;display:flex;align-items:center;gap:.5rem}
+.point-title::before{content:'';display:inline-block;width:6px;height:6px;background:var(--accent);border-radius:50%;flex-shrink:0}
+.point p{color:var(--text);padding-left:1.1rem}
+
+/* Quote */
+.quote{padding:1.4rem 1.6rem;margin:1.8rem 0;background:var(--surface);border-radius:12px;border:1px solid var(--border)}
+.quote-speaker{font-size:.78rem;font-weight:700;letter-spacing:.05em;margin-bottom:.5rem;display:inline-block;padding:.15rem .6rem;border-radius:4px}
+.quote-speaker.s1{color:var(--s1);background:rgba(245,158,11,.1)}
+.quote-speaker.s2{color:var(--s2);background:rgba(16,185,129,.1)}
+.quote-speaker.s3{color:var(--s3);background:rgba(99,102,241,.1)}
+.quote p{color:var(--text);font-style:italic;opacity:.9}
+
+/* Example */
+.example{background:var(--surface-light);border-radius:12px;padding:1.4rem 1.6rem;margin:1.5rem 0;border:1px solid var(--border)}
+.example-label{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem}
+.example p{color:var(--text-dim);font-size:.95rem}
+
+/* QA */
+.qa-item{margin-bottom:2.5rem}
+.qa-question{font-weight:700;color:var(--accent);font-size:1.05rem;margin-bottom:1rem;display:flex;align-items:flex-start;gap:.6rem}
+.qa-question::before{content:'Q';flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:var(--accent);color:var(--bg);border-radius:6px;font-size:.8rem;font-weight:900}
+.qa-answer{padding-left:2.1rem}
+.qa-answer .point{margin-bottom:1.2rem}
+
+/* Footer */
+.footer{text-align:center;padding:3rem 2rem;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);max-width:760px;margin:0 auto}
+.footer a{color:var(--accent);text-decoration:none}
+.footer a:hover{text-decoration:underline}
+
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.hero{min-height:60vh;padding:3rem 1.5rem}.content{padding:2rem 1.5rem 4rem}.toc{padding:2rem 1.5rem 3rem}.section-title{font-size:1.3rem}.speakers{gap:1rem}.speaker-card{min-width:170px;padding:1rem}}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Tech Talk Summary</div>
+  <h1>시니어 개발자는 어떻게<br><em>문제</em>를 바라보는가</h1>
+  <p class="hero-meta">2026.02.11 화 <span>·</span> 약 66분 <span>·</span> 패널 토크 + Q&A</p>
+  <a class="hero-link" href="https://clovanote.naver.com/s/SsiTT4GnB3sFdx6itcEXh3S" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    클로바노트 원본 음성 듣기
+  </a>
+  <div class="speakers">
+    <div class="speaker-card">
+      <span class="speaker-role mod">Moderator</span>
+      <span class="speaker-name">하조은</span>
+      <span class="speaker-title">당근 모임 파트 리드</span>
+      <span class="speaker-prev">前 당근 프론트엔드 엔지니어<br>前 뱅크샐러드 엔지니어링 매니저<br>前 뱅크샐러드 프론트엔드 엔지니어<br>前 마플 프론트엔드 엔지니어</span>
+    </div>
+    <div class="speaker-card">
+      <span class="speaker-role p1">Panel</span>
+      <span class="speaker-name">이민석</span>
+      <span class="speaker-title">국민대학교 소프트웨어 학부 교수</span>
+      <span class="speaker-prev">前 이노베이션 아카데미 학장<br>前 NHN NEXT 학장<br>前 한성대학교 컴퓨터공학과 교수<br>前 (주)팜팜테크 CTO</span>
+    </div>
+    <div class="speaker-card">
+      <span class="speaker-role p2">Panel</span>
+      <span class="speaker-name">박상권</span>
+      <span class="speaker-title">헤이딜러 안드로이드팀 리더</span>
+      <span class="speaker-prev">前 하이퍼 커넥트<br>前 선의의 경쟁<br>前 대신증권<br>前 삼성 SDS (인턴)</span>
+    </div>
+  </div>
+</section>
+
+<!-- TOC -->
+<nav class="toc">
+  <p class="toc-label">목차</p>
+  <ol class="toc-list">
+    <li><a href="#s1"><span class="toc-num">01</span><span class="toc-title">기술적 완벽함 vs 비즈니스 속도 — 충돌의 순간, 어떤 선택?</span></a></li>
+    <li><a href="#s2"><span class="toc-num">02</span><span class="toc-title">팀이 길을 잃었을 때, 어떻게 해야 하나?</span></a></li>
+    <li><a href="#s3"><span class="toc-num">03</span><span class="toc-title">복잡한 문제 앞에서 가장 먼저 꺼내 드는 나만의 해결 원칙은?</span></a></li>
+    <li><a href="#s4"><span class="toc-num">04</span><span class="toc-title">AI 시대, 기술 구현을 넘어 우리가 던져야 할 본질적인 질문은?</span></a></li>
+    <li><a href="#s5"><span class="toc-num">05</span><span class="toc-title">내일 출근해서 '문제'를 마주했을 때, 딱 한 가지만 다르게 행동해 본다면?</span></a></li>
+    <li><a href="#qa"><span class="toc-num">Q&A</span><span class="toc-title">청중 질의응답</span></a></li>
+  </ol>
+</nav>
+<div class="divider"></div>
+
+<!-- CONTENT -->
+<main class="content">
+
+<!-- S1 -->
+<article class="section" id="s1">
+  <div class="section-header">
+    <p class="section-num">Section 01</p>
+    <h2 class="section-title">기술적 완벽함 vs 비즈니스 속도<br>충돌의 순간, 어떤 선택?</h2>
+  </div>
+  <div class="key-insight">비즈니스가 세상에서 가치를 인정받은 <strong>이후에</strong> 리팩토링하라. 빠른 행동이 어려운 걸 잘 만드는 것보다 훨씬 중요하다.</div>
+
+  <div class="point">
+    <div class="point-title">일단 팔리는 것을 먼저 만들어라</div>
+    <p>기술적 고민은 시장 반응을 보면서 해도 늦지 않다. 마케팅은 이미 "만들 것"을 팔고 있기 때문에, 빠른 결정과 빠른 실행이 최우선이다.</p>
+  </div>
+  <div class="quote">
+    <span class="quote-speaker s1">이민석</span>
+    <p>서울시 교통카드 시스템을 만들었을 때 코드가 완전 엉망이었어요. 걸레. 일단 되게 만든 거죠. 하지만 비즈니스 관점에서는 괜찮은 결정이었습니다. 2년 후 코드를 전부 버리고 OS부터 새로 설치해서 깨끗하게 다시 만들었고, 그 이후로 안정적으로 돌고 수출도 됐습니다.</p>
+  </div>
+  <div class="point">
+    <div class="point-title">트레이드오프는 레거시를 만든다 — 그리고 괜찮다</div>
+    <p>빠른 결정을 위해 만들어놓은 시스템은 당연히 레거시가 된다. 핵심은 비즈니스가 당위성을 인정받은 뒤에 리팩토링하는 것이다. 당근마켓이 Ruby on Rails로 시작해서 성장 후 코틀린으로 전환한 것처럼.</p>
+  </div>
+  <div class="point">
+    <div class="point-title">지속 가능한 코드의 리듬</div>
+    <p>기한에 맞춰 일단 배포하고 → 코드 개선(리팩토링) → 다시 진행. 이 사이클을 반복하는 것이 현실적인 개발 전략이다.</p>
+  </div>
+  <div class="point">
+    <div class="point-title">시니어의 프롬프팅 = 팀원에게 디렉션 주기 <span class="ts">⏱ 04:40</span></div>
+    <p>AI에게 컨벤션과 가이드를 담은 프롬프트를 주는 행위는, 팀원에게 디렉션을 주고 코드 리뷰하는 행위와 본질적으로 같다. 리더 입장에서는 <strong>"팀원한테 시키냐 AI한테 시키냐"</strong>의 차이일 뿐, 하는 일 자체는 동일하다.</p>
+  </div>
+  <div class="quote">
+    <span class="quote-speaker s3">박상권</span>
+    <p>시니어 입장에서는 똑같은 것 같아요. 팀원들한테 가이드를 주고 디렉션을 주는 것이 프롬프트와 똑같은 행위를 제가 하고 있는데, 그것을 팀원한테 시키냐 AI한테 시키냐의 차이입니다.</p>
+  </div>
+</article>
+
+<!-- S2 -->
+<article class="section" id="s2">
+  <div class="section-header">
+    <p class="section-num">Section 02</p>
+    <h2 class="section-title">팀이 길을 잃었을 때,<br>어떻게 해야 하나?</h2>
+  </div>
+  <div class="key-insight">문제는 <strong>현상</strong>이고, 현상 뒤에는 <strong>원인</strong>이 있다. 원인을 모른 채 해결하려 하면 배가 산으로 간다.</div>
+
+  <div class="point">
+    <div class="point-title">"원인"에 집중하자</div>
+    <p>대표가 "이거 이렇게 하시죠"라고 던지면 문제와 해결 방향만 있고 원인이 빠져 있다. 원인을 파악하면 건물을 3cm 옮기라는 요구가 사실은 아주 간단하게 풀릴 수 있다.</p>
+  </div>
+  <div class="quote">
+    <span class="quote-speaker s3">박상권</span>
+    <p>원인을 모르는 상태에서 문제가 있고 해결하겠다로 가면 산으로 가는 경우가 많아요. 원인을 찾으면 오히려 되게 쉽게 풀리는 경우가 많습니다.</p>
+  </div>
+  <div class="point">
+    <div class="point-title">"겸사겸사"를 경계하라</div>
+    <p>"하는 김에 이것도 보면 좋지 않을까?"가 붙는 순간 문제의 초점이 흐려진다. 하나의 피처에 검증하고 싶은 가설이 너무 많아지면, 원래 하려던 것이 무엇이었는지 돌아봐야 한다.</p>
+  </div>
+  <div class="point">
+    <div class="point-title">질문의 순서를 정리하라</div>
+    <p>엔지니어의 본능은 "어떻게 만들까?"이지만, 그 질문은 가장 나중에 해야 한다. <strong>"무엇을 만들까?"</strong> → <strong>"언제 필요한가?"</strong> → 그 후에 "어떻게?"가 와야 한다.</p>
+  </div>
+</article>
+
+<!-- S3 -->
+<article class="section" id="s3">
+  <div class="section-header">
+    <p class="section-num">Section 03</p>
+    <h2 class="section-title">복잡한 문제 앞에서 가장 먼저 꺼내 드는<br>나만의 해결 원칙은?</h2>
+  </div>
+  <div class="key-insight">기술적 문제는 <strong>책</strong>에서, 비기술적 선택은 <strong>엑셀 표</strong>에서 답을 찾아라. 그리고 AI에게 시키기 전에 <strong>혼자 생각하는 시간</strong>을 가져라.</div>
+
+  <div class="point">
+    <div class="point-title">기술적 문제 → 책을 보라</div>
+    <p>내가 처음 겪는 문제가 아닐 가능성이 높다. 책은 세상의 문제를 추상화하여 잘 정리해놓은 것이다. 옛날 똘똘한 사람들이 어떻게 봤는지 아는 것이 출발점이다.</p>
+  </div>
+  <div class="point">
+    <div class="point-title">비기술적 선택 → 엑셀 의사결정 매트릭스</div>
+    <p>선택지를 행에, 고려 사항을 열에 놓고 가중치를 매겨 점수를 계산한다. 결국 자기 편향에 맞게 가중치를 조정하게 되지만, 이 절차를 거치면 선택하지 않은 것에 대한 후회가 훨씬 줄어들고 논리적으로 결정했다는 마음의 안정을 얻는다.</p>
+  </div>
+  <div class="quote">
+    <span class="quote-speaker s1">이민석</span>
+    <p>표를 만든 다음에 보면 내 예단에 맞게 가중치를 조정하게 돼 있어요. 그럼에도 이런 절차를 거치고 나면 다른 것에 대한 후회가 훨씬 적어지고, 인생이 굉장히 윤택해집니다.</p>
+  </div>
+  <div class="point">
+    <div class="point-title">"하는 김에 한다"를 제거하라</div>
+    <p>하나의 커밋에 하나의 작업, 하나의 PR에 제목과 맞는 작업만. 사전 작업이 필요하면 별도 티켓으로 분리한다. AB 테스트 결과도 안 나왔는데 미리 고도화하지 마라.</p>
+  </div>
+  <div class="point">
+    <div class="point-title">AI에게 물어보기 전에, 혼자 생각하라</div>
+    <p>AI는 생각을 너무 빠르게 끌고 가서 본질에서 멀어지게 한다. 내가 도대체 뭘 알고 싶은지를 먼저 정리한 뒤 AI를 붙여야 끌려가지 않는다. 혼자 생각하는 시간 자체가 가장 강력한 도구다.</p>
+  </div>
+</article>
+
+<!-- S4 -->
+<article class="section" id="s4">
+  <div class="section-header">
+    <p class="section-num">Section 04</p>
+    <h2 class="section-title">AI 시대, 기술 구현을 넘어<br>우리가 던져야 할 본질적인 질문은?</h2>
+  </div>
+  <div class="key-insight">AI가 잘하는 건 AI에게 시키고, AI가 <strong>못 따라오는 영역</strong>을 찾아라. 문제 해결 능력의 본질은 <strong>쪼개기, 제약 조건, 우선순위</strong>다.</div>
+
+  <div class="point">
+    <div class="point-title">"이걸 내가 하는 게 맞나?"를 먼저 물어라</div>
+    <p>AI가 얼마나 잘할 수 있는지 확인하지 않으면, AI가 쉽게 할 수 있는 것을 사람이 하다가 기회를 잃는다. 먼저 AI에게 시켜보고, AI가 못하는 영역을 탐색하라.</p>
+  </div>
+
+  <div class="example">
+    <p class="example-label">🔧 실화 — Claude Code에게 기계어 계산기 만들기 <span class="ts">⏱ 24:01</span></p>
+    <p>이민석 교수가 Claude Code에게 고급 언어도 어셈블러도 쓰지 말고 <strong>순수 기계어(바이너리)로 계산기</strong>를 만들라고 시켰다. Claude Code는 CPU 명령어 체계를 파악한 뒤, 기계어 바이트를 생성하는 파이썬 코드를 먼저 작성하고 분기 주소를 자동 계산하여 바이너리를 완성했다. Segmentation Fault가 나자 스스로 디버거를 돌려 원인을 찾아 수정하고, 오버플로우·나누기 0 등 엣지 케이스 테스트까지 자동으로 수행했다. — AI가 이 정도로 잘하는 시대에, 사람이 해야 할 일이 무엇인지를 고민해야 한다.</p>
+  </div>
+
+  <div class="example">
+    <p class="example-label">비유 — 절벽에서의 비행기</p>
+    <p>AI 덕분에 절벽에서 뛰어내리면서 비행기를 조립해 착지 전에 탈 수 있게 됐다. 하지만 더 중요한 건 <strong>그 비행기로 태평양을 건널 수 없다는 걸 아는 것</strong>이다. 악마의 디테일, 복합적 복잡성(Complex + Complicated)은 여전히 사람의 영역이다.</p>
+  </div>
+
+  <div class="point">
+    <div class="point-title">문제 해결 능력 = 쪼개기 + 제약 조건 + 우선순위</div>
+    <p>AI에게 큰 문제를 던지면 한 번에 다 해결하려 한다. 현실에는 기한, 인력, 시스템 설계라는 제약이 있다. 문제를 잘게 쪼개면 각 단위의 소요 시간을 예측할 수 있고, 정확한 딜리버리 일정이 나온다.</p>
+  </div>
+  <div class="quote">
+    <span class="quote-speaker s3">박상권</span>
+    <p>AI는 제약 조건 없이 자기 하고 싶은 대로 꿈을 펼치잖아요. 우리는 제약 조건 안에서 문제를 해결해야 합니다.</p>
+  </div>
+  <div class="point">
+    <div class="point-title">시니어의 역량도 AI가 학습 중이다</div>
+    <p>일을 쪼개고, 우선순위를 정하고, 검증하는 시니어의 노하우가 rules.md, SKILL.md 등에 기록되며 AI에게 흡수되고 있다. AI 전환은 세대 전환이며, 결국 아이디어가 있는 사람이 판을 잡게 될 것이다.</p>
+  </div>
+</article>
+
+<!-- S5 -->
+<article class="section" id="s5">
+  <div class="section-header">
+    <p class="section-num">Section 05</p>
+    <h2 class="section-title">내일 출근해서 '문제'를 마주했을 때,<br>딱 한 가지만 다르게 행동해 본다면?</h2>
+  </div>
+  <div class="key-insight">세 가지 키워드: <strong>책임감을 넓혀라</strong>, <strong>개발자 마인드를 버려라</strong>, <strong>"이걸 내가 해야 하나?"를 물어라</strong>.</div>
+
+  <div class="quote">
+    <span class="quote-speaker s2">하조은 (모더레이터)</span>
+    <p>개발자가 더 많은 걸 책임져 나갈수록 더 많은 일을 할 수 있다고 생각해요. 원래 내가 안 해도 되는 일을 한 번 더 들여다보고, AI로 일주일 걸릴 일을 하루 만에 해서 드려보세요.</p>
+  </div>
+  <div class="quote">
+    <span class="quote-speaker s3">박상권</span>
+    <p>개발자 마인드를 버려야 합니다. "이게 진짜 우리 서비스에 도움이 되는가?", "기획자가 정리한 게 진짜 문제가 맞나?" — 비즈니스 임팩트를 항상 우선시하세요.</p>
+  </div>
+  <div class="quote">
+    <span class="quote-speaker s1">이민석</span>
+    <p>매일 아침 "이걸 내가 하는 게 맞나"를 생각합니다. 나한테 결정 권한이 있나, 그리고 이건 AI가 결정한 걸 따르면 될지도 모른다 — 두 가지를 동시에 질문하세요.</p>
+  </div>
+</article>
+
+<div class="divider" style="margin-bottom:4rem"></div>
+
+<!-- Q&A -->
+<article class="section" id="qa">
+  <div class="section-header">
+    <p class="section-num">Q & A</p>
+    <h2 class="section-title">청중 질의응답</h2>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-question">AI 도입으로 개발자 생산성을 높이라는 과제를 받았는데, 생산성을 어떤 지표로 표현할 수 있을까요?</div>
+    <div class="qa-answer">
+      <div class="point">
+        <div class="point-title">이민석 — 비용 대비 시간 절약</div>
+        <p>연봉 5천만 원 기준, 20달러짜리 AI가 하루 1분만 절약해도 본전이다. 200달러면 하루 10분. 회사에서 AI를 못 쓰게 하는 것은 거의 배임에 가깝다. 지금은 같은 시간 안에 다른 트라이를 한 번 더 해봤다 — 그 정도로 충분하다.</p>
+      </div>
+      <div class="point">
+        <div class="point-title">박상권 — 트럭 카운트(Truck Count) <span class="ts">⏱ 54:56</span></div>
+        <p><strong>"우리 팀원 중 몇 명이 트럭에 치여도 팀이 운영 가능한가?"</strong>의 카운트. 높을수록 좋은 팀이다. 누군가 내일 당장 못 나와도 문제가 없다는 것은, 그 사람의 컨벤션·컨텍스트·작업 내역이 항상 팀에 공유되고 어딘가에 관리되고 있다는 의미다. AI에게 컨벤션을 주면 누가 짜도 같은 코드가 나오고, 트럭 카운트가 올라간다 = 생산성이 올라간다.</p>
+      </div>
+      <div class="point">
+        <div class="point-title">하조은 — 배포 빈도와 유의미한 개선 횟수</div>
+        <p>코드 수로 따질 수는 없고, 하루에 얼마나 자주 배포해서 얼마나 유의미한 개선이 발생하는가를 보라. 오더를 내린 분과 지표에 대해 많이 대화하라.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-question">주니어 백엔드 개발자입니다. AI가 짠 코드로 PR을 올렸더니 "왜 이렇게 짰냐"는 리뷰를 받고 할 말이 없었어요. AI를 어떻게 활용하면 좋을까요?</div>
+    <div class="qa-answer">
+      <div class="point">
+        <div class="point-title">이민석 — 회사 프로세스를 바꿔야 한다</div>
+        <p>사람이 짰든 AI가 짰든 원하는 피처가 제대로 구현되고 보안 문제가 없으면 AI를 쓰는 게 당연하다. 개발 루프에서 사람을 빼는 것이 궁극적 목표이므로, 회사 프로세스 자체가 AI 중심으로 변해야 한다. 에이전트 옵스(Agent Ops)라는 말이 나오기 시작한 것도 같은 맥락이다.</p>
+      </div>
+      <div class="point">
+        <div class="point-title">박상권 — "암묵지 없애기"로 팀을 감동시켜라</div>
+        <p>리뷰의 핵심은 AI 사용 여부가 아니라 도메인 이해와 컨벤션이다. 신입이야말로 암묵지를 가장 잘 발견하는 사람이다. 10년 차가 머릿속에만 갖고 있던 것을 문서화하면 팀원들이 감동한다. 온보딩 문서를 가장 잘 개선할 수 있는 사람은 새로 온 사람이다.</p>
+      </div>
+      <div class="point">
+        <div class="point-title">하조은 — AI를 더 열심히 써서, 방어까지 AI로 하라</div>
+        <p>처음에 AI를 썼다고 밝힌 게 실수다. 극단적으로 써서 어느 순간 믿고 보는 코드가 되게 만들어야 한다. 암묵지를 context.md에 넣어서 다음 사람은 AI가 알아서 컨벤션에 맞게 짜주도록 하라.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-question">사고의 편향을 인정하면 향상심을 포기하는 것 아닌가요? 어떻게 편향을 수용하는 멘탈 모델을 가질 수 있을까요?</div>
+    <div class="qa-answer">
+      <div class="point">
+        <div class="point-title">이민석 — 모든 선택은 편향되어 있다. 인정하라.</div>
+        <p>선택에 옳고 그름은 없다. 선택한 것에 대해 후회하지 않고, 선택하지 않은 것에 미련을 갖지 않는 것이 중요하다. 고민이 많다면 빨리 해보는 게 장땡이다. AI에게 다른 관점을 물어보고, 엑셀 표의 가중치를 내 마음대로 정해서 만족스러운 결과를 만들면 인생이 편안해진다.</p>
+      </div>
+      <div class="point">
+        <div class="point-title">박상권 — 다 들어보고, 내가 결정한다</div>
+        <p>팀원, AI, 여러 시각을 다 들어본 뒤 내가 결정한다. 결정 후에는 돌이켜보며 회고하되, 결정 과정에서 다양성을 충분히 들었다면 그것으로 충분하다.</p>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- Footer -->
+<div class="footer">
+  <p>본 문서는 2026.02.11 패널 토크 녹취록을 AI로 요약·정리한 것입니다.</p>
+  <p style="margin-top:.5rem"><a href="https://clovanote.naver.com/s/SsiTT4GnB3sFdx6itcEXh3S" target="_blank" rel="noopener">🔗 클로바노트 원본 음성 듣기</a></p>
+</div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위험성평가 환경설정 - 빈도강도 커스텀 프로토타입</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5F7FA; color: #222; padding: 32px; }
+
+  .container { max-width: 1500px; margin: 0 auto; display: flex; gap: 24px; }
+  .left-panel { flex: 1; min-width: 0; }
+  .right-panel { width: 440px; flex-shrink: 0; position: sticky; top: 32px; align-self: flex-start; }
+
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #70747F; }
+
+  .card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+  /* Scale selector */
+  .scale-selector { display: flex; gap: 8px; margin-bottom: 24px; }
+  .scale-btn { padding: 8px 16px; border: 1px solid #BCC3D1; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+  .scale-btn.active { background: #222; color: #fff; border-color: #222; }
+  .scale-btn:hover:not(.active) { background: #F5F7FA; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; border-top: 2px solid #BCC3D1; }
+  th { background: #F5F7FA; border-bottom: 1px solid #BCC3D1; padding: 14px 12px; font-size: 13px; font-weight: 600; text-align: left; white-space: nowrap; }
+  td { border-bottom: 1px solid #BCC3D1; padding: 12px; vertical-align: middle; }
+
+  /* Inputs */
+  input[type="text"], input[type="number"], select {
+    height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #BCC3D1;
+    font-size: 14px; font-weight: 500; color: #222; outline: none; transition: border 0.15s;
+  }
+  input:focus, select:focus { border-color: #222; }
+  input[readonly] { background: #F5F7FA; color: #70747F; cursor: default; }
+  input[readonly]:focus { border-color: #BCC3D1; }
+
+  .range-group { display: flex; align-items: center; gap: 6px; }
+  .range-group input { width: 52px; text-align: center; }
+  .range-group select { width: 68px; text-align: center; padding: 0 4px; }
+  .range-tilde { color: #9A9DA4; font-size: 14px; }
+
+  .grade-group { display: flex; align-items: center; gap: 8px; }
+  .color-box { width: 36px; height: 36px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0; position: relative; }
+  .color-box input[type="color"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .grade-input { width: 110px; }
+
+  /* Buttons */
+  .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-add { background: #F5F7FA; color: #222; border: 1px dashed #BCC3D1; width: 100%; padding: 10px; margin-top: 4px; }
+  .btn-add:hover { background: #E0E5EF; }
+  .btn-add:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-delete { background: none; color: #FF5757; font-size: 18px; padding: 4px 8px; border: none; cursor: pointer; border-radius: 4px; }
+  .btn-delete:hover { background: #FFF0F0; }
+  .btn-delete:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Grid */
+  .grid-table th, .grid-table td { text-align: center; padding: 10px 8px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .badge svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* Type changes panel */
+  .type-card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .type-card h3 { margin-bottom: 10px; color: #222; font-size: 14px; }
+  .diff-block { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11.5px; line-height: 1.7; background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 14px; overflow-x: auto; margin-bottom: 8px; }
+  .diff-removed { color: #f38ba8; text-decoration: line-through; opacity: 0.7; }
+  .diff-added { color: #a6e3a1; }
+  .diff-comment { color: #6c7086; }
+  .diff-type { color: #89b4fa; }
+  .diff-key { color: #f9e2af; }
+
+  .status-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .status-tag { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+
+  .section-title { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .section-title .badge-count { background: #222; color: #fff; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+
+  .info-text { font-size: 12px; color: #9A9DA4; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<h1>위험성평가 환경설정 - 빈도강도 커스텀 프로토타입</h1>
+<p style="color: #70747F; font-size: 14px; margin-bottom: 24px;">위험성추정기준 값 변경 시 등급 산정표가 실시간으로 연동됩니다. 우측에서 타입 변경사항을 확인할 수 있습니다.</p>
+
+<div class="container">
+  <!-- Left Panel: 설정 UI -->
+  <div class="left-panel">
+
+    <!-- Scale Selector -->
+    <div class="card">
+      <h3>Matrix Scale 선택</h3>
+      <div class="scale-selector">
+        <button class="scale-btn active" onclick="changeScale('5x5')">5 x 5</button>
+        <button class="scale-btn" onclick="changeScale('5x4')">5 x 4</button>
+        <button class="scale-btn" onclick="changeScale('4x4')">4 x 4</button>
+        <button class="scale-btn" onclick="changeScale('3x3')">3 x 3</button>
+      </div>
+    </div>
+
+    <!-- Estimation Table -->
+    <div class="card">
+      <div class="section-title">
+        <h2>위험성추정기준</h2>
+        <span class="badge-count" id="rowCount">5</span>
+        <span style="font-size: 12px; color: #9A9DA4;">/ 최대 5개</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="estimationTable">
+          <thead>
+            <tr>
+              <th style="width: 150px;">범위</th>
+              <th style="width: 200px;">위험등급</th>
+              <th style="width: 160px;">허용여부</th>
+              <th style="width: 220px;">개선방법</th>
+              <th style="width: 220px;">조치기준</th>
+              <th style="width: 50px;"></th>
+            </tr>
+          </thead>
+          <tbody id="estimationBody"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-add" id="addBtn" onclick="addEstimation()">+ 범위 추가</button>
+      <p class="info-text" id="addInfo"></p>
+    </div>
+
+    <!-- Risk Level Grid -->
+    <div class="card">
+      <div class="section-title">
+        <h2>등급 산정표</h2>
+        <span style="font-size: 12px; color: #9A9DA4; padding: 3px 8px; background: #F5F7FA; border-radius: 4px;">실시간 연동</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="grid-table" id="riskLevelGrid"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel: Type Changes -->
+  <div class="right-panel">
+    <div class="card" style="padding: 16px;">
+      <h2 style="font-size: 16px; margin-bottom: 12px;">타입 변경 사항</h2>
+      <div class="status-bar">
+        <span class="status-tag" style="background: #a6e3a11a; color: #40a02b;">Before / After</span>
+        <span class="status-tag" style="background: #89b4fa1a; color: #1e66f5;">실시간 반영</span>
+      </div>
+    </div>
+
+    <!-- MatrixEstimation Type -->
+    <div class="type-card">
+      <h3>1. MatrixEstimation 타입</h3>
+      <div class="diff-block">
+        <span class="diff-comment">// Before</span><br>
+        <span class="diff-type">type</span> MatrixEstimation = {<br>
+        &nbsp;&nbsp;<span class="diff-removed"><span class="diff-key">grade</span>: RiskGrade;</span><br>
+        &nbsp;&nbsp;<span class="diff-key">allowance</span>: string;<br>
+        &nbsp;&nbsp;<span class="diff-key">improvement</span>: string;<br>
+        &nbsp;&nbsp;<span class="diff-key">actionCriteria</span>: string;<br>
+        };<br><br>
+        <span class="diff-comment">// After</span><br>
+        <span class="diff-type">type</span> MatrixEstimation = {<br>
+        &nbsp;&nbsp;<span class="diff-added"><span class="diff-key">id</span>: string;</span> <span class="diff-comment">// uuid v4</span><br>
+        &nbsp;&nbsp;<span class="diff-added"><span class="diff-key">order</span>: number;</span> <span class="diff-comment">// 정렬 순서</span><br>
+        &nbsp;&nbsp;<span class="diff-key">grade</span>?: RiskGrade; <span class="diff-comment">// optional</span><br>
+        &nbsp;&nbsp;<span class="diff-added"><span class="diff-key">gradeName</span>: string;</span><br>
+        &nbsp;&nbsp;<span class="diff-added"><span class="diff-key">color</span>: string;</span> <span class="diff-comment">// HEX</span><br>
+        &nbsp;&nbsp;<span class="diff-added"><span class="diff-key">rangeMin</span>: number;</span><br>
+        &nbsp;&nbsp;<span class="diff-added"><span class="diff-key">rangeMax</span>: number;</span><br>
+        &nbsp;&nbsp;<span class="diff-key">allowance</span>: string;<br>
+        &nbsp;&nbsp;<span class="diff-key">improvement</span>: string;<br>
+        &nbsp;&nbsp;<span class="diff-key">actionCriteria</span>: string;<br>
+        };
+      </div>
+    </div>
+
+    <!-- MatrixRiskLevelCell Type -->
+    <div class="type-card">
+      <h3>2. MatrixRiskLevelCell 타입</h3>
+      <div class="diff-block">
+        <span class="diff-comment">// Before</span><br>
+        <span class="diff-type">type</span> MatrixRiskLevelCell = {<br>
+        &nbsp;&nbsp;<span class="diff-key">score</span>: number;<br>
+        &nbsp;&nbsp;<span class="diff-removed"><span class="diff-key">riskGrade</span>: RiskGrade;</span><br>
+        };<br><br>
+        <span class="diff-comment">// After &mdash; score만 유지</span><br>
+        <span class="diff-type">type</span> MatrixRiskLevelCell = {<br>
+        &nbsp;&nbsp;<span class="diff-key">score</span>: number;<br>
+        };
+      </div>
+    </div>
+
+    <!-- MatrixEvaluation Type -->
+    <div class="type-card">
+      <h3>3. MatrixEvaluation 타입</h3>
+      <div class="diff-block">
+        <span class="diff-comment">// Before</span><br>
+        <span class="diff-type">type</span> MatrixEvaluation = {<br>
+        &nbsp;&nbsp;<span class="diff-key">riskType</span>: MATRIX;<br>
+        &nbsp;&nbsp;<span class="diff-key">frequency</span>: number;<br>
+        &nbsp;&nbsp;<span class="diff-key">intensity</span>: number;<br>
+        &nbsp;&nbsp;<span class="diff-key">totalScore</span>: number;<br>
+        &nbsp;&nbsp;<span class="diff-removed"><span class="diff-key">riskGrade</span>: RiskGrade;</span><br>
+        };<br><br>
+        <span class="diff-comment">// After</span><br>
+        <span class="diff-type">type</span> MatrixEvaluation = {<br>
+        &nbsp;&nbsp;<span class="diff-key">riskType</span>: MATRIX;<br>
+        &nbsp;&nbsp;<span class="diff-key">frequency</span>: number;<br>
+        &nbsp;&nbsp;<span class="diff-key">intensity</span>: number;<br>
+        &nbsp;&nbsp;<span class="diff-key">totalScore</span>: number;<br>
+        &nbsp;&nbsp;<span class="diff-key">riskGrade</span>?: RiskGrade; <span class="diff-comment">// optional</span><br>
+        };
+      </div>
+    </div>
+
+    <!-- Order Sorting Logic -->
+    <div class="type-card">
+      <h3>4. order 정렬 로직</h3>
+      <div style="font-size: 12.5px; line-height: 1.8; color: #444; margin-bottom: 12px;">
+        <p style="margin-bottom: 8px;"><strong>order</strong>는 estimation 배열의 정렬 순서를 보장하는 필드입니다. <code>Position.order</code>와 동일한 패턴입니다.</p>
+
+        <p style="margin-bottom: 4px; font-weight: 600; color: #222;">1) 초기 생성 시</p>
+        <p style="margin-bottom: 8px; color: #70747F;">배열 index가 곧 order. <code>ranges.map((r, i) =&gt; ({ order: i, ... }))</code></p>
+
+        <p style="margin-bottom: 4px; font-weight: 600; color: #222;">2) row 추가 시</p>
+        <p style="margin-bottom: 8px; color: #70747F;">마지막 row를 분할하므로 새 row의 order = <code>estimations.length</code> (배열 끝에 push)</p>
+
+        <p style="margin-bottom: 4px; font-weight: 600; color: #222;">3) row 삭제 시 (핵심)</p>
+        <p style="margin-bottom: 8px; color: #70747F;">삭제 후 <strong>order를 0부터 재할당</strong>하여 연속성 보장:<br>
+        <code>filtered.map((e, i) =&gt; ({ ...e, order: i }))</code></p>
+
+        <p style="margin-bottom: 4px; font-weight: 600; color: #222;">4) DB 저장/조회 시</p>
+        <p style="color: #70747F;">서버에서 받은 데이터를 <code>order</code> 기준으로 정렬:<br>
+        <code>estimations.sort((a, b) =&gt; a.order - b.order)</code><br>
+        MongoDB 배열 순서가 보장되지 않는 경우에 대비하는 안전장치입니다.</p>
+      </div>
+
+      <div class="diff-block">
+<span class="diff-comment">// 삭제 시 order 재할당 로직</span><br>
+<span class="diff-type">const</span> removeEstimation = (<br>
+&nbsp;&nbsp;estimations, targetId, maxScore<br>
+) =&gt; {<br>
+&nbsp;&nbsp;<span class="diff-comment">// 1. 삭제 대상 제거</span><br>
+&nbsp;&nbsp;<span class="diff-type">const</span> filtered = estimations.filter(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(e) =&gt; e.id !== targetId<br>
+&nbsp;&nbsp;);<br><br>
+&nbsp;&nbsp;<span class="diff-comment">// 2. <span class="diff-added">order를 0부터 재할당 (핵심)</span></span><br>
+&nbsp;&nbsp;<span class="diff-type">const</span> reordered = filtered.map(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(e, <span class="diff-added">index</span>) =&gt; ({ ...e, <span class="diff-added">order: index</span> })<br>
+&nbsp;&nbsp;);<br><br>
+&nbsp;&nbsp;<span class="diff-comment">// 3. 범위 재조정 (삭제된 범위 흡수)</span><br>
+&nbsp;&nbsp;<span class="diff-type">return</span> reordered.map(...);<br>
+};<br><br>
+<span class="diff-comment">// 추가 시 order 할당</span><br>
+<span class="diff-type">const</span> addEstimation = (estimations, maxScore) =&gt; {<br>
+&nbsp;&nbsp;<span class="diff-type">const</span> newEstimation = {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;id: uuidv4(),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="diff-added">order: estimations.length</span>, <span class="diff-comment">// 끝에 추가</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;<span class="diff-type">return</span> [...estimations.slice(0, -1), updated, newEstimation];<br>
+};<br><br>
+<span class="diff-comment">// DB 조회 시 정렬</span><br>
+<span class="diff-type">const</span> loadEstimations = (raw) =&gt;<br>
+&nbsp;&nbsp;raw.<span class="diff-added">sort((a, b) =&gt; a.order - b.order)</span>;
+      </div>
+
+      <div style="margin-top: 10px; padding: 10px; background: #F5F7FA; border-radius: 8px; font-size: 11.5px;">
+        <strong>예시:</strong> 4개 row에서 order:1 삭제<br>
+        <span style="color: #9A9DA4;">Before:</span> [order:0, <span style="color: #f38ba8; text-decoration: line-through;">order:1</span>, order:2, order:3]<br>
+        <span style="color: #9A9DA4;">After&nbsp;:</span> [<span style="color: #40a02b;">order:0</span>, <span style="color: #40a02b;">order:1</span>, <span style="color: #40a02b;">order:2</span>] <span style="color: #70747F;">&larr; 재할당</span>
+      </div>
+    </div>
+
+    <!-- Live Data View -->
+    <div class="type-card">
+      <h3>5. 현재 estimations 데이터 (실시간)</h3>
+      <div class="diff-block" id="liveDataView" style="max-height: 400px; overflow-y: auto; font-size: 11px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+const SCALE_CONFIG = {
+  '5x5': { freqMax: 5, intMax: 5, maxScore: 25 },
+  '5x4': { freqMax: 5, intMax: 4, maxScore: 20 },
+  '4x4': { freqMax: 4, intMax: 4, maxScore: 16 },
+  '3x3': { freqMax: 3, intMax: 3, maxScore: 9 },
+};
+
+const DEFAULT_GRADES = [
+  { gradeName: '매우낮음', color: '#1F66F1' },
+  { gradeName: '낮음',   color: '#00AC0B' },
+  { gradeName: '보통',   color: '#FF9500' },
+  { gradeName: '높음',   color: '#FF5A1A' },
+  { gradeName: '매우높음', color: '#FE2C2B' },
+];
+
+const DEFAULT_RANGES = {
+  '5x5': [[1,4],[5,8],[9,12],[13,17],[18,25]],
+  '5x4': [[1,3],[4,7],[8,9],[10,12],[13,20]],
+  '4x4': [[1,2],[3,4],[5,6],[7,10],[11,16]],
+  '3x3': [[1,2],[3,4],[5,6],[7,8],[9,9]],
+};
+
+let currentScale = '5x5';
+let estimations = [];
+let idCounter = 0;
+
+const uuid = () => `est-${++idCounter}-${Date.now()}`;
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
+
+const initEstimations = (scale) => {
+  const ranges = DEFAULT_RANGES[scale];
+  return ranges.map((r, i) => ({
+    id: uuid(),
+    order: i,
+    gradeName: DEFAULT_GRADES[i].gradeName,
+    color: DEFAULT_GRADES[i].color,
+    rangeMin: r[0],
+    rangeMax: r[1],
+    allowance: i <= 2 ? '허용' : '허용불가능',
+    improvement: '',
+    actionCriteria: '',
+  }));
+};
+
+// ============================================================
+// COLOR UTILS
+// ============================================================
+
+const generateColorSet = (hex) => {
+  const norm = hex.match(/^#([0-9A-Fa-f]{6})/);
+  const base = norm ? `#${norm[1]}` : hex;
+  return { text: base, border: base, fill: `${base}1A` };
+};
+
+const getEstimationByScore = (score) =>
+  estimations.find(e => score >= e.rangeMin && score <= e.rangeMax);
+
+// ============================================================
+// RANGE LOGIC
+// ============================================================
+
+const getMaxScore = () => SCALE_CONFIG[currentScale].maxScore;
+
+const getRangeMaxOptions = (targetIndex) => {
+  const est = estimations[targetIndex];
+  const isLast = targetIndex === estimations.length - 1;
+  if (isLast) return [getMaxScore()];
+
+  const remainingRows = estimations.length - targetIndex - 1;
+  const min = est.rangeMax; // 현재값 이상만 선택 가능 (줄이기 불가, 이전 row에서 조정)
+  const max = getMaxScore() - remainingRows;
+  const options = [];
+  for (let v = min; v <= max; v++) options.push(v);
+  return options;
+};
+
+const handleRangeMaxChange = (targetIndex, newMax) => {
+  estimations[targetIndex].rangeMax = newMax;
+  if (targetIndex + 1 < estimations.length) {
+    estimations[targetIndex + 1].rangeMin = newMax + 1;
+  }
+  render();
+};
+
+// ============================================================
+// ADD / REMOVE
+// ============================================================
+
+const addEstimation = () => {
+  if (estimations.length >= 5) return;
+  const lastIdx = estimations.length - 1;
+  const last = estimations[lastIdx];
+  if (last.rangeMin >= last.rangeMax) return;
+
+  const split = Math.floor((last.rangeMin + last.rangeMax) / 2);
+  estimations[lastIdx] = { ...last, rangeMax: split };
+  estimations.push({
+    id: uuid(),
+    order: estimations.length,
+    gradeName: '',
+    color: '#808080',
+    rangeMin: split + 1,
+    rangeMax: getMaxScore(),
+    allowance: '',
+    improvement: '',
+    actionCriteria: '',
+  });
+  render();
+};
+
+const removeEstimation = (targetId) => {
+  if (estimations.length <= 2) return;
+  const targetIndex = estimations.findIndex(e => e.id === targetId);
+  const target = estimations[targetIndex];
+  const filtered = estimations.filter(e => e.id !== targetId);
+  const reordered = filtered.map((e, i) => ({ ...e, order: i }));
+
+  const maxScore = getMaxScore();
+  const result = reordered.map((e, i) => {
+    if (i === targetIndex && targetIndex < filtered.length) {
+      return { ...e, rangeMin: target.rangeMin };
+    }
+    if (targetIndex >= filtered.length && i === filtered.length - 1) {
+      return { ...e, rangeMax: maxScore };
+    }
+    return e;
+  });
+
+  estimations = result;
+  render();
+};
+
+// ============================================================
+// SCALE CHANGE
+// ============================================================
+
+const changeScale = (scale) => {
+  currentScale = scale;
+  estimations = initEstimations(scale);
+  document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+};
+
+// ============================================================
+// RENDER
+// ============================================================
+
+const renderEstimationTable = () => {
+  const tbody = document.getElementById('estimationBody');
+  const maxScore = getMaxScore();
+  const canDelete = estimations.length > 2;
+  const canAdd = estimations.length < 5 && estimations[estimations.length - 1].rangeMin < estimations[estimations.length - 1].rangeMax;
+
+  let html = '';
+  estimations.forEach((est, idx) => {
+    const isLast = idx === estimations.length - 1;
+    const options = getRangeMaxOptions(idx);
+    const rangeMaxDisabled = isLast;
+
+    html += `<tr>
+      <td>
+        <div class="range-group">
+          <input type="number" value="${est.rangeMin}" readonly style="width:52px;">
+          <span class="range-tilde">~</span>
+          ${rangeMaxDisabled
+            ? `<input type="number" value="${est.rangeMax}" readonly style="width:52px;">`
+            : `<select onchange="handleRangeMaxChange(${idx}, Number(this.value))" style="width:68px;">
+                ${options.map(v => `<option value="${v}" ${v === est.rangeMax ? 'selected' : ''}>${v}</option>`).join('')}
+              </select>`
+          }
+        </div>
+      </td>
+      <td>
+        <div class="grade-group">
+          <div class="color-box" style="background-color: ${est.color};">
+            <input type="color" value="${est.color}" onchange="estimations[${idx}].color = this.value; render();">
+          </div>
+          <input type="text" class="grade-input" value="${est.gradeName}" placeholder="등급명"
+            oninput="estimations[${idx}].gradeName = this.value; renderGrid(); renderLiveData();">
+        </div>
+      </td>
+      <td>
+        <input type="text" value="${est.allowance}" style="width:140px;"
+          oninput="estimations[${idx}].allowance = this.value; renderLiveData();">
+      </td>
+      <td>
+        <input type="text" value="${est.improvement}" style="width:200px;"
+          oninput="estimations[${idx}].improvement = this.value; renderLiveData();">
+      </td>
+      <td>
+        <input type="text" value="${est.actionCriteria}" style="width:200px;"
+          oninput="estimations[${idx}].actionCriteria = this.value; renderLiveData();">
+      </td>
+      <td>
+        <button class="btn-delete" onclick="removeEstimation('${est.id}')" ${!canDelete ? 'disabled' : ''}>&times;</button>
+      </td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = html;
+  document.getElementById('rowCount').textContent = estimations.length;
+
+  const addBtn = document.getElementById('addBtn');
+  addBtn.disabled = !canAdd;
+
+  const addInfo = document.getElementById('addInfo');
+  if (estimations.length >= 5) {
+    addInfo.textContent = '최대 5개까지 추가할 수 있습니다.';
+  } else if (!canAdd) {
+    addInfo.textContent = '마지막 범위가 1칸이어서 더 분할할 수 없습니다.';
+  } else {
+    addInfo.textContent = '';
+  }
+};
+
+const renderGrid = () => {
+  const { freqMax, intMax } = SCALE_CONFIG[currentScale];
+  const grid = document.getElementById('riskLevelGrid');
+
+  const freqLabels = [];
+  for (let i = 1; i <= freqMax; i++) freqLabels.push(`L${i}`);
+  const intLabels = [];
+  for (let i = 1; i <= intMax; i++) intLabels.push(`S${i}`);
+
+  let html = '<thead><tr><th style="width:80px;">빈도＼강도</th>';
+  [...intLabels].reverse().forEach(l => {
+    html += `<th>${l}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  [...freqLabels].reverse().forEach((fLabel, rowIdx) => {
+    const freq = freqMax - rowIdx;
+    html += `<tr><td style="background:#F5F7FA; font-weight:600; text-align:center;">${fLabel}</td>`;
+    [...intLabels].reverse().forEach((sLabel, colIdx) => {
+      const intensity = intMax - colIdx;
+      const score = freq * intensity;
+      const est = getEstimationByScore(score);
+      if (est) {
+        const cs = generateColorSet(est.color);
+        html += `<td>
+          <div class="badge" style="background:${cs.fill}; border:1px solid ${cs.border}; justify-content:center;">
+            <svg viewBox="0 0 16 16" fill="${cs.text}"><path d="M8 1.5l2.09 4.26 4.66.68-3.38 3.3.8 4.64L8 12.26l-4.17 2.12.8-4.64L1.25 6.44l4.66-.68z"/></svg>
+            <span style="color:${cs.text}; font-size:11px;">${est.gradeName || '?'}</span>
+          </div>
+          <div style="font-size:10px; color:#9A9DA4; margin-top:2px;">${score}점</div>
+        </td>`;
+      } else {
+        html += `<td><div class="badge" style="background:#F5F7FA; border:1px solid #BCC3D1;">
+          <span style="color:#9A9DA4; font-size:11px;">-</span>
+        </div><div style="font-size:10px; color:#9A9DA4; margin-top:2px;">${score}점</div></td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  grid.innerHTML = html;
+};
+
+const renderLiveData = () => {
+  const view = document.getElementById('liveDataView');
+  const json = estimations.map(e => ({
+    id: e.id.substring(0, 12) + '...',
+    order: e.order,
+    gradeName: e.gradeName,
+    color: e.color,
+    rangeMin: e.rangeMin,
+    rangeMax: e.rangeMax,
+    allowance: e.allowance || '(empty)',
+    improvement: e.improvement || '(empty)',
+    actionCriteria: e.actionCriteria || '(empty)',
+  }));
+
+  let html = `<span class="diff-comment">// estimation 배열 (${estimations.length}개)</span><br>`;
+  html += `<span class="diff-comment">// scale: ${currentScale}, maxScore: ${getMaxScore()}</span><br>`;
+  html += '[<br>';
+  json.forEach((item, i) => {
+    const cs = generateColorSet(estimations[i].color);
+    html += `&nbsp;&nbsp;{<br>`;
+    html += `&nbsp;&nbsp;&nbsp;&nbsp;<span class="diff-key">order</span>: ${item.order},<br>`;
+    html += `&nbsp;&nbsp;&nbsp;&nbsp;<span class="diff-key">gradeName</span>: <span style="color:${cs.text}; text-shadow: 0 0 6px ${cs.text}40;">"${item.gradeName}"</span>,<br>`;
+    html += `&nbsp;&nbsp;&nbsp;&nbsp;<span class="diff-key">color</span>: "${item.color}",<br>`;
+    html += `&nbsp;&nbsp;&nbsp;&nbsp;<span class="diff-key">range</span>: <span class="diff-added">${item.rangeMin} ~ ${item.rangeMax}</span>,<br>`;
+    html += `&nbsp;&nbsp;&nbsp;&nbsp;<span class="diff-key">allowance</span>: "${item.allowance}",<br>`;
+    html += `&nbsp;&nbsp;}${i < json.length - 1 ? ',' : ''}<br>`;
+  });
+  html += ']';
+  view.innerHTML = html;
+};
+
+const render = () => {
+  renderEstimationTable();
+  renderGrid();
+  renderLiveData();
+};
+
+// ============================================================
+// INIT
+// ============================================================
+
+estimations = initEstimations('5x5');
+render();
+</script>
+
+</body>
+</html>

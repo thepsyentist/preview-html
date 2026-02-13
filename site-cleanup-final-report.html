@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SafeU Works 현장 데이터 정리 최종 리포트</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --c-bg:#f8f9fa;--c-white:#fff;--c-dark:#212529;--c-text:#495057;--c-muted:#868e96;--c-border:#e9ecef;--c-border2:#dee2e6;
+  --c-blue:#228be6;--c-blue-bg:#e7f5ff;--c-blue-border:#74c0fc;
+  --c-green:#40c057;--c-green-bg:#ebfbee;--c-green-border:#69db7c;
+  --c-red:#fa5252;--c-red-bg:#fff5f5;--c-red-border:#ffc9c9;
+  --c-orange:#e67700;--c-orange-bg:#fff9db;--c-orange-border:#ffd43b;
+  --c-purple:#7950f2;--c-purple-bg:#f3f0ff;--c-purple-border:#b197fc;
+  --c-cyan:#15aabf;--c-cyan-bg:#e3fafc;--c-cyan-border:#66d9e8;
+  --radius:12px;--radius-sm:8px;--radius-xs:4px;
+}
+body{font-family:'Pretendard Variable',Pretendard,-apple-system,'Noto Sans KR',sans-serif;background:var(--c-bg);color:var(--c-dark);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.hero{background:var(--c-dark);color:#fff;padding:64px 32px 48px;text-align:center}
+.hero h1{font-size:32px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
+.hero p{font-size:15px;color:#adb5bd;max-width:600px;margin:0 auto 28px}
+.hero-stats{display:flex;justify-content:center;gap:32px;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hero-stat .num{font-size:36px;font-weight:800;letter-spacing:-1px}
+.hero-stat .num.blue{color:var(--c-blue)}.hero-stat .num.green{color:var(--c-green)}.hero-stat .num.red{color:var(--c-red)}
+.hero-stat .label{font-size:12px;color:#adb5bd;font-weight:600;margin-top:2px}
+.topnav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--c-border);padding:0 24px;overflow-x:auto;white-space:nowrap}
+.topnav-inner{max-width:960px;margin:0 auto;display:flex;gap:4px}
+.topnav a{display:inline-block;padding:12px 16px;font-size:13px;font-weight:600;color:var(--c-muted);text-decoration:none;border-bottom:2px solid transparent;transition:.2s}
+.topnav a:hover,.topnav a.active{color:var(--c-blue);border-bottom-color:var(--c-blue)}
+.container{max-width:960px;margin:0 auto;padding:48px 24px}
+.section{margin-bottom:56px}
+.section-num{font-size:11px;font-weight:700;color:var(--c-blue);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.section-title{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.section-desc{font-size:14px;color:var(--c-muted);margin-bottom:24px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}
+.stat-card{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius);padding:20px;text-align:center;transition:.15s}
+.stat-card:hover{border-color:var(--c-border2)}
+.stat-card .stat-num{font-size:32px;font-weight:800;letter-spacing:-1px}
+.stat-card .stat-label{font-size:12px;color:var(--c-muted);font-weight:600;margin-top:2px}
+.stat-card .stat-sub{font-size:11px;color:var(--c-muted);margin-top:4px}
+.stat-card.blue .stat-num{color:var(--c-blue)}.stat-card.green .stat-num{color:var(--c-green)}
+.stat-card.red .stat-num{color:var(--c-red)}.stat-card.orange .stat-num{color:var(--c-orange)}
+.chart-row{display:grid;grid-template-columns:240px 1fr;gap:24px;margin-bottom:32px;align-items:start}
+.donut-wrap{position:relative;width:200px;height:200px;margin:0 auto}
+.donut{width:200px;height:200px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.donut-center{position:absolute;width:120px;height:120px;background:var(--c-white);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;top:50%;left:50%;transform:translate(-50%,-50%)}
+.donut-center .num{font-size:28px;font-weight:800;letter-spacing:-1px}
+.donut-center .label{font-size:11px;color:var(--c-muted);font-weight:600}
+.legend{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.category-bars{display:flex;flex-direction:column;gap:12px}
+.cat-bar-row{display:flex;align-items:center;gap:12px}
+.cat-bar-label{width:100px;font-size:13px;font-weight:600;text-align:right;flex-shrink:0}
+.cat-bar-track{flex:1;height:32px;background:var(--c-bg);border-radius:6px;overflow:hidden;position:relative}
+.cat-bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:700;color:#fff;transition:width .5s ease;min-width:fit-content}
+.cat-bar-count{font-size:13px;font-weight:700;width:40px;text-align:right;flex-shrink:0}
+.dup-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+.dup-card{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius);padding:16px;transition:.15s}
+.dup-card:hover{border-color:var(--c-blue-border)}
+.dup-card .dup-name{font-size:14px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.dup-card .dup-original{font-size:12px;color:var(--c-green);font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.dup-card .dup-deleted{font-size:24px;font-weight:800;color:var(--c-red);letter-spacing:-1px}
+.dup-card .dup-deleted-label{font-size:11px;color:var(--c-muted)}
+.dup-card .dup-meta{display:flex;gap:12px;margin-top:8px;font-size:12px;color:var(--c-muted)}
+.search-bar{display:flex;gap:8px;margin-bottom:16px;align-items:center}
+.search-input{flex:1;padding:10px 14px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;outline:none;transition:.2s}
+.search-input:focus{border-color:var(--c-blue);box-shadow:0 0 0 3px var(--c-blue-bg)}
+.filter-btn{padding:8px 14px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:inherit;background:var(--c-white);cursor:pointer;transition:.15s;white-space:nowrap}
+.filter-btn:hover{border-color:var(--c-border2)}.filter-btn.active{background:var(--c-blue);color:#fff;border-color:var(--c-blue)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--c-dark);color:#fff;padding:10px 12px;font-weight:600;text-align:left;white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{background:#343a40}
+thead th .sort-icon{margin-left:4px;opacity:.5;font-size:10px}
+thead th.sorted .sort-icon{opacity:1}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--c-border)}
+tbody tr:nth-child(even){background:var(--c-bg)}
+tbody tr:hover{background:var(--c-blue-bg)}
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-xs);font-size:11px;font-weight:700;line-height:1.5}
+.badge.active{background:var(--c-green-bg);color:var(--c-green);border:1px solid var(--c-green-border)}
+.badge.dup{background:var(--c-red-bg);color:var(--c-red);border:1px solid var(--c-red-border)}
+.badge.test{background:var(--c-orange-bg);color:var(--c-orange);border:1px solid var(--c-orange-border)}
+.badge.trial{background:var(--c-purple-bg);color:var(--c-purple);border:1px solid var(--c-purple-border)}
+.badge.inactive{background:#f1f3f5;color:var(--c-muted);border:1px solid var(--c-border2)}
+.badge.pre{background:#f1f3f5;color:#868e96;border:1px solid #ced4da}
+.accordion{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden}
+.accordion-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:.15s}
+.accordion-header:hover{background:var(--c-bg)}
+.accordion-header .left{display:flex;align-items:center;gap:10px}
+.accordion-header .arrow{display:inline-block;transition:transform .2s;font-size:12px}
+.accordion.open .accordion-header .arrow{transform:rotate(90deg)}
+.accordion-body{display:none;border-top:1px solid var(--c-border)}
+.accordion.open .accordion-body{display:block}
+.reason-tag{font-size:11px;padding:2px 6px;border-radius:3px;font-weight:600}
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:var(--c-border)}
+.timeline-item{position:relative;padding-bottom:24px}
+.timeline-item:last-child{padding-bottom:0}
+.timeline-dot{position:absolute;left:-24px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid var(--c-blue);background:var(--c-white)}
+.timeline-item.done .timeline-dot{background:var(--c-green);border-color:var(--c-green)}
+.timeline-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.timeline-desc{font-size:13px;color:var(--c-muted)}
+.timeline-badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:3px;margin-left:6px}
+.info-box{padding:14px 16px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:16px;line-height:1.7}
+.info-box.blue{background:var(--c-blue-bg);border:1px solid var(--c-blue-border);color:#1864ab}
+.info-box.green{background:var(--c-green-bg);border:1px solid var(--c-green-border);color:#2b8a3e}
+.info-box.red{background:var(--c-red-bg);border:1px solid var(--c-red-border);color:#c92a2a}
+.empty{text-align:center;padding:32px;color:var(--c-muted);font-size:13px}
+.footer{text-align:center;padding:32px;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:48px}
+.td-right{text-align:right}
+.td-center{text-align:center}
+.highlight{background:#fff3bf;padding:0 2px;border-radius:2px}
+.num-cell{font-variant-numeric:tabular-nums;font-weight:600}
+.activity-bar{display:inline-block;height:6px;border-radius:3px;vertical-align:middle;margin-right:6px}
+@media(max-width:768px){
+  .hero{padding:40px 20px 32px}.hero h1{font-size:24px}.hero-stat .num{font-size:28px}
+  .hero-stats{gap:20px}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .chart-row{grid-template-columns:1fr}
+  .dup-grid{grid-template-columns:1fr}
+  .container{padding:32px 16px}
+  .section-title{font-size:20px}
+  .cat-bar-label{width:70px;font-size:12px}
+  table{font-size:12px}thead th,tbody td{padding:8px 6px}
+  .topnav a{padding:10px 12px;font-size:12px}
+}
+.scroll-table{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.no-data{color:var(--c-muted);font-style:italic}
+.original-link{color:var(--c-blue);text-decoration:none;font-weight:600;font-size:12px}
+.original-link:hover{text-decoration:underline}
+.tab-filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.progress-ring{display:inline-block;width:48px;height:48px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{opacity:0;animation:fadeUp .6s ease forwards}
+.fade-in:nth-child(1){animation-delay:.1s}.fade-in:nth-child(2){animation-delay:.2s}
+.fade-in:nth-child(3){animation-delay:.3s}.fade-in:nth-child(4){animation-delay:.4s}
+.section{opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease}
+.section.visible{opacity:1;transform:translateY(0)}
+.back-to-top{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--c-dark);color:#fff;border:none;font-size:18px;cursor:pointer;opacity:0;transition:.3s;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.back-to-top.show{opacity:1}
+.back-to-top:hover{background:var(--c-blue)}
+.summary-row{background:var(--c-dark)!important;color:#fff;font-weight:700}
+.summary-row td{border-bottom:none!important;padding:12px!important}
+@media print{.topnav,.back-to-top,.search-bar,.tab-filters,.filter-btn{display:none!important}.hero{padding:32px;break-after:avoid}.section{opacity:1!important;transform:none!important;break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>SafeU Works 현장 데이터 정리</h1>
+  <p>운영 DB 현장(SITE) 레코드 전수 조사 및 정리 결과 리포트</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">118</div><div class="label">전체 현장</div></div>
+    <div class="hero-stat"><div class="num green">45</div><div class="label">활성 (운영중)</div></div>
+    <div class="hero-stat"><div class="num red">73</div><div class="label">삭제 처리</div></div>
+    <div class="hero-stat"><div class="num blue">61.9%</div><div class="label">정리율</div></div>
+  </div>
+</div>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="#summary" class="active">요약</a>
+    <a href="#analysis">삭제 분석</a>
+    <a href="#active-sites">활성 현장</a>
+    <a href="#deleted-sites">삭제 현장</a>
+    <a href="#dup-groups">중복 그룹</a>
+    <a href="#timeline">작업 로그</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- SECTION 1: SUMMARY -->
+<div class="section" id="summary">
+  <div class="section-num">SECTION 01</div>
+  <div class="section-title">작업 요약</div>
+  <div class="section-desc">2026년 2월 13일 기준, 운영 DB의 M6Bucket SITE 레코드 전수 조사 결과</div>
+
+  <div class="info-box blue">
+    <strong>작업 범위:</strong> MongoDB 운영 DB(M6Bucket)의 전체 SITE 118건을 조사하여, 중복 생성된 현장 / 테스트 현장 / 체험계정 / 미활동 현장을 식별하고 soft delete(deleted: true) 처리했습니다. 삭제된 데이터는 DB에 보존되어 있어 필요 시 복구 가능합니다.
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num">118</div>
+      <div class="stat-label">전체 SITE 레코드</div>
+      <div class="stat-sub">M6Bucket type=SITE</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-num">45</div>
+      <div class="stat-label">활성 현장</div>
+      <div class="stat-sub">실제 운영중인 현장</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-num">54</div>
+      <div class="stat-label">이번 작업 삭제</div>
+      <div class="stat-sub">중복 32 + 테스트 16 + 체험 5 + 미활동 1</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-num">19</div>
+      <div class="stat-label">기존 삭제</div>
+      <div class="stat-sub">작업 전 이미 삭제 상태</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: ANALYSIS -->
+<div class="section" id="analysis">
+  <div class="section-num">SECTION 02</div>
+  <div class="section-title">삭제 분석</div>
+  <div class="section-desc">전체 삭제 73건의 사유별 분류</div>
+
+  <div class="chart-row">
+    <div>
+      <div class="donut-wrap">
+        <div class="donut" style="background:conic-gradient(var(--c-red) 0deg 192.3deg, var(--c-orange) 192.3deg 330.4deg, var(--c-purple) 330.4deg 355.1deg, #adb5bd 355.1deg 360deg)"></div>
+        <div class="donut-center">
+          <div class="num">73</div>
+          <div class="label">삭제 현장</div>
+        </div>
+      </div>
+      <div class="legend" style="margin-top:20px">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-red)"></div>중복 39건 (53.4%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>테스트 28건 (38.4%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-purple)"></div>체험계정 5건 (6.8%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#adb5bd"></div>미활동 1건 (1.4%)</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:16px">삭제 사유별 분포</div>
+      <div class="category-bars">
+        <div class="cat-bar-row">
+          <div class="cat-bar-label">중복 현장</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:53.4%;background:var(--c-red)">39건</div></div>
+          <div class="cat-bar-count" style="color:var(--c-red)">53.4%</div>
+        </div>
+        <div class="cat-bar-row">
+          <div class="cat-bar-label">테스트</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:38.4%;background:var(--c-orange)">28건</div></div>
+          <div class="cat-bar-count" style="color:var(--c-orange)">38.4%</div>
+        </div>
+        <div class="cat-bar-row">
+          <div class="cat-bar-label">체험계정</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:6.8%;background:var(--c-purple);min-width:40px">5건</div></div>
+          <div class="cat-bar-count" style="color:var(--c-purple)">6.8%</div>
+        </div>
+        <div class="cat-bar-row">
+          <div class="cat-bar-label">미활동</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:1.4%;background:#adb5bd;min-width:32px">1건</div></div>
+          <div class="cat-bar-count" style="color:var(--c-muted)">1.4%</div>
+        </div>
+      </div>
+
+      <div style="margin-top:28px;font-size:15px;font-weight:700;margin-bottom:16px">중복 발생 원인</div>
+      <div class="info-box green">
+        <strong>주된 원인:</strong> 협력사/하도급사가 메인 시공사의 현장에 참여하지 않고, 동일 프로젝트에 대해 별도의 현장을 개별 생성하여 중복이 발생했습니다. 특히 쿠팡 제천 물류센터(13건 중복)가 가장 많은 중복을 보였습니다.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: ACTIVE SITES -->
+<div class="section" id="active-sites">
+  <div class="section-num">SECTION 03</div>
+  <div class="section-title">활성 현장 <span style="font-size:16px;color:var(--c-green);font-weight:700">45건</span></div>
+  <div class="section-desc">현재 운영중인 정상 현장 목록</div>
+
+  <div class="search-bar">
+    <input type="text" class="search-input" id="activeSearch" placeholder="현장명 또는 시공사 검색...">
+    <button class="filter-btn active" onclick="filterActive('all')">전체</button>
+    <button class="filter-btn" onclick="filterActive('high')">활발</button>
+    <button class="filter-btn" onclick="filterActive('low')">저활동</button>
+  </div>
+
+  <div class="scroll-table">
+    <table id="activeTable">
+      <thead>
+        <tr>
+          <th style="width:30px" onclick="sortActive('idx')"># <span class="sort-icon">&#9650;</span></th>
+          <th onclick="sortActive('name')">현장명 <span class="sort-icon">&#9650;</span></th>
+          <th onclick="sortActive('company')">시공사 <span class="sort-icon">&#9650;</span></th>
+          <th onclick="sortActive('companyCount')" class="td-center">회사 <span class="sort-icon">&#9650;</span></th>
+          <th onclick="sortActive('participants')" class="td-center">참여자 <span class="sort-icon">&#9650;</span></th>
+          <th onclick="sortActive('risk')" class="td-center">위험성평가 <span class="sort-icon">&#9650;</span></th>
+          <th onclick="sortActive('docs')" class="td-center">문서 <span class="sort-icon">&#9650;</span></th>
+        </tr>
+      </thead>
+      <tbody id="activeBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 4: DELETED SITES -->
+<div class="section" id="deleted-sites">
+  <div class="section-num">SECTION 04</div>
+  <div class="section-title">삭제된 현장 <span style="font-size:16px;color:var(--c-red);font-weight:700">73건</span></div>
+  <div class="section-desc">삭제 사유별로 분류된 현장 목록</div>
+
+  <div class="tab-filters">
+    <button class="filter-btn active" onclick="filterDeleted('all')">전체 73</button>
+    <button class="filter-btn" onclick="filterDeleted('duplicate')" style="border-color:var(--c-red-border)">중복 39</button>
+    <button class="filter-btn" onclick="filterDeleted('test')" style="border-color:var(--c-orange-border)">테스트 28</button>
+    <button class="filter-btn" onclick="filterDeleted('trial')" style="border-color:var(--c-purple-border)">체험계정 5</button>
+    <button class="filter-btn" onclick="filterDeleted('inactive')" style="border-color:var(--c-border2)">미활동 1</button>
+  </div>
+
+  <div class="search-bar" style="margin-bottom:12px">
+    <input type="text" class="search-input" id="deletedSearch" placeholder="삭제된 현장 검색...">
+  </div>
+
+  <div id="deletedAccordions"></div>
+</div>
+
+<!-- SECTION 5: DUPLICATE GROUPS -->
+<div class="section" id="dup-groups">
+  <div class="section-num">SECTION 05</div>
+  <div class="section-title">중복 그룹 상세</div>
+  <div class="section-desc">운영 현장 1개에 대해 발생한 중복 현장 그룹</div>
+  <div class="dup-grid" id="dupGrid"></div>
+</div>
+
+<!-- SECTION 6: TIMELINE -->
+<div class="section" id="timeline">
+  <div class="section-num">SECTION 06</div>
+  <div class="section-title">작업 로그</div>
+  <div class="section-desc">2026년 2월 13일 수행한 현장 정리 작업 타임라인</div>
+
+  <div class="timeline">
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <div class="timeline-title">전체 현장 데이터 수집 및 분석 <span class="timeline-badge" style="background:var(--c-blue-bg);color:var(--c-blue)">분석</span></div>
+      <div class="timeline-desc">M6Bucket SITE 118건 전수 조회. 회사, 참여자, 위험성평가, 전화번호 등 상세 데이터 수집. 11개 중복 그룹 식별.</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <div class="timeline-title">중복 현장 삭제 - 5개 그룹 순차 실행 <span class="timeline-badge" style="background:var(--c-red-bg);color:var(--c-red)">28건</span></div>
+      <div class="timeline-desc">쿠팡(12) + 아디다스(4) + 유한양행(4) + 청주대(2) + 기타(6). 각 그룹별 삭제 전 DB 재검증 → soft delete → 삭제 후 검증 3단계 진행.</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <div class="timeline-title">봉담송산 테스트 현장 식별 및 삭제 <span class="timeline-badge" style="background:var(--c-orange-bg);color:var(--c-orange)">1건</span></div>
+      <div class="timeline-desc">봉담송산고속도로 2개 중 테스트 전화번호(01010001011) 사용 현장 삭제. 실제 운영 현장(참여자 6명) 유지.</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <div class="timeline-title">테스트/데모 현장 전수 조사 및 삭제 <span class="timeline-badge" style="background:var(--c-orange-bg);color:var(--c-orange)">15건</span></div>
+      <div class="timeline-desc">활성 현장 대상 이름 패턴, 전화번호 패턴, 활동량 분석. 3단계 신뢰도(확정 9 + 의심 6)로 분류 후 삭제.</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <div class="timeline-title">체험계정 + 미활동 현장 삭제 <span class="timeline-badge" style="background:var(--c-purple-bg);color:var(--c-purple)">6건</span></div>
+      <div class="timeline-desc">체험계정 5건(토브디엔씨, 휴플러스, 대신네트웍스, 삼성물산, 보미건설) + 미활동 1건(양주청담천).</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <div class="timeline-title">추가 중복 현장 식별 및 삭제 <span class="timeline-badge" style="background:var(--c-red-bg);color:var(--c-red)">4건</span></div>
+      <div class="timeline-desc">덕소2구역(2건), 평택브레인시티6블럭(1건), 브레인시티 6블럭(1건). 운영 현장 대비 중복 확인 후 삭제.</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <div class="timeline-title">최종 감사 완료 <span class="timeline-badge" style="background:var(--c-green-bg);color:var(--c-green)">완료</span></div>
+      <div class="timeline-desc">남은 45개 활성 현장 전수 검토. 추가 중복/테스트 없음 확인. 미활동 현장은 실제 고객 가입 상태로 유지 결정.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  SafeU Works 현장 데이터 정리 리포트 &middot; 2026.02.13 &middot; 작업자: AI Assistant (Claude)
+</div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">&uarr;</button>
+
+<script>
+const activeSites = [
+  {id:"6852c598",name:"안양천 지방하천 정비사업.",company:"일성건설",companyCount:1,participants:7,risk:47,docs:551},
+  {id:"685bd906",name:"오뚜기 삼남 글로벌로지스틱센터 신축공사",company:"동인종합건설 외 15개사",companyCount:16,participants:35,risk:147,docs:297},
+  {id:"685cefc4",name:"가마지천 수해상습지 개선공사",company:"동양건설, 대원건설(주)",companyCount:2,participants:4,risk:3,docs:31},
+  {id:"685e0945",name:"양주청담천 (지방하천 정비사업)",company:"덕산종합건설 외 1개사",companyCount:2,participants:3,risk:230,docs:268},
+  {id:"6889c1d3",name:"창원교도소 이전 신축공사",company:"(주)제일공사",companyCount:1,participants:2,risk:0,docs:271},
+  {id:"688c2c88",name:"인천검단AA-21BL",company:"동부건설",companyCount:1,participants:1,risk:0,docs:7},
+  {id:"688d6e84",name:"노원기차마을(이탈리아관)증축공사",company:"(주)신광건설",companyCount:1,participants:1,risk:0,docs:5},
+  {id:"6891a7e3",name:"울산",company:"한화솔루션",companyCount:1,participants:1,risk:0,docs:8},
+  {id:"6896d73a",name:"덕소2구역 주택재개발 정비사업",company:"라온건설(주)",companyCount:1,participants:3,risk:1,docs:28},
+  {id:"68d0bbc8",name:"가락동",company:"태영건설",companyCount:1,participants:1,risk:1,docs:7},
+  {id:"68d37308",name:"서울",company:"다온",companyCount:1,participants:1,risk:0,docs:6},
+  {id:"68da0d7a",name:"우림라이온스밸리3차입주사협의회",company:"우림라이온스밸리3차입주사협의회",companyCount:1,participants:1,risk:2,docs:11},
+  {id:"68f600e6",name:"아진산업 본사공장",company:"아진산업",companyCount:1,participants:1,risk:1,docs:7},
+  {id:"68fec393",name:"평택브레인시티6블럭",company:"대광건영 외 12개사",companyCount:13,participants:46,risk:112,docs:225},
+  {id:"68fec3f7",name:"봉담송산고속도로",company:"동서순환고속도로",companyCount:1,participants:6,risk:1,docs:17},
+  {id:"68fef848",name:"마포 유플리트 신사옥 신축공사",company:"유플리트 외 1개사",companyCount:2,participants:5,risk:23,docs:83},
+  {id:"6908278f",name:"한화토탈에너지스",company:"한화토탈에너지스",companyCount:1,participants:1,risk:1,docs:11},
+  {id:"690eb18b",name:"금형텍",company:"아진산업(주)",companyCount:1,participants:1,risk:2,docs:7},
+  {id:"6916dd18",name:"현대HT",company:"휴플러스엠",companyCount:1,participants:1,risk:1,docs:6},
+  {id:"691a78fb",name:"점동광산 주질개선사업",company:"한국광해광업공단",companyCount:1,participants:1,risk:0,docs:5},
+  {id:"6923a10e",name:"25-A-00부대 시설공사(1008)",company:"주식회사 서한",companyCount:1,participants:1,risk:0,docs:5},
+  {id:"69257492",name:"삼영순화 제조업 현장",company:"삼영순화",companyCount:1,participants:3,risk:4,docs:53},
+  {id:"6927eef7",name:"KB 국민은행 개포 업무시설 신축공사",company:"(주)보미건설 외 6개사",companyCount:7,participants:18,risk:41,docs:118},
+  {id:"6927eefa",name:"배곧 시니어타운",company:"(주)보미건설 외 14개사",companyCount:15,participants:22,risk:41,docs:150},
+  {id:"6927eefc",name:"안양 글로벌 샘병원 신축공사",company:"(주)보미건설 외 6개사",companyCount:7,participants:19,risk:78,docs:275},
+  {id:"6927ef00",name:"쿠팡 제천 물류센터",company:"(주)보미건설 외 13개사",companyCount:14,participants:30,risk:59,docs:135},
+  {id:"6927ef02",name:"유한양행 Willow House 개발사업",company:"(주)보미건설 외 15개사",companyCount:16,participants:24,risk:58,docs:144},
+  {id:"6927ef04",name:"이천 켄달 물류센터",company:"(주)보미건설 외 5개사",companyCount:6,participants:9,risk:31,docs:62},
+  {id:"6927ef06",name:"해운대 우동 시니어 복합시설 신축공사",company:"(주)보미건설 외 5개사",companyCount:6,participants:13,risk:19,docs:55},
+  {id:"6927ef09",name:"경인여자대학교 행복기숙사",company:"(주)보미건설 외 3개사",companyCount:4,participants:8,risk:18,docs:52},
+  {id:"6927ef0b",name:"개운산마을 가로주택 정비사업",company:"(주)보미건설 외 1개사",companyCount:2,participants:6,risk:10,docs:31},
+  {id:"6927ef0d",name:"평택 아디다스 물류센터",company:"(주)보미건설 외 9개사",companyCount:10,participants:14,risk:34,docs:90},
+  {id:"6927ef0f",name:"청주대학교 리모델링 공사",company:"(주)보미건설 외 6개사",companyCount:7,participants:15,risk:19,docs:59},
+  {id:"6927ef11",name:"인하대학교 반도체교육동 신축공사",company:"(주)보미건설 외 1개사",companyCount:2,participants:3,risk:3,docs:23},
+  {id:"6927ef14",name:"(주) 보미건설",company:"(주)보미건설",companyCount:1,participants:3,risk:5,docs:40},
+  {id:"693a19d8",name:"브라보 사옥 공사",company:"브라보ict",companyCount:1,participants:1,risk:1,docs:13},
+  {id:"693a610d",name:"천안사업장",company:"삼영순화",companyCount:1,participants:1,risk:1,docs:6},
+  {id:"69435df9",name:"가든 손바닥공원 재정비사업",company:"주식회사 리첸",companyCount:1,participants:1,risk:7,docs:38},
+  {id:"69642e3c",name:"내수공공하수처리시설 증설공사",company:"(주)호원",companyCount:1,participants:1,risk:0,docs:5},
+  {id:"6969f678",name:"브라보 문정",company:"브라보아이씨티",companyCount:1,participants:1,risk:2,docs:13},
+  {id:"69780941",name:"인덕대학교",company:"인덕대학교",companyCount:1,participants:1,risk:2,docs:20},
+  {id:"69893989",name:"파주 스튜디오시티 일반산업단지 스튜디오 신축공사",company:"경수제철건설",companyCount:1,participants:3,risk:0,docs:12},
+  {id:"69895439",name:"미코세라믹스 안성 A동 신축공사",company:"동인종합건설, 청룡건설",companyCount:2,participants:4,risk:0,docs:10},
+  {id:"698954ed",name:"울진 덕구온천 가족호텔 신축공사",company:"동인종합건설 외 1개사",companyCount:2,participants:4,risk:1,docs:15},
+  {id:"69897cc6",name:"경기동서순환도로(주)_법인 현장 (건물 시설 관리)",company:"경기동서순환도로(주) 외 2개사",companyCount:3,participants:5,risk:20,docs:43}
+];
+
+const deletedSites = [
+  {id:"685e07be",name:"양주청담천 (지방하천 정비사업)",company:"덕산종합건설",reason:"inactive",reasonText:"미활동",detail:"참여자 0명, 활동 없음. 동일 이름 운영 현장 존재.",original:"양주청담천 (685e0945)"},
+  {id:"685ee096",name:"유플월드",company:"유플건설 외 3개사",reason:"test",reasonText:"테스트",detail:"테스트 전화번호 사용, 내부 개발 테스트 현장"},
+  {id:"68817b96",name:"덕소2구역 주택재개발 정비사업",company:"라온건설",reason:"duplicate",reasonText:"중복",detail:"운영 현장과 동일 이름/회사. 참여자 1명 중복.",original:"덕소2구역 (6896d73a)"},
+  {id:"68878137",name:"서울 강남 빌딩 신축현장",company:"안전건설",reason:"test",reasonText:"테스트",detail:"테스트용 회사명, 테스트 전화번호"},
+  {id:"688c42e0",name:"서울 내마음 건설 현장",company:"테스트웍스",reason:"test",reasonText:"테스트",detail:"회사명 '테스트웍스'로 테스트 현장"},
+  {id:"689adc81",name:"신림동 MJ TOWER 신축공사",company:"동인종합건설",reason:"duplicate",reasonText:"중복",detail:"동인종합건설 개별 프로젝트 중복 생성",original:"오뚜기 삼남 (685bd906)"},
+  {id:"689adcac",name:"대효제약 동탄공장 증축공사",company:"동인종합건설",reason:"duplicate",reasonText:"중복",detail:"동인종합건설 개별 프로젝트 중복 생성",original:"오뚜기 삼남 (685bd906)"},
+  {id:"689add12",name:"평택 브레인시티 (주)KGA공장 신축공사",company:"동인종합건설",reason:"duplicate",reasonText:"중복",detail:"동인종합건설 개별 프로젝트 중복 생성",original:"오뚜기 삼남 (685bd906)"},
+  {id:"689add50",name:"덕구온천 가족호텔 신축공사",company:"동인종합건설",reason:"duplicate",reasonText:"중복",detail:"운영 현장의 협력사가 별도 생성",original:"울진 덕구온천 (698954ed)"},
+  {id:"689be12b",name:"덕소2구역 주택재개발 정비사업",company:"라온건설",reason:"duplicate",reasonText:"중복",detail:"운영 현장과 동일 이름. 참여자 1명만 있는 중복본.",original:"덕소2구역 (6896d73a)"},
+  {id:"68a68b08",name:"체험계정 (토브디엔씨)",company:"토브디엔씨",reason:"trial",reasonText:"체험계정",detail:"체험용 데모 계정"},
+  {id:"68a68b70",name:"체험계정 (휴플러스)",company:"휴플러스",reason:"trial",reasonText:"체험계정",detail:"체험용 데모 계정"},
+  {id:"68a68b8b",name:"체험계정 (대신네트웍스)",company:"대신네트웍스",reason:"trial",reasonText:"체험계정",detail:"체험용 데모 계정"},
+  {id:"68aeb219",name:"체험계정 (삼성물산)",company:"삼성물산",reason:"trial",reasonText:"체험계정",detail:"체험용 데모 계정"},
+  {id:"68aeb32d",name:"체험계정 (보미건설)",company:"보미건설",reason:"trial",reasonText:"체험계정",detail:"체험용 데모 계정"},
+  {id:"68dc8852",name:"ㅇㅇㅇ",company:"ㅇㅇ",reason:"test",reasonText:"테스트",detail:"의미없는 이름, 테스트 현장"},
+  {id:"68fef0b4",name:"평택브레인시티6블럭",company:"모아건설산업(주)",reason:"duplicate",reasonText:"중복",detail:"운영 현장(참여자 46명)과 동일 프로젝트. 참여자 1명만 있는 중복본.",original:"평택브레인시티6블럭 (68fec393)"},
+  {id:"68fef8cf",name:"포테이토 월드 신축공사",company:"포테이토 나이쓰, 유플리트",reason:"test",reasonText:"테스트",detail:"가상의 프로젝트명, 내부 테스트"},
+  {id:"68ff19f6",name:"브레인시티 6블럭",company:"모아",reason:"duplicate",reasonText:"중복",detail:"운영 현장과 동일 프로젝트. 참여자 1명, 활동 0.",original:"평택브레인시티6블럭 (68fec393)"},
+  {id:"6900d4c7",name:"테스트",company:"테스트",reason:"test",reasonText:"테스트",detail:"이름/회사 모두 '테스트'"},
+  {id:"690ab38a",name:"삼성평택현장 테스트",company:"써니",reason:"test",reasonText:"테스트",detail:"이름에 '테스트' 포함"},
+  {id:"691ae101",name:"테스트 현장",company:"테스트 회사",reason:"test",reasonText:"테스트",detail:"이름/회사 모두 테스트"},
+  {id:"692e3210",name:"정호테스트",company:"정호컴퍼니 외 3개사",reason:"test",reasonText:"테스트",detail:"이름에 '테스트' 포함, 개발자 테스트"},
+  {id:"692e4398",name:"봉담송산고속도로",company:"경기동서순환도로 외 2개사",reason:"test",reasonText:"테스트",detail:"테스트 전화번호(01010001011) 사용",original:"봉담송산고속도로 (68fec3f7)"},
+  {id:"692e5869",name:"아디다스 물류 창고 부분천거 및 재촉 공사",company:"성일시스템",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"평택 아디다스 물류센터 (6927ef0d)"},
+  {id:"69321eba",name:"쿠팡 제천 물류센터",company:"보미건설",reason:"duplicate",reasonText:"중복",detail:"협력사가 동일 프로젝트에 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"69322b3b",name:"쿠팡 제천FC 물류센터 신축공사",company:"(주)한국이엔씨",reason:"duplicate",reasonText:"중복",detail:"협력사가 동일 프로젝트에 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"693327ac",name:"현장추가",company:"테스트회사날짜",reason:"test",reasonText:"테스트",detail:"테스트 회사명, 기능 테스트"},
+  {id:"69362e4b",name:"테스트 현장",company:"시공사",reason:"test",reasonText:"테스트",detail:"이름 '테스트 현장', 기능 테스트"},
+  {id:"69365c0a",name:"테스트현장251208",company:"(없음)",reason:"test",reasonText:"테스트",detail:"날짜 포함 테스트 현장명"},
+  {id:"69365fa6",name:"테스트현장120801111",company:"테스트회사 외 1개사",reason:"test",reasonText:"테스트",detail:"날짜 포함 테스트 현장명"},
+  {id:"6936740a",name:"현장추가테스트",company:"(없음)",reason:"test",reasonText:"테스트",detail:"기능 테스트"},
+  {id:"69367563",name:"현장추가테스트3",company:"(없음)",reason:"test",reasonText:"테스트",detail:"기능 테스트 시리즈"},
+  {id:"6936758a",name:"현장추가테스트4",company:"(없음)",reason:"test",reasonText:"테스트",detail:"기능 테스트 시리즈"},
+  {id:"69367673",name:"로그확인",company:"(없음)",reason:"test",reasonText:"테스트",detail:"개발 로그 확인용"},
+  {id:"69367d2c",name:"현장추가테스트111",company:"세이프유시공사 외 1개사",reason:"test",reasonText:"테스트",detail:"기능 테스트"},
+  {id:"6936873c",name:"세이프유테스트",company:"유플리트 외 1개사",reason:"test",reasonText:"테스트",detail:"이름에 '테스트' 포함"},
+  {id:"69377aa1",name:"임시현장테스트",company:"유플리트2 외 1개사",reason:"test",reasonText:"테스트",detail:"이름에 '테스트' 포함"},
+  {id:"6938074d",name:"정승일 수석님 테스트",company:"(없음)",reason:"test",reasonText:"테스트",detail:"개인 테스트 현장"},
+  {id:"6938f71d",name:"(빈 이름)",company:"주식회사 동원이엔지",reason:"test",reasonText:"테스트",detail:"현장명 미입력, 테스트 데이터"},
+  {id:"6939096f",name:"유한양행 Willow Haus 개발사업",company:"성원종합설비 주식회사",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성 (Haus/House 표기 차이)",original:"유한양행 Willow House (6927ef02)"},
+  {id:"69390993",name:"유한양행 윌로하우스 구사옥 리모델링",company:"와이지건설 주식회사",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"유한양행 Willow House (6927ef02)"},
+  {id:"69391450",name:"KB국민은행 업무시설 기계설비,소방설비",company:"주식회사 탐진이엔지",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"KB 국민은행 개포 (6927eef7)"},
+  {id:"693942f8",name:"테스트 2",company:"테스트 2 현장입니다.",reason:"test",reasonText:"테스트",detail:"이름/회사 모두 테스트"},
+  {id:"6939f318",name:"유한양행 리모델링",company:"시공비얀",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"유한양행 Willow House (6927ef02)"},
+  {id:"6939f8bd",name:"이천안평리물류센터신축공사현장",company:"지피씨(주)",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"이천 켄달 물류센터 (6927ef04)"},
+  {id:"693b5841",name:"평택 아디다스 물류창고 부분철거 및 재건축공사",company:"주식회사 하림이에스티",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"평택 아디다스 물류센터 (6927ef0d)"},
+  {id:"693b7a4e",name:"쿠팡제천FC",company:"주식회사 한국이엔씨",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"693f83b2",name:"평택아디다스물류센터",company:"트라비스엘리베이터",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"평택 아디다스 물류센터 (6927ef0d)"},
+  {id:"6941efce",name:"쿠팡 진천FC 물류창고 신축공사현장",company:"주식회사 성원이앤지",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"69420cd1",name:"쿠팡 제천 FC 물류센터 신축공사 중 도장공사",company:"(주)보미건설",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"6943dff1",name:"공사",company:"로컬마루",reason:"test",reasonText:"테스트",detail:"일반적인 이름, 테스트성 데이터"},
+  {id:"69436757",name:"쿠팡 제천 FC 물류센터 신축공사",company:"성원이앤지",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"6944001d",name:"쿠팡제천물류센터",company:"주식회사 대호엔지니어링",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"6944a71a",name:"쿠팡 제천 FC 물류센터 신축공사",company:"주식회사 대호엔지니어링",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"694645de",name:"제천쿠팡 FC물류센터조성 공사",company:"선아아이엔디(주)",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"69476c26",name:"아디다스물류센타",company:"(주)호담엔지니어링",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"평택 아디다스 물류센터 (6927ef0d)"},
+  {id:"69489cfa",name:"쿠팡 제천 FC물류센터 신축공사",company:"동양윈스텍 주식회사",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"6948e3c0",name:"쿠팡 물류 제천센터",company:"동양윈스텍",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"6948e89b",name:"쿠팡 물류 제천센터",company:"동양윈스텍",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성 (재중복)",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"69491727",name:"쿠팡제천 물류센터 신축공사",company:"주식회사 이룸석재",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"쿠팡 제천 물류센터 (6927ef00)"},
+  {id:"69491a2c",name:"청주 대학교 항공, 국방대학교 리모델링 공사 중 석공사",company:"주식회사 이룸석재",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"청주대학교 리모델링 공사 (6927ef0f)"},
+  {id:"6952479f",name:"무료 테스트",company:"세이프유",reason:"test",reasonText:"테스트",detail:"이름에 '테스트' 포함"},
+  {id:"6954e06e",name:"유한양행본사 리모델링",company:"오티스엘리베이터",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"유한양행 Willow House (6927ef02)"},
+  {id:"695b460a",name:"유플리트 테스트 공사",company:"유플리트 외 1개사",reason:"test",reasonText:"테스트",detail:"이름에 '테스트' 포함, 내부 테스트"},
+  {id:"695b61f1",name:"인하대학교 산학협력단",company:"보미건설",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"인하대학교 반도체교육동 (6927ef11)"},
+  {id:"69688a93",name:"유한양행",company:"광창기업사",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"유한양행 Willow House (6927ef02)"},
+  {id:"696f1204",name:"청주대학교 항공,국방대학 리모델링 및 증축공사",company:"(없음)",reason:"duplicate",reasonText:"중복",detail:"동일 프로젝트 중복 생성",original:"청주대학교 리모델링 공사 (6927ef0f)"},
+  {id:"696f4926",name:"청주대학교 항공ㆍ국방대학 리모델링 및 증축공사",company:"(주)보미건설",reason:"duplicate",reasonText:"중복",detail:"동일 프로젝트 중복 생성",original:"청주대학교 리모델링 공사 (6927ef0f)"},
+  {id:"6978409f",name:"경인여대신축현장",company:"보미건설",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"경인여자대학교 행복기숙사 (6927ef09)"},
+  {id:"6978756d",name:"종암동개운산마을",company:"보미건설",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"개운산마을 가로주택 정비사업 (6927ef0b)"},
+  {id:"69795d7a",name:"청주대학교 항공.국방대학 리모텔링 및 증축공사",company:"디에이치산업안전(주)",reason:"duplicate",reasonText:"중복",detail:"협력사가 별도 현장 생성",original:"청주대학교 리모델링 공사 (6927ef0f)"},
+  {id:"6979f0de",name:"260128테스트현장",company:"260128체크리스트",reason:"test",reasonText:"테스트",detail:"날짜 포함 테스트 현장명"}
+];
+
+const dupGroups = [
+  {name:"쿠팡 제천 물류센터",originalId:"6927ef00",count:13,participants:30,risk:59,color:"var(--c-red)"},
+  {name:"유한양행 Willow House",originalId:"6927ef02",count:5,participants:24,risk:58,color:"var(--c-orange)"},
+  {name:"아디다스 평택 물류센터",originalId:"6927ef0d",count:4,participants:14,risk:34,color:"var(--c-orange)"},
+  {name:"청주대학교 리모델링",originalId:"6927ef0f",count:4,participants:15,risk:19,color:"var(--c-orange)"},
+  {name:"동인종합건설 프로젝트",originalId:"685bd906",count:3,participants:35,risk:147,color:"var(--c-purple)"},
+  {name:"덕소2구역 주택재개발",originalId:"6896d73a",count:2,participants:3,risk:1,color:"var(--c-cyan)"},
+  {name:"평택브레인시티6블럭",originalId:"68fec393",count:2,participants:46,risk:112,color:"var(--c-cyan)"},
+  {name:"KB국민은행 개포",originalId:"6927eef7",count:1,participants:18,risk:41,color:"#adb5bd"},
+  {name:"경인여자대학교",originalId:"6927ef09",count:1,participants:8,risk:18,color:"#adb5bd"},
+  {name:"개운산마을",originalId:"6927ef0b",count:1,participants:6,risk:10,color:"#adb5bd"},
+  {name:"이천 켄달 물류센터",originalId:"6927ef04",count:1,participants:9,risk:31,color:"#adb5bd"},
+  {name:"인하대학교",originalId:"6927ef11",count:1,participants:3,risk:3,color:"#adb5bd"},
+  {name:"덕구온천 가족호텔",originalId:"698954ed",count:1,participants:4,risk:1,color:"#adb5bd"}
+];
+
+// === RENDER FUNCTIONS ===
+
+let activeSortKey = 'risk';
+let activeSortAsc = false;
+let activeFilter = 'all';
+
+function renderActiveTable() {
+  const search = document.getElementById('activeSearch').value.toLowerCase();
+  let data = [...activeSites];
+  if (search) data = data.filter(s => s.name.toLowerCase().includes(search) || s.company.toLowerCase().includes(search));
+  if (activeFilter === 'high') data = data.filter(s => s.risk >= 10);
+  if (activeFilter === 'low') data = data.filter(s => s.risk < 10);
+
+  data.sort((a, b) => {
+    const va = a[activeSortKey], vb = b[activeSortKey];
+    if (typeof va === 'number') return activeSortAsc ? va - vb : vb - va;
+    return activeSortAsc ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+  });
+
+  const maxRisk = Math.max(...activeSites.map(s => s.risk));
+  const totalP = data.reduce((a, s) => a + s.participants, 0);
+  const totalR = data.reduce((a, s) => a + s.risk, 0);
+  const totalD = data.reduce((a, s) => a + s.docs, 0);
+  const totalC = data.reduce((a, s) => a + s.companyCount, 0);
+
+  const tbody = document.getElementById('activeBody');
+  tbody.innerHTML = data.map((s, i) => {
+    const barW = maxRisk > 0 ? Math.max(2, (s.risk / maxRisk) * 80) : 0;
+    const barColor = s.risk >= 30 ? 'var(--c-green)' : s.risk >= 10 ? 'var(--c-blue)' : s.risk > 0 ? 'var(--c-orange)' : '#dee2e6';
+    return `<tr>
+      <td class="td-center num-cell">${i + 1}</td>
+      <td><strong>${s.name}</strong></td>
+      <td style="font-size:12px;color:var(--c-text)">${s.company}</td>
+      <td class="td-center num-cell">${s.companyCount}</td>
+      <td class="td-center num-cell">${s.participants}</td>
+      <td class="td-right num-cell"><span class="activity-bar" style="width:${barW}px;background:${barColor}"></span>${s.risk}</td>
+      <td class="td-right num-cell">${s.docs}</td>
+    </tr>`;
+  }).join('') + `<tr class="summary-row">
+    <td colspan="3" style="text-align:right">합계 (${data.length}개 현장)</td>
+    <td class="td-center">${totalC}</td>
+    <td class="td-center">${totalP}</td>
+    <td class="td-center">${totalR}</td>
+    <td class="td-center">${totalD}</td>
+  </tr>`;
+}
+
+function sortActive(key) {
+  if (activeSortKey === key) activeSortAsc = !activeSortAsc;
+  else { activeSortKey = key; activeSortAsc = key === 'name' || key === 'company'; }
+  renderActiveTable();
+}
+
+function filterActive(type) {
+  activeFilter = type;
+  document.querySelectorAll('#active-sites .filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderActiveTable();
+}
+
+let deletedFilter = 'all';
+
+function renderDeletedSections() {
+  const search = document.getElementById('deletedSearch').value.toLowerCase();
+  const categories = [
+    {key:'duplicate',label:'중복 현장',badge:'dup',icon:'&#128257;'},
+    {key:'test',label:'테스트 현장',badge:'test',icon:'&#128295;'},
+    {key:'trial',label:'체험계정',badge:'trial',icon:'&#127919;'},
+    {key:'inactive',label:'미활동',badge:'inactive',icon:'&#128164;'}
+  ];
+
+  const container = document.getElementById('deletedAccordions');
+  let html = '';
+
+  for (const cat of categories) {
+    if (deletedFilter !== 'all' && deletedFilter !== cat.key) continue;
+    let items = deletedSites.filter(s => s.reason === cat.key);
+    if (search) items = items.filter(s => s.name.toLowerCase().includes(search) || s.company.toLowerCase().includes(search));
+    if (items.length === 0) continue;
+
+    html += `<div class="accordion open">
+      <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="left">
+          <span class="arrow">&#9654;</span>
+          <span class="badge ${cat.badge}">${cat.label}</span>
+          <strong style="font-size:14px">${items.length}건</strong>
+        </div>
+      </div>
+      <div class="accordion-body">
+        <div class="scroll-table"><table>
+          <thead><tr>
+            <th style="width:30px">#</th>
+            <th>현장명</th>
+            <th>회사</th>
+            <th>삭제 사유</th>
+            ${cat.key === 'duplicate' ? '<th>운영 현장 (원본)</th>' : ''}
+          </tr></thead>
+          <tbody>${items.map((s, i) => `<tr>
+            <td class="td-center">${i + 1}</td>
+            <td><strong>${s.name}</strong></td>
+            <td style="font-size:12px">${s.company}</td>
+            <td style="font-size:12px;color:var(--c-muted)">${s.detail}</td>
+            ${cat.key === 'duplicate' ? `<td><span class="original-link">${s.original || '-'}</span></td>` : ''}
+          </tr>`).join('')}</tbody>
+        </table></div>
+      </div>
+    </div>`;
+  }
+
+  container.innerHTML = html || '<div class="empty">검색 결과가 없습니다.</div>';
+}
+
+function filterDeleted(type) {
+  deletedFilter = type;
+  document.querySelectorAll('#deleted-sites .tab-filters .filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderDeletedSections();
+}
+
+function renderDupGrid() {
+  const grid = document.getElementById('dupGrid');
+  grid.innerHTML = dupGroups.map(g => `<div class="dup-card">
+    <div class="dup-name"><span style="color:${g.color}">&#9632;</span> ${g.name}</div>
+    <div class="dup-original">&#10004; 운영 현장: 참여자 ${g.participants}명, 위험성평가 ${g.risk}건</div>
+    <div class="dup-deleted">${g.count}</div>
+    <div class="dup-deleted-label">건 중복 삭제</div>
+  </div>`).join('');
+}
+
+// === NAVIGATION ===
+document.querySelectorAll('.topnav a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    document.querySelectorAll('.topnav a').forEach(a => a.classList.remove('active'));
+    e.target.classList.add('active');
+  });
+});
+
+window.addEventListener('scroll', () => {
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.topnav a');
+  let current = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 80;
+    if (scrollY >= top) current = section.id;
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+});
+
+// === SEARCH DEBOUNCE ===
+let searchTimeout;
+document.getElementById('activeSearch').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(renderActiveTable, 200);
+});
+document.getElementById('deletedSearch').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(renderDeletedSections, 200);
+});
+
+// === SCROLL OBSERVER ===
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('backToTop');
+  btn.classList.toggle('show', scrollY > 400);
+});
+
+// === STAT CARD ANIMATION ===
+document.querySelectorAll('.stat-card').forEach((card, i) => {
+  card.classList.add('fade-in');
+  card.style.animationDelay = (i * 0.1 + 0.2) + 's';
+});
+
+// === INIT ===
+renderActiveTable();
+renderDeletedSections();
+renderDupGrid();
+</script>
+</body>
+</html>

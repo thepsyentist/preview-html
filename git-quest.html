@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Quest — Trunk-Based Development 마스터하기</title>
+<style>body{margin:0;padding:0;background:#0b0b12;}</style>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+
+const CHAPTERS = [
+  {
+    id: 1, title: "Git 기초", icon: "💡", color: "#6366f1",
+    stages: [
+      {
+        id: "1-0", title: "Git은 왜 필요한가",
+        mode: "intro",
+        intro: {
+          before: {
+            title: "Git이 없는 세상",
+            icon: "😱",
+            files: [
+              "📁 기획서_최종.docx",
+              "📁 기획서_최종_수정.docx",
+              "📁 기획서_진짜최종_v2.docx",
+              "📁 기획서_진짜최종_v2_팀장확인.docx",
+              "📁 기획서_진짜최종_v3_이걸로제출.docx",
+            ],
+            problems: [
+              "누가 뭘 바꿨는지 모름",
+              "되돌리기 불가능",
+              "동시에 수정하면 파일이 엉킴",
+              "어떤 게 최신인지 혼란",
+            ],
+          },
+          after: {
+            title: "Git이 있는 세상",
+            icon: "✨",
+            files: [
+              "📁 기획서/  ← Git이 모든 변경을 자동 관리",
+            ],
+            benefits: [
+              "누가, 언제, 뭘 바꿨는지 전부 기록",
+              "어떤 시점으로든 되돌리기 가능",
+              "여러 명이 동시에 작업 가능",
+              "변경 이력이 깔끔하게 정리됨",
+            ],
+          },
+          summary: "Git = 프로젝트의 타임머신 🕐 + 협업 도구 🤝",
+          howItWorks: {
+            title: "Git은 이렇게 저장해요",
+            steps: [
+              { icon: "📝", name: "작업 공간", sub: "Working Directory", desc: "파일을 만들고 수정하는 곳" },
+              { arrow: "git add", desc: "저장할 파일을 골라서" },
+              { icon: "📦", name: "대기실", sub: "Staging Area", desc: "다음 저장에 포함시킬 파일" },
+              { arrow: "git commit", desc: "영구 저장!" },
+              { icon: "🏛️", name: "저장소", sub: "Repository", desc: "변경 기록이 영구 보관" },
+            ],
+            analogy: "책상에서 작업 → 택배 박스에 담기 → 택배 발송 완료!",
+          },
+        },
+      },
+      {
+        id: "1-1", title: "첫 번째 저장",
+        desc: "이제 직접 해봅시다! Git에서 파일을 저장하려면 두 단계가 필요해요.\n\n① git add — 수정한 파일 중 저장할 것을 골라 '대기실'에 올리기\n② git commit — 대기실에 있는 파일들을 '저장소'에 영구 기록하기\n\n왜 두 단계일까요? 10개 파일을 수정했는데 3개만 먼저 저장하고 싶을 때가 있거든요!",
+        diagram: "flow",
+        steps: [
+          { instruction: "README.md 파일을 대기실에 올리세요", expected: ["git add"], options: [
+            { cmd: "git add README.md", desc: "파일을 대기실에 올리기", correct: true },
+            { cmd: "git commit -m \"init\"", desc: "저장소에 기록하기", correct: false, fb: "아직 대기실에 올리지 않았어요. add를 먼저!" },
+            { cmd: "git push origin main", desc: "원격에 올리기", correct: false, fb: "push는 원격 저장소에 올리는 거예요. 먼저 add부터!" },
+          ]},
+          { instruction: "커밋 메시지와 함께 저장하세요", expected: ["git commit"], options: [
+            { cmd: "git commit -m \"프로젝트 시작\"", desc: "저장소에 기록하기", correct: true },
+            { cmd: "git add .", desc: "파일을 대기실에 올리기", correct: false, fb: "이미 add 했어요! 이제 commit할 차례예요." },
+            { cmd: "git log", desc: "히스토리 보기", correct: false, fb: "log는 기록을 보는 거예요. 저장하려면 commit!" },
+          ]},
+        ],
+      },
+      {
+        id: "1-2", title: "기록 확인하기",
+        desc: "Git의 가장 큰 장점은 '누가 언제 뭘 바꿨는지' 전부 기록된다는 거예요.\n\n• git log — 지금까지의 커밋 목록을 시간순으로 보여줘요. 프로젝트의 일기장이라고 생각하세요!\n• git diff — 마지막 저장 이후 무엇이 달라졌는지 줄 단위로 비교해줘요.",
+        steps: [
+          { instruction: "커밋 히스토리를 확인하세요", expected: ["git log"], options: [
+            { cmd: "git log --oneline", desc: "커밋 목록 보기", correct: true },
+            { cmd: "git status", desc: "현재 상태 확인", correct: false, fb: "status는 지금 상태. 과거 기록은 log로!" },
+            { cmd: "git diff", desc: "변경사항 비교", correct: false, fb: "diff는 변경 내용. 기록 목록은 log!" },
+          ]},
+        ],
+      },
+      {
+        id: "1-3", title: "실수 되돌리기",
+        desc: "실수는 누구나 해요! Git은 되돌리기를 위한 안전장치가 있어요.\n\n• 아직 커밋 전이라면 → git restore로 파일을 마지막 저장 상태로 복원\n• 이미 커밋했다면 → git revert로 '되돌리는 새 커밋'을 만들어서 안전하게 취소\n\n⚠️ git reset --hard는 기록을 아예 지워버려서 위험해요. 우리 팀에선 쓰지 않아요!",
+        steps: [
+          { instruction: "커밋 전 수정사항을 되돌리세요", expected: ["git restore"], options: [
+            { cmd: "git restore README.md", desc: "마지막 커밋 상태로 복원", correct: true },
+            { cmd: "git revert HEAD", desc: "커밋을 되돌리는 새 커밋 생성", correct: false, fb: "revert는 이미 커밋한 것을 되돌릴 때. 커밋 전이면 restore!" },
+            { cmd: "git reset --hard", desc: "강제 리셋", correct: false, fb: "reset --hard는 위험해요! 커밋 전 복원은 restore가 안전." },
+          ]},
+        ],
+      },
+    ],
+  },
+  {
+    id: 2, title: "원격 저장소", icon: "☁️", color: "#10b981",
+    stages: [
+      {
+        id: "2-1", title: "프로젝트 가져오기",
+        desc: "지금까지는 내 컴퓨터에서만 작업했어요. 실제 팀 프로젝트는 GitHub 같은 '원격 저장소'에 있어요.\n\ngit clone은 원격 저장소의 프로젝트 전체(파일 + 모든 변경 기록)를 내 컴퓨터에 복사하는 명령어예요. 팀에 합류할 때 가장 먼저 하는 일이에요!",
+        steps: [
+          { instruction: "원격 저장소를 내 컴퓨터로 복제하세요", expected: ["git clone"], options: [
+            { cmd: "git clone https://github.com/team/project.git", desc: "원격 저장소 복제", correct: true },
+            { cmd: "git pull origin main", desc: "최신 변경사항 가져오기", correct: false, fb: "pull은 이미 clone된 프로젝트에서 업데이트 받을 때!" },
+            { cmd: "git init", desc: "새 저장소 생성", correct: false, fb: "init은 빈 저장소를 새로 만드는 거예요." },
+          ]},
+        ],
+      },
+      {
+        id: "2-2", title: "Push & Pull",
+        desc: "원격 저장소와 내 컴퓨터는 자동으로 동기화되지 않아요. 직접 주고받아야 해요!\n\n• git push — 내가 만든 커밋을 원격 저장소에 '올리기'. 팀원들이 내 작업을 볼 수 있게 돼요.\n• git pull — 원격 저장소의 새로운 변경사항을 '가져오기'. 팀원이 올린 작업을 내 컴퓨터에 반영해요.\n\n순서가 중요해요: add → commit → push. 세 단계를 꼭 기억하세요!",
+        steps: [
+          { instruction: "수정한 파일을 add하세요", expected: ["git add"], options: [
+            { cmd: "git add .", correct: true },
+            { cmd: "git push origin main", correct: false, fb: "push 전에 add와 commit이 먼저!" },
+            { cmd: "git pull origin main", correct: false, fb: "pull은 가져오기. 올리려면 먼저 add!" },
+          ]},
+          { instruction: "커밋하세요", expected: ["git commit"], options: [
+            { cmd: "git commit -m \"문서 업데이트\"", correct: true },
+            { cmd: "git push origin main", correct: false, fb: "아직 commit 안 했어요!" },
+            { cmd: "git add .", correct: false, fb: "이미 add 했어요!" },
+          ]},
+          { instruction: "원격 저장소에 올리세요", expected: ["git push"], options: [
+            { cmd: "git push origin main", desc: "원격에 올리기", correct: true },
+            { cmd: "git pull origin main", desc: "가져오기", correct: false, fb: "pull은 가져오기! 올리려면 push." },
+            { cmd: "git commit -m \"push\"", correct: false, fb: "이미 commit 했어요. push할 차례!" },
+          ]},
+        ],
+      },
+      {
+        id: "2-3", title: "최신 동기화",
+        desc: "팀원이 새로운 작업을 push했어요. 내 컴퓨터에는 아직 반영되지 않았어요.\n\n작업을 시작하기 전에 항상 git pull로 최신 상태를 가져오는 습관을 들이세요! 안 그러면 나중에 팀원의 작업과 내 작업이 충돌할 수 있어요.",
+        steps: [
+          { instruction: "원격의 최신 변경사항을 가져오세요", expected: ["git pull"], options: [
+            { cmd: "git pull origin main", correct: true },
+            { cmd: "git push origin main", correct: false, fb: "push는 올리기! 가져오려면 pull." },
+            { cmd: "git fetch origin", correct: false, fb: "fetch는 가져오기만, 합치진 않아요. pull = fetch + merge." },
+          ]},
+        ],
+      },
+    ],
+  },
+  {
+    id: 3, title: "브랜치", icon: "🌿", color: "#f59e0b",
+    stages: [
+      {
+        id: "3-1", title: "브랜치 만들고 이동",
+        desc: "🚨 main 브랜치에서 직접 작업하면 왜 위험할까요?\n\nmain은 팀 전체가 공유하는 '완성본'이에요. 여기서 직접 수정하다가 실수하면 팀원 전체에게 영향을 줘요. 마치 공유 문서의 원본을 직접 수정하는 것과 같아요!\n\n그래서 '브랜치(branch)'를 만들어요. 브랜치는 main의 복사본 같은 거예요. 여기서 마음껏 작업하고, 다 끝나면 main에 합치는 거죠. 실수해도 main은 안전해요!\n\n• git checkout -b 브랜치이름 — 새 브랜치를 만들면서 동시에 이동 (가장 자주 쓰는 명령어!)\n• 브랜치 이름은 feature/작업내용 형식으로 지어요 (예: feature/update-docs)",
+        diagram: "branch",
+        steps: [
+          { instruction: "feature/update-docs 브랜치를 만들면서 이동하세요", expected: ["git checkout -b"], options: [
+            { cmd: "git checkout -b feature/update-docs", desc: "브랜치 생성 + 이동", correct: true },
+            { cmd: "git branch feature/update-docs", desc: "생성만 (이동 안 함)", correct: false, fb: "branch만 쓰면 만들기만 해요. checkout -b로 만들기+이동!" },
+            { cmd: "git checkout feature/update-docs", desc: "이동만 (이미 있을 때)", correct: false, fb: "이 브랜치는 아직 없어요. -b 옵션으로 만들면서 이동!" },
+          ]},
+        ],
+      },
+      {
+        id: "3-2", title: "브랜치에서 작업 후 Push",
+        desc: "feature 브랜치에서 작업을 마쳤으면, 원격 저장소에 올려서 팀원들이 볼 수 있게 해야 해요.\n\npush할 때 중요한 점: 브랜치 이름을 정확히 써야 해요! 지금 main이 아니라 feature 브랜치에 있으니, push 대상도 feature 브랜치여야 합니다.",
+        steps: [
+          { instruction: "파일을 add하세요", expected: ["git add"], options: [
+            { cmd: "git add .", correct: true },
+            { cmd: "git push origin feature/update-docs", correct: false, fb: "push 전에 add와 commit이 먼저!" },
+            { cmd: "git checkout main", correct: false, fb: "아직 작업을 안 올렸어요!" },
+          ]},
+          { instruction: "커밋하세요", expected: ["git commit"], options: [
+            { cmd: "git commit -m \"문서 구조 개선\"", correct: true },
+            { cmd: "git push origin feature/update-docs", correct: false, fb: "commit을 먼저!" },
+            { cmd: "git add .", correct: false, fb: "이미 add 했어요!" },
+          ]},
+          { instruction: "feature 브랜치를 원격에 올리세요", expected: ["git push origin feature"], options: [
+            { cmd: "git push origin feature/update-docs", correct: true },
+            { cmd: "git push origin main", correct: false, fb: "지금 feature 브랜치에 있어요! 브랜치 이름을 정확히!" },
+            { cmd: "git merge feature/update-docs", correct: false, fb: "merge는 합치기. 먼저 push!" },
+          ]},
+        ],
+      },
+    ],
+  },
+  {
+    id: 4, title: "Trunk-Based 워크플로우", icon: "🔀", color: "#ec4899",
+    stages: [
+      {
+        id: "4-1", title: "전체 워크플로우",
+        desc: "이것이 우리 팀의 Git 워크플로우 전체 흐름이에요! 매일 이 순서대로 작업합니다.\n\n① main에서 최신 코드 가져오기 → ② 작업용 브랜치 만들기 → ③ 작업하고 커밋 → ④ 원격에 Push → ⑤ PR(Pull Request)로 팀원 리뷰 → ⑥ Squash Merge로 main에 합치기 → ⑦ 브랜치 삭제\n\n아래에서 올바른 순서로 명령어를 배치해보세요!",
+        mode: "order",
+        diagram: "pipeline",
+        orderSteps: [
+          { cmd: "git checkout main", hint: "① main으로 이동" },
+          { cmd: "git pull origin main", hint: "② 최신 동기화" },
+          { cmd: "git checkout -b feature/team-intro", hint: "③ 브랜치 생성" },
+          { cmd: "git add .", hint: "④ 파일 추가" },
+          { cmd: "git commit -m \"feat: 팀 소개 작성\"", hint: "⑤ 커밋" },
+          { cmd: "git push origin feature/team-intro", hint: "⑥ Push" },
+          { cmd: "git checkout main", hint: "⑦ main으로 복귀" },
+          { cmd: "git merge --squash feature/team-intro", hint: "⑧ Squash Merge" },
+          { cmd: "git commit -m \"feat: 팀 소개 페이지 추가\"", hint: "⑨ 스쿼시 커밋" },
+          { cmd: "git branch -d feature/team-intro", hint: "⑩ 브랜치 삭제" },
+        ],
+      },
+      {
+        id: "4-2", title: "Squash Merge",
+        desc: "브랜치에서 작업하다 보면 커밋이 여러 개 쌓여요. \"초안 작성\", \"오타 수정\", \"내용 추가\" 같은 자잘한 커밋들이요.\n\nSquash Merge는 이 여러 커밋을 하나의 깔끔한 커밋으로 합쳐서 main에 넣어요.\n\n일반 Merge: 커밋 3개 → main에 커밋 3개가 그대로 들어옴 (지저분)\nSquash Merge: 커밋 3개 → main에 커밋 1개만 들어옴 (깔끔!)\n\n이렇게 하면 main의 히스토리가 '기능 단위'로 깔끔하게 정리돼요!",
+        diagram: "squash",
+        steps: [
+          { instruction: "main으로 이동하세요", expected: ["git checkout main"], options: [
+            { cmd: "git checkout main", correct: true },
+            { cmd: "git merge --squash feature/work", correct: false, fb: "merge 전에 main으로 먼저 이동!" },
+            { cmd: "git branch -d feature/work", correct: false, fb: "삭제는 merge 후에!" },
+          ]},
+          { instruction: "feature/work 브랜치를 Squash Merge하세요", expected: ["git merge --squash"], options: [
+            { cmd: "git merge --squash feature/work", desc: "여러 커밋을 하나로 합치기", correct: true },
+            { cmd: "git merge feature/work", desc: "일반 머지 (커밋 그대로)", correct: false, fb: "일반 merge는 모든 커밋이 그대로 들어와요. --squash를 써야 깔끔!" },
+            { cmd: "git rebase feature/work", correct: false, fb: "rebase는 다른 용도예요. squash merge는 merge --squash!" },
+          ]},
+          { instruction: "스쿼시된 내용을 커밋하세요", expected: ["git commit"], options: [
+            { cmd: "git commit -m \"feat: 기능 추가\"", correct: true },
+            { cmd: "git push origin main", correct: false, fb: "squash 후 commit을 먼저!" },
+            { cmd: "git add .", correct: false, fb: "squash merge는 자동으로 staging돼요. commit만 하면 돼요." },
+          ]},
+          { instruction: "사용한 브랜치를 삭제하세요", expected: ["git branch -d"], options: [
+            { cmd: "git branch -d feature/work", desc: "브랜치 삭제", correct: true },
+            { cmd: "git branch feature/work", correct: false, fb: "삭제하려면 -d 옵션이 필요해요!" },
+            { cmd: "git checkout feature/work", correct: false, fb: "이미 main에 merge했어요. 삭제할 차례!" },
+          ]},
+        ],
+      },
+      {
+        id: "4-3", title: "Rebase로 최신화",
+        desc: "내가 feature 브랜치에서 작업하는 동안, 다른 팀원이 main에 새로운 변경을 추가할 수 있어요.\n\n이때 내 브랜치가 '옛날 main' 기준이라 문제가 생길 수 있어요. rebase는 내 작업을 '최신 main 위'로 옮겨주는 명령어예요.\n\n비유하면: 어제 찍은 사진에 오늘 산 모자를 합성하는 것처럼, 최신 상태 위에 내 작업을 얹는 거예요!",
+        steps: [
+          { instruction: "main으로 이동하세요", expected: ["git checkout main"], options: [
+            { cmd: "git checkout main", correct: true },
+            { cmd: "git rebase main", correct: false, fb: "rebase 전에 main의 최신을 먼저 가져와야 해요!" },
+            { cmd: "git pull origin feature/my-work", correct: false, fb: "feature가 아니라 main을 먼저 업데이트!" },
+          ]},
+          { instruction: "최신 main을 가져오세요", expected: ["git pull"], options: [
+            { cmd: "git pull origin main", correct: true },
+            { cmd: "git fetch origin", correct: false, fb: "fetch도 되지만 pull이 fetch+merge를 한번에!" },
+            { cmd: "git rebase main", correct: false, fb: "아직 main이 최신이 아니에요. pull 먼저!" },
+          ]},
+          { instruction: "다시 feature 브랜치로 이동하세요", expected: ["git checkout feature"], options: [
+            { cmd: "git checkout feature/my-work", correct: true },
+            { cmd: "git checkout -b feature/my-work", correct: false, fb: "이미 있는 브랜치예요. -b 없이 이동!" },
+            { cmd: "git rebase main", correct: false, fb: "먼저 feature 브랜치로 이동해야 해요!" },
+          ]},
+          { instruction: "최신 main 위에 내 작업을 올리세요", expected: ["git rebase"], options: [
+            { cmd: "git rebase main", desc: "최신 main 위에 재배치", correct: true },
+            { cmd: "git merge main", desc: "main을 합치기", correct: false, fb: "merge도 되지만, 우리 팀은 rebase로 깔끔하게!" },
+            { cmd: "git pull origin main", correct: false, fb: "이미 main은 최신. 이제 rebase!" },
+          ]},
+        ],
+      },
+    ],
+  },
+  {
+    id: 5, title: "트러블슈팅", icon: "🚨", color: "#ef4444",
+    stages: [
+      {
+        id: "5-1", title: "충돌 해결",
+        desc: "충돌(Conflict)은 두 사람이 같은 파일의 같은 부분을 다르게 수정했을 때 발생해요. Git이 어떤 걸 선택해야 할지 모르는 거예요.\n\n파일을 열면 이런 표시가 보여요:\n<<<<<<< (내 변경)\n=======\n>>>>>>> (팀원 변경)\n\n이 표시들을 지우고 원하는 내용으로 정리한 뒤, add → commit하면 해결 완료!",
+        mode: "free",
+        freeSteps: [
+          { expected: ["git add"], hint: "충돌을 해결한 파일을 add하세요", ok: "파일을 staging에 올렸어요!" },
+          { expected: ["git commit"], hint: "충돌 해결을 커밋하세요", ok: "충돌 해결 완료!" },
+        ],
+      },
+      {
+        id: "5-2", title: "커밋 되돌리기",
+        desc: "이미 push한 커밋에 실수가 있었어요! 이때 두 가지 방법이 있는데:\n\n• git revert ✅ — 실수를 되돌리는 '새로운 커밋'을 만들어요. 기록이 남아서 안전해요.\n• git reset ❌ — 커밋 자체를 지워버려요. 이미 push한 걸 reset하면 팀원들에게 문제가 생겨요!\n\n우리 팀 규칙: push한 커밋은 반드시 revert로 되돌린다!",
+        mode: "free",
+        freeSteps: [
+          { expected: ["git revert"], hint: "push한 커밋은 revert로! (reset은 위험)", ok: "안전하게 되돌렸어요!" },
+        ],
+      },
+      {
+        id: "5-3", title: "Stash: 임시 보관",
+        desc: "문서 작업 중인데, 팀장님이 '급하게 main에서 뭐 좀 확인해줘!'라고 해요.\n\n그런데 지금 작업 중인 파일이 있어서 브랜치를 못 바꿔요. 이때 git stash를 쓰면 현재 작업을 '서랍'에 잠시 넣어두고, 다른 일을 처리한 뒤 돌아와서 git stash pop으로 꺼낼 수 있어요.\n\n서랍에 넣기(stash) → 다른 일 처리 → 돌아와서 꺼내기(stash pop)!",
+        mode: "free",
+        freeSteps: [
+          { expected: ["git stash"], hint: "현재 작업을 임시 보관", ok: "작업을 보관했어요!" },
+          { expected: ["git checkout main"], hint: "main으로 이동하세요", ok: "main으로 이동!" },
+          { expected: ["git checkout feature"], hint: "다시 feature 브랜치로 돌아가세요", ok: "돌아왔어요!" },
+          { expected: ["git stash pop"], hint: "보관한 작업을 다시 꺼내세요", ok: "작업 복원 완료!" },
+        ],
+      },
+    ],
+  },
+];
+
+const FINAL_MISSION = {
+  title: "🏆 최종 미션",
+  desc: "가이드 없이 FAQ 페이지를 Trunk-Based 방식으로 완성하세요!",
+  freeSteps: [
+    { expected: ["git checkout main"], hint: "main으로 이동", ok: "✓" },
+    { expected: ["git pull"], hint: "최신 동기화", ok: "✓" },
+    { expected: ["git checkout -b feature"], hint: "feature 브랜치 생성 (feature/ 접두사)", ok: "✓" },
+    { expected: ["git add"], hint: "파일 추가", ok: "✓" },
+    { expected: ["git commit"], hint: "커밋 (feat: 타입 추천)", ok: "✓" },
+    { expected: ["git push origin feature"], hint: "원격에 Push", ok: "✓" },
+    { expected: ["git checkout main"], hint: "main으로 복귀", ok: "✓" },
+    { expected: ["git merge --squash"], hint: "Squash Merge", ok: "✓" },
+    { expected: ["git commit"], hint: "스쿼시 커밋", ok: "✓" },
+    { expected: ["git branch -d"], hint: "브랜치 정리", ok: "🎉 완료!" },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════
+// COMPONENTS
+// ═══════════════════════════════════════════════════════════
+
+function GitFlowDiagram() {
+  const items = [
+    { name: "작업 공간", sub: "Working Dir", icon: "📝", color: "#f59e0b" },
+    { name: "대기실", sub: "Staging", icon: "📦", color: "#10b981" },
+    { name: "저장소", sub: "Repository", icon: "🏛️", color: "#6366f1" },
+  ];
+  const arrows = ["git add", "git commit"];
+  return (
+    <div className="diagram flow-diagram">
+      {items.map((s, i) => (
+        <div key={i} className="flow-group">
+          {i > 0 && <div className="flow-arrow"><span className="arrow-cmd">{arrows[i - 1]}</span><span className="arrow-icon">→</span></div>}
+          <div className="flow-box" style={{ borderColor: s.color }}>
+            <span className="flow-emoji">{s.icon}</span>
+            <span className="flow-name">{s.name}</span>
+            <span className="flow-sub">{s.sub}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BranchDiagram() {
+  return (
+    <div className="diagram branch-diagram">
+      <div className="bd-label">브랜치 = main의 안전한 복사본에서 작업하는 것</div>
+      <div className="bd-visual">
+        <div className="bd-track">
+          <div className="bd-track-label">
+            <span className="bd-tag main-tag">main</span>
+            <span className="bd-track-desc">팀 전체의 완성본 (건드리면 안 됨!)</span>
+          </div>
+          <div className="bd-line main-line">
+            <span className="bd-node" /><span className="bd-node" /><span className="bd-node" />
+            <span className="bd-connector" />
+          </div>
+        </div>
+        <div className="bd-fork-area">
+          <div className="bd-fork-line" />
+          <span className="bd-fork-label">git checkout -b</span>
+        </div>
+        <div className="bd-track">
+          <div className="bd-track-label">
+            <span className="bd-tag feat-tag">feature/update-docs</span>
+            <span className="bd-track-desc">내 작업 공간 (마음껏 수정 가능!)</span>
+          </div>
+          <div className="bd-line feat-line">
+            <span className="bd-node feat" /><span className="bd-node feat" />
+            <span className="bd-node-add">+ 커밋 추가중...</span>
+          </div>
+        </div>
+      </div>
+      <div className="bd-bottom">✅ feature에서 실수해도 main은 안전해요!</div>
+    </div>
+  );
+}
+
+function PipelineDiagram() {
+  return (
+    <div className="diagram pipeline-diagram">
+      {["main pull", "branch 생성", "작업+커밋", "push", "PR 리뷰", "squash merge", "branch 삭제"].map((s, i) => (
+        <div key={i} className="pipe-step">
+          <span className="pipe-num">{i + 1}</span>
+          <span className="pipe-text">{s}</span>
+          {i < 6 && <span className="pipe-arr">→</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SquashDiagram() {
+  return (
+    <div className="diagram squash-diagram">
+      <div className="sq-section">
+        <div className="sq-header bad">일반 Merge</div>
+        <div className="sq-body">
+          <div className="sq-branch-commits">
+            <span className="sq-mini">초안 작성</span>
+            <span className="sq-mini">오타 수정</span>
+            <span className="sq-mini">내용 추가</span>
+          </div>
+          <div className="sq-arrow-down">↓ main에 그대로 들어감</div>
+          <div className="sq-result-area bad">
+            <span className="sq-tag">main 히스토리</span>
+            <div className="sq-result-commits">
+              <span className="sq-mini">초안 작성</span>
+              <span className="sq-mini">오타 수정</span>
+              <span className="sq-mini">내용 추가</span>
+            </div>
+            <span className="sq-verdict">😵 커밋 3개 — 지저분!</span>
+          </div>
+        </div>
+      </div>
+      <div className="sq-vs-divider">VS</div>
+      <div className="sq-section">
+        <div className="sq-header good">Squash Merge ✨</div>
+        <div className="sq-body">
+          <div className="sq-branch-commits">
+            <span className="sq-mini">초안 작성</span>
+            <span className="sq-mini">오타 수정</span>
+            <span className="sq-mini">내용 추가</span>
+          </div>
+          <div className="sq-arrow-down good-arrow">↓ 하나로 합쳐서 들어감</div>
+          <div className="sq-result-area good">
+            <span className="sq-tag">main 히스토리</span>
+            <div className="sq-result-commits">
+              <span className="sq-mini big">feat: FAQ 페이지 추가</span>
+            </div>
+            <span className="sq-verdict">✨ 커밋 1개 — 깔끔!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CmdCard({ cmd, desc, state, fb, onClick }) {
+  return (
+    <div className={`cmd-card ${state || ""}`} onClick={state !== "correct" ? onClick : undefined}>
+      <code>{cmd}</code>
+      {desc && <p className="cmd-desc">{desc}</p>}
+      {state === "wrong" && fb && <div className="cmd-fb">{fb}</div>}
+    </div>
+  );
+}
+
+function Terminal({ lines, input, onInput, onSubmit, placeholder, autocomplete }) {
+  const [acItems, setAcItems] = useState([]);
+  const [acOpen, setAcOpen] = useState(false);
+  const inputRef = useRef(null);
+  const endRef = useRef(null);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [lines]);
+  useEffect(() => {
+    if (autocomplete && input.length >= 3) {
+      const m = autocomplete.filter(a => a.toLowerCase().startsWith(input.toLowerCase())).slice(0, 5);
+      setAcItems(m); setAcOpen(m.length > 0);
+    } else { setAcOpen(false); }
+  }, [input, autocomplete]);
+  const onKey = (e) => {
+    if (e.key === "Enter") { onSubmit(); setAcOpen(false); }
+    if (e.key === "Tab" && acOpen && acItems.length) { e.preventDefault(); onInput(acItems[0]); setAcOpen(false); }
+  };
+  return (
+    <div className="terminal">
+      <div className="term-bar"><span className="dot r" /><span className="dot y" /><span className="dot g" /><span className="term-title">Terminal</span></div>
+      <div className="term-body">
+        {lines.map((l, i) => <div key={i} className={`tl tl-${l.t}`}>{l.t === "in" && <span className="pr">$ </span>}{l.text}</div>)}
+        <div className="tl-input"><span className="pr">$ </span>
+          <input ref={inputRef} value={input} onChange={e => onInput(e.target.value)} onKeyDown={onKey} placeholder={placeholder} autoFocus />
+          {acOpen && <div className="ac-popup">{acItems.map((a, i) => <div key={i} className="ac-item" onClick={() => { onInput(a); setAcOpen(false); inputRef.current?.focus(); }}>{a}</div>)}</div>}
+        </div>
+        <div ref={endRef} />
+      </div>
+    </div>
+  );
+}
+
+function OrderPuzzle({ steps, onComplete }) {
+  const [pool, setPool] = useState([]);
+  const [slots, setSlots] = useState([]);
+  const [wrongId, setWrongId] = useState(null);
+  useEffect(() => { setPool([...steps].map((s, i) => ({ ...s, oi: i })).sort(() => Math.random() - 0.5)); setSlots([]); }, []);
+  const pick = (item) => {
+    const next = slots.length;
+    if (item.oi === next) {
+      setSlots([...slots, item]); setPool(pool.filter(p => p.oi !== item.oi)); setWrongId(null);
+      if (next === steps.length - 1) setTimeout(onComplete, 500);
+    } else { setWrongId(item.oi); setTimeout(() => setWrongId(null), 900); }
+  };
+  return (
+    <div className="order-puzzle">
+      <div className="order-slots">
+        {steps.map((_, i) => (
+          <div key={i} className={`o-slot ${i < slots.length ? "filled" : i === slots.length ? "next" : ""}`}>
+            <span className="o-num">{i + 1}</span>
+            {slots[i] && <code>{slots[i].cmd}</code>}
+          </div>
+        ))}
+      </div>
+      <p className="pool-label">올바른 순서로 클릭하세요:</p>
+      <div className="pool-cards">
+        {pool.map(item => (
+          <div key={item.oi} className={`p-card ${wrongId === item.oi ? "shake" : ""}`} onClick={() => pick(item)}>
+            <code>{item.cmd}</code>
+            {wrongId === item.oi && <div className="p-wrong">순서가 맞지 않아요!</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// MAIN APP
+// ═══════════════════════════════════════════════════════════
+
+function App() {
+  const [view, setView] = useState("home"); // home | stage | final | victory
+  const [fade, setFade] = useState("in");
+  const [chId, setChId] = useState(null);
+  const [stIdx, setStIdx] = useState(0);
+  const [stepIdx, setStepIdx] = useState(0);
+  const [cards, setCards] = useState({});
+  const [tLines, setTLines] = useState([]);
+  const [tInput, setTInput] = useState("");
+  const [done, setDone] = useState(false);
+  const [progress, setProgress] = useState(() => {
+    const p = {}; CHAPTERS.forEach(c => { p[c.id] = new Array(c.stages.length).fill(false); }); return p;
+  });
+
+  const go = useCallback((next, data) => {
+    setFade("out");
+    setTimeout(() => {
+      setStepIdx(0); setCards({}); setTLines([]); setTInput(""); setDone(false);
+      if (next === "home") { setView("home"); }
+      else if (next === "stage") { setView("stage"); setChId(data.c); setStIdx(data.s); }
+      else if (next === "final") { setView("final"); }
+      else if (next === "victory") { setView("victory"); }
+      setFade("in");
+    }, 350);
+  }, []);
+
+  const ch = chId != null ? CHAPTERS.find(c => c.id === chId) : null;
+  const stage = ch ? ch.stages[stIdx] : null;
+
+  const markDone = () => {
+    if (!ch) return;
+    setProgress(p => { const n = { ...p }; n[ch.id] = [...n[ch.id]]; n[ch.id][stIdx] = true; return n; });
+  };
+
+  const nextStage = () => {
+    markDone();
+    if (stIdx < ch.stages.length - 1) go("stage", { c: chId, s: stIdx + 1 });
+    else go("home");
+  };
+
+  // Select mode
+  const pickCard = (opt, si) => {
+    if (cards[`${si}-ok`]) return;
+    if (opt.correct) {
+      setCards(p => ({ ...p, [`${si}-${opt.cmd}`]: "correct", [`${si}-ok`]: true }));
+      setTLines(p => [...p, { t: "in", text: opt.cmd }, { t: "ok", text: "✅ 정답!" }]);
+      if (si === stage.steps.length - 1) setTimeout(() => setDone(true), 700);
+      else setTimeout(() => setStepIdx(si + 1), 500);
+    } else {
+      setCards(p => ({ ...p, [`${si}-${opt.cmd}`]: "wrong" }));
+      setTLines(p => [...p, { t: "err", text: `⚠️ ${opt.fb || "다시 생각해보세요!"}` }]);
+      setTimeout(() => setCards(p => ({ ...p, [`${si}-${opt.cmd}`]: "" })), 1000);
+    }
+  };
+
+  // Free mode
+  const acList = ["git add","git add .","git commit","git commit -m","git push","git push origin","git pull","git pull origin main","git checkout","git checkout main","git checkout -b","git merge","git merge --squash","git branch","git branch -d","git rebase","git rebase main","git stash","git stash pop","git revert","git revert HEAD","git restore","git log","git log --oneline","git diff","git status","git clone"];
+
+  const submitFree = (steps, isFinal) => {
+    if (!tInput.trim()) return;
+    const val = tInput.trim(); setTInput("");
+    if (val === "hint") { setTLines(p => [...p, { t: "in", text: val }, { t: "hint", text: `💡 ${steps[stepIdx].hint}` }]); return; }
+    const match = steps[stepIdx].expected.some(e => val.toLowerCase().startsWith(e.toLowerCase()));
+    if (match) {
+      setTLines(p => [...p, { t: "in", text: val }, { t: "ok", text: `✅ ${steps[stepIdx].ok}` }]);
+      if (stepIdx < steps.length - 1) setStepIdx(stepIdx + 1);
+      else { if (isFinal) setTimeout(() => go("victory"), 800); else setTimeout(() => setDone(true), 600); }
+    } else {
+      setTLines(p => [...p, { t: "in", text: val }, { t: "err", text: "❌ 다시 확인해보세요. 'hint' 입력으로 힌트!" }]);
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════════════════
+
+  const getDiagram = (type) => {
+    if (type === "flow") return <GitFlowDiagram />;
+    if (type === "branch") return <BranchDiagram />;
+    if (type === "pipeline") return <PipelineDiagram />;
+    if (type === "squash") return <SquashDiagram />;
+    return null;
+  };
+
+  return (
+    <div className={`app fade-${fade}`}>
+
+      {/* HOME */}
+      {view === "home" && (
+        <div className="home">
+          <div className="home-head anim">
+            <h1 className="logo">🌿 Git Quest</h1>
+            <p className="logo-sub">Trunk-Based Development 마스터하기</p>
+          </div>
+          <div className="chapters">
+            {CHAPTERS.map(c => {
+              const d = progress[c.id].filter(Boolean).length;
+              const t = c.stages.length;
+              return (
+                <div key={c.id} className="ch-section">
+                  <div className="ch-head" style={{ "--cc": c.color }}>
+                    <span className="ch-icon">{c.icon}</span>
+                    <div><h2>Chapter {c.id}: {c.title}</h2><span className="ch-prog">{d}/{t} 완료</span></div>
+                    <div className="ch-bar"><div className="ch-fill" style={{ width: `${(d / t) * 100}%` }} /></div>
+                  </div>
+                  <div className="st-list">
+                    {c.stages.map((s, si) => (
+                      <div key={s.id} className={`st-card ${progress[c.id][si] ? "st-done" : ""}`} onClick={() => go("stage", { c: c.id, s: si })}>
+                        <span className="st-id">{s.id}</span>
+                        <span className="st-title">{s.title}</span>
+                        {progress[c.id][si] && <span className="st-check">✅</span>}
+                        <span className="st-arrow">→</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            <div className="ch-section final-section">
+              <div className="st-card final-card" onClick={() => go("final")}>
+                <span className="st-id">🏆</span>
+                <span className="st-title">최종 미션: 실전 시뮬레이션</span>
+                <span className="st-arrow">→</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE */}
+      {view === "stage" && stage && (
+        <div className="stage">
+          <div className="s-top anim">
+            <button className="btn-back" onClick={() => go("home")}>← 목록</button>
+            <span className="s-badge" style={{ background: ch.color }}>{ch.icon} {stage.id}</span>
+            <h2>{stage.title}</h2>
+          </div>
+
+          {/* INTRO MODE — Git 소개 */}
+          {stage.mode === "intro" && stage.intro && (
+            <div className="intro-screen">
+              {/* Before vs After */}
+              <div className="intro-compare anim">
+                <div className="intro-box intro-bad">
+                  <div className="intro-box-head">
+                    <span className="intro-icon">{stage.intro.before.icon}</span>
+                    <h3>{stage.intro.before.title}</h3>
+                  </div>
+                  <div className="intro-files">
+                    {stage.intro.before.files.map((f, i) => (
+                      <div key={i} className="intro-file" style={{ animationDelay: `${i * 0.08}s` }}>{f}</div>
+                    ))}
+                  </div>
+                  <div className="intro-tags">
+                    {stage.intro.before.problems.map((p, i) => (
+                      <span key={i} className="intro-tag bad">❌ {p}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="intro-arrow-big anim d1">→</div>
+
+                <div className="intro-box intro-good">
+                  <div className="intro-box-head">
+                    <span className="intro-icon">{stage.intro.after.icon}</span>
+                    <h3>{stage.intro.after.title}</h3>
+                  </div>
+                  <div className="intro-files">
+                    {stage.intro.after.files.map((f, i) => (
+                      <div key={i} className="intro-file good">{f}</div>
+                    ))}
+                  </div>
+                  <div className="intro-tags">
+                    {stage.intro.after.benefits.map((b, i) => (
+                      <span key={i} className="intro-tag good">✅ {b}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="intro-summary anim d1">
+                <span className="intro-summary-text">{stage.intro.summary}</span>
+              </div>
+
+              {/* How it works */}
+              <div className="intro-how anim d2">
+                <h3>{stage.intro.howItWorks.title}</h3>
+                <div className="intro-flow">
+                  {stage.intro.howItWorks.steps.map((s, i) => (
+                    <div key={i} className={s.arrow ? "intro-flow-arrow" : "intro-flow-box"}>
+                      {s.arrow ? (
+                        <>
+                          <div className="ifa-line" />
+                          <code className="ifa-cmd">{s.arrow}</code>
+                          <div className="ifa-line" />
+                        </>
+                      ) : (
+                        <>
+                          <span className="ifb-icon">{s.icon}</span>
+                          <span className="ifb-name">{s.name}</span>
+                          <span className="ifb-sub">{s.sub}</span>
+                          <span className="ifb-desc">{s.desc}</span>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="intro-analogy">💡 {stage.intro.howItWorks.analogy}</div>
+              </div>
+
+              {/* Next button */}
+              <div className="intro-action anim d2">
+                <button className="btn-primary" onClick={nextStage}>이해했어요! 직접 해볼게요 →</button>
+              </div>
+            </div>
+          )}
+
+          {/* NON-INTRO: desc + diagram */}
+          {stage.mode !== "intro" && (
+            <>
+              <div className="s-desc anim d1">{stage.desc.split('\n').map((line, i) => <p key={i} className={line.trim() === '' ? 's-desc-gap' : ''}>{line}</p>)}</div>
+              {stage.diagram && <div className="anim d2">{getDiagram(stage.diagram)}</div>}
+            </>
+          )}
+
+          {/* SELECT MODE */}
+          {!stage.mode && stage.steps && (
+            <div className="anim d2">
+              {stage.steps.map((step, si) => (
+                <div key={si} className={`step ${si < stepIdx ? "step-done" : si === stepIdx ? "step-active" : "step-locked"}`}>
+                  <div className="step-head">
+                    <span className="step-n">{si + 1}</span>
+                    <p>{step.instruction}</p>
+                  </div>
+                  {si === stepIdx && (
+                    <div className="cmd-cards anim">
+                      {step.options.map((o, oi) => (
+                        <CmdCard key={oi} cmd={o.cmd} desc={o.desc} state={cards[`${si}-${o.cmd}`]} fb={o.fb} onClick={() => pickCard(o, si)} />
+                      ))}
+                    </div>
+                  )}
+                  {si < stepIdx && <div className="step-ok">✅</div>}
+                </div>
+              ))}
+              <Terminal lines={tLines} input="" onInput={() => {}} onSubmit={() => {}} placeholder="명령어가 여기에 표시됩니다" />
+            </div>
+          )}
+
+          {/* ORDER MODE */}
+          {stage.mode === "order" && (
+            <div className="anim d2">
+              <OrderPuzzle steps={stage.orderSteps} onComplete={() => setDone(true)} />
+            </div>
+          )}
+
+          {/* FREE MODE */}
+          {stage.mode === "free" && (
+            <div className="anim d2">
+              <div className="free-dots">
+                {stage.freeSteps.map((_, i) => <div key={i} className={`fd ${i < stepIdx ? "fd-done" : i === stepIdx ? "fd-cur" : ""}`} />)}
+              </div>
+              <Terminal lines={tLines} input={tInput} onInput={setTInput} onSubmit={() => submitFree(stage.freeSteps, false)}
+                placeholder={`Step ${stepIdx + 1}/${stage.freeSteps.length} — 'hint'로 힌트`} autocomplete={acList} />
+            </div>
+          )}
+
+          {done && (
+            <div className="overlay anim">
+              <div className="done-card bounce">
+                <div className="done-emoji">🎉</div>
+                <h3>Stage Clear!</h3>
+                <button className="btn-primary" onClick={nextStage}>
+                  {stIdx < ch.stages.length - 1 ? "다음 →" : "챕터 완료 →"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* FINAL */}
+      {view === "final" && (
+        <div className="stage">
+          <div className="s-top anim">
+            <button className="btn-back" onClick={() => go("home")}>← 목록</button>
+            <span className="s-badge" style={{ background: "#8b5cf6" }}>🏆</span>
+            <h2>{FINAL_MISSION.title}</h2>
+          </div>
+          <p className="s-desc anim d1">{FINAL_MISSION.desc}</p>
+          <div className="anim d2">
+            <div className="free-dots">
+              {FINAL_MISSION.freeSteps.map((_, i) => <div key={i} className={`fd ${i < stepIdx ? "fd-done" : i === stepIdx ? "fd-cur" : ""}`} />)}
+            </div>
+            <Terminal lines={tLines} input={tInput} onInput={setTInput} onSubmit={() => submitFree(FINAL_MISSION.freeSteps, true)}
+              placeholder={`Step ${stepIdx + 1}/${FINAL_MISSION.freeSteps.length} — 보기 없이 도전! 'hint' 가능`} autocomplete={acList} />
+          </div>
+        </div>
+      )}
+
+      {/* VICTORY */}
+      {view === "victory" && (
+        <div className="victory">
+          <div className="v-content bounce">
+            <div className="v-trophy">🏆</div>
+            <h1>Git Quest 완료!</h1>
+            <p className="v-sub">Trunk-Based Development 마스터</p>
+            <div className="cheat">
+              <h3>📋 Quick Reference</h3>
+              <div className="cheat-list">
+                {[
+                  ["git checkout -b feature/xxx", "브랜치 생성"],
+                  ["git add . → git commit -m \"\"", "저장"],
+                  ["git push origin feature/xxx", "Push"],
+                  ["git merge --squash feature/xxx", "Squash Merge"],
+                  ["git branch -d feature/xxx", "브랜치 삭제"],
+                  ["git stash / git stash pop", "임시 보관"],
+                  ["git revert HEAD", "안전하게 되돌리기"],
+                ].map(([cmd, label], i) => (
+                  <div key={i} className="cheat-row"><code>{cmd}</code><span>{label}</span></div>
+                ))}
+              </div>
+            </div>
+            <button className="btn-primary" onClick={() => go("home")}>다시 도전</button>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0b0b12;--bg2:#13131f;--bg3:#1c1c30;--sf:#161628;
+  --bd:#282848;--tx:#e4e4f0;--tx2:#8888a8;
+  --ac:#6366f1;--gn:#10b981;--rd:#ef4444;--yw:#f59e0b;--pk:#ec4899;
+  --fn:'Noto Sans KR',sans-serif;--mo:'JetBrains Mono',monospace;
+}
+.app{min-height:100vh;background:var(--bg);color:var(--tx);font-family:var(--fn);position:relative}
+.app::after{content:'';position:fixed;inset:0;background:var(--bg);pointer-events:none;z-index:9998;opacity:0;transition:opacity .35s ease}
+.app.fade-out::after{opacity:1}
+.app.fade-in::after{opacity:0}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(.4)}60%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,.4)}50%{box-shadow:0 0 0 8px rgba(99,102,241,0)}}
+.anim{animation:fadeUp .45s ease both}.d1{animation-delay:.12s}.d2{animation-delay:.24s}
+.bounce{animation:bounceIn .5s ease both}.shake{animation:shake .35s ease}
+
+/* BUTTONS */
+.btn-primary{padding:12px 28px;background:linear-gradient(135deg,var(--ac),#818cf8);color:#fff;border:none;border-radius:10px;font:600 15px var(--fn);cursor:pointer;transition:all .2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(99,102,241,.4)}
+.btn-back{background:var(--sf);border:1px solid var(--bd);color:var(--tx2);padding:6px 14px;border-radius:8px;cursor:pointer;font:14px var(--fn);transition:all .2s}
+.btn-back:hover{border-color:var(--ac);color:var(--tx)}
+
+/* HOME */
+.home{max-width:720px;margin:0 auto;padding:40px 20px 80px}
+.home-head{text-align:center;margin-bottom:32px}
+.logo{font-size:40px;font-weight:900;background:linear-gradient(135deg,#6366f1,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{color:var(--tx2);margin-top:4px;font-size:15px}
+.chapters{display:flex;flex-direction:column;gap:24px}
+.ch-section{background:var(--sf);border:1px solid var(--bd);border-radius:14px;overflow:hidden}
+.ch-head{display:flex;align-items:center;gap:12px;padding:16px 20px;flex-wrap:wrap}
+.ch-icon{font-size:28px}
+.ch-head h2{font-size:16px;font-weight:700}
+.ch-prog{font-size:12px;color:var(--tx2)}
+.ch-bar{width:80px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-left:auto}
+.ch-fill{height:100%;background:linear-gradient(90deg,var(--ac),var(--gn));border-radius:2px;transition:width .5s}
+.st-list{border-top:1px solid var(--bd)}
+.st-card{display:flex;align-items:center;gap:10px;padding:14px 20px;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.03)}
+.st-card:last-child{border-bottom:none}
+.st-card:hover{background:rgba(99,102,241,.06)}
+.st-id{font:600 13px var(--mo);color:var(--ac);min-width:32px}
+.st-title{flex:1;font-size:15px}
+.st-check{font-size:14px}
+.st-arrow{color:var(--tx2);font-size:14px}
+.st-done{opacity:.6}
+.st-done:hover{opacity:1}
+.final-section .st-card{border:1px dashed var(--bd);border-radius:14px;margin:0}
+.final-card:hover{border-color:#8b5cf6}
+
+/* STAGE */
+.stage{max-width:720px;margin:0 auto;padding:28px 20px 120px}
+.s-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.s-badge{padding:3px 10px;border-radius:99px;color:#fff;font-size:13px;font-weight:600}
+.s-top h2{font-size:22px;font-weight:700}
+.s-desc{color:var(--tx2);font-size:14px;line-height:1.7;padding:14px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;margin-bottom:16px}
+.s-desc p{margin:0}.s-desc-gap{height:8px}
+
+/* DIAGRAMS */
+.diagram{padding:16px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;margin-bottom:16px;overflow-x:auto}
+
+/* Flow Diagram */
+.flow-diagram{display:flex;align-items:center;gap:0;justify-content:center;flex-wrap:wrap}
+.flow-group{display:flex;align-items:center}
+.flow-arrow{display:flex;align-items:center;gap:4px;padding:0 10px;color:var(--tx2)}
+.arrow-cmd{font:12px var(--mo)}
+.arrow-icon{font-size:16px}
+.flow-box{display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 18px;background:var(--sf);border:2px solid;border-radius:10px;min-width:100px}
+.flow-emoji{font-size:24px}.flow-name{font-size:14px;font-weight:700}.flow-sub{font-size:10px;color:var(--tx2);font-family:var(--mo)}
+
+/* Branch Diagram */
+.branch-diagram{padding:20px}
+.bd-label{text-align:center;font-size:13px;color:var(--tx2);margin-bottom:16px;font-style:italic}
+.bd-visual{display:flex;flex-direction:column;gap:0}
+.bd-track{margin-bottom:4px}
+.bd-track-label{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.bd-tag{font:600 12px var(--mo);padding:3px 10px;border-radius:99px}
+.main-tag{background:rgba(16,185,129,.15);color:var(--gn)}
+.feat-tag{background:rgba(236,72,153,.15);color:var(--pk)}
+.bd-track-desc{font-size:12px;color:var(--tx2)}
+.bd-line{display:flex;align-items:center;gap:0;padding:6px 0;padding-left:4px;position:relative}
+.bd-line::before{content:'';position:absolute;left:4px;right:0;top:50%;height:3px;border-radius:2px}
+.main-line::before{background:rgba(16,185,129,.25)}
+.feat-line::before{background:rgba(236,72,153,.25)}
+.bd-node{width:16px;height:16px;border-radius:50%;background:var(--gn);border:3px solid var(--bg2);position:relative;z-index:1;margin-right:28px;flex-shrink:0}
+.bd-node.feat{background:var(--pk);width:14px;height:14px}
+.bd-connector{display:none}
+.bd-node-add{font-size:12px;color:var(--pk);position:relative;z-index:1;white-space:nowrap}
+.bd-fork-area{display:flex;align-items:center;gap:8px;padding:4px 0 4px 20px}
+.bd-fork-line{width:20px;height:20px;border-left:2px dashed var(--tx2);border-bottom:2px dashed var(--tx2);border-radius:0 0 0 8px}
+.bd-fork-label{font:600 11px var(--mo);color:var(--ac);background:rgba(99,102,241,.1);padding:2px 8px;border-radius:4px}
+.bd-bottom{text-align:center;font-size:13px;color:var(--gn);margin-top:12px;padding:8px;background:rgba(16,185,129,.06);border-radius:6px}
+
+/* Pipeline Diagram */
+.pipeline-diagram{display:flex;align-items:center;gap:0;flex-wrap:wrap;padding:12px}
+.pipe-step{display:flex;align-items:center;gap:4px}
+.pipe-num{width:20px;height:20px;border-radius:50%;background:var(--ac);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pipe-text{font-size:12px;white-space:nowrap}.pipe-arr{color:var(--tx2);margin:0 4px}
+
+/* Squash Diagram */
+.squash-diagram{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.sq-section{flex:1;min-width:220px;display:flex;flex-direction:column}
+.sq-header{text-align:center;font-size:14px;font-weight:700;padding:8px;border-radius:8px 8px 0 0}
+.sq-header.bad{background:rgba(239,68,68,.1);color:var(--rd)}
+.sq-header.good{background:rgba(16,185,129,.1);color:var(--gn)}
+.sq-body{background:var(--bg3);border-radius:0 0 8px 8px;padding:14px;flex:1;display:flex;flex-direction:column;gap:8px}
+.sq-branch-commits{display:flex;gap:4px;flex-wrap:wrap}
+.sq-mini{font:12px var(--mo);padding:4px 8px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;white-space:nowrap}
+.sq-mini.big{border-color:var(--gn);color:var(--gn);background:rgba(16,185,129,.06)}
+.sq-arrow-down{text-align:center;font-size:12px;color:var(--tx2);padding:4px 0}
+.sq-arrow-down.good-arrow{color:var(--gn)}
+.sq-result-area{padding:10px;border-radius:6px;border:1px dashed var(--bd)}
+.sq-result-area.bad{border-color:rgba(239,68,68,.2)}
+.sq-result-area.good{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.03)}
+.sq-tag{font-size:10px;color:var(--tx2);display:block;margin-bottom:6px}
+.sq-result-commits{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.sq-verdict{font-size:12px;font-weight:600}
+.sq-vs-divider{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--tx2);padding:0 4px}
+
+/* SELECT STEPS */
+.step{margin-bottom:16px;transition:opacity .3s}
+.step-locked{opacity:.25;pointer-events:none}.step-done{opacity:.5}
+.step-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.step-n{font:700 12px var(--mo);color:var(--ac);background:rgba(99,102,241,.12);padding:2px 10px;border-radius:99px}
+.step-head p{font-size:15px}
+.step-ok{color:var(--gn);font-size:13px}
+.cmd-cards{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.cmd-card{flex:1;min-width:160px;padding:12px 14px;background:var(--sf);border:2px solid var(--bd);border-radius:10px;cursor:pointer;transition:all .2s}
+.cmd-card:hover{border-color:#818cf8;transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.cmd-card.correct{border-color:var(--gn);background:rgba(16,185,129,.08);cursor:default}
+.cmd-card.wrong{border-color:var(--rd);animation:shake .35s}
+.cmd-card code{font:600 14px var(--mo);display:block}
+.cmd-desc{font-size:12px;color:var(--tx2);margin-top:4px}
+.cmd-fb{font-size:12px;color:var(--yw);margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);line-height:1.5;animation:fadeUp .3s ease}
+
+/* ORDER */
+.order-puzzle{margin:16px 0}
+.order-slots{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.o-slot{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--bg3);border:2px dashed var(--bd);border-radius:8px;min-height:38px;min-width:100px;transition:all .3s}
+.o-slot.filled{border-style:solid;border-color:var(--gn);background:rgba(16,185,129,.06);animation:fadeUp .25s ease}
+.o-slot.next{border-color:var(--ac);animation:pulse 1.5s infinite}
+.o-num{font:700 11px var(--mo);color:var(--tx2);background:var(--sf);padding:2px 7px;border-radius:99px}
+.o-slot code{font:13px var(--mo);color:var(--gn)}
+.pool-label{font-size:13px;color:var(--tx2);margin-bottom:8px}
+.pool-cards{display:flex;flex-wrap:wrap;gap:6px}
+.p-card{padding:8px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;cursor:pointer;transition:all .2s;position:relative}
+.p-card:hover{border-color:var(--ac);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.p-card code{font:13px var(--mo)}
+.p-wrong{position:absolute;top:100%;left:0;right:0;padding:4px 8px;background:var(--rd);color:#fff;font-size:11px;border-radius:0 0 8px 8px;text-align:center;z-index:10}
+
+/* FREE MODE */
+.free-dots{display:flex;gap:5px;margin-bottom:12px}
+.fd{width:8px;height:8px;border-radius:50%;background:var(--bd);transition:all .3s}
+.fd-done{background:var(--gn)}.fd-cur{background:var(--ac);box-shadow:0 0 8px var(--ac)}
+
+/* TERMINAL */
+.terminal{background:#0a0a10;border:1px solid var(--bd);border-radius:10px;overflow:hidden;font:14px var(--mo);margin-top:12px}
+.term-bar{display:flex;align-items:center;gap:5px;padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--bd)}
+.dot{width:9px;height:9px;border-radius:50%}.dot.r{background:#ef4444}.dot.y{background:#f59e0b}.dot.g{background:#10b981}
+.term-title{font-size:11px;color:var(--tx2);margin-left:6px}
+.term-body{padding:12px;max-height:260px;overflow-y:auto}
+.tl{padding:2px 0;line-height:1.5}
+.tl-in{color:var(--tx)}.tl-ok{color:var(--gn)}.tl-err{color:var(--rd)}.tl-hint{color:var(--yw)}
+.pr{color:var(--ac);font-weight:600}
+.tl-input{display:flex;align-items:center;padding:4px 0;position:relative}
+.tl-input input{flex:1;background:none;border:none;outline:none;color:var(--tx);font:14px var(--mo);caret-color:var(--ac)}
+.tl-input input::placeholder{color:#3a3a58}
+.ac-popup{position:absolute;bottom:100%;left:14px;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:3px;z-index:100;min-width:250px}
+.ac-item{padding:6px 10px;cursor:pointer;border-radius:4px;font-size:13px}.ac-item:hover{background:rgba(99,102,241,.2)}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(6px)}
+.done-card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:36px;text-align:center}
+.done-emoji{font-size:44px;margin-bottom:8px}
+.done-card h3{font-size:22px;margin-bottom:16px}
+
+/* VICTORY */
+.victory{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(ellipse at 30% 20%,rgba(99,102,241,.12),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(16,185,129,.08),transparent 50%),var(--bg)}
+.v-content{text-align:center;max-width:560px;width:100%}
+.v-trophy{font-size:72px;margin-bottom:8px}
+.v-content h1{font-size:36px;font-weight:900;margin-bottom:4px}
+.v-sub{color:var(--tx2);font-size:16px;margin-bottom:24px}
+.cheat{text-align:left;background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:20px}
+.cheat h3{font-size:15px;margin-bottom:12px}
+.cheat-list{display:flex;flex-direction:column;gap:8px}
+.cheat-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.cheat-row code{font:13px var(--mo);color:var(--gn)}.cheat-row span{font-size:13px;color:var(--tx2)}
+
+@media(max-width:640px){
+  .logo{font-size:28px}
+  .flow-diagram{flex-direction:column}.flow-arrow{transform:rotate(90deg);padding:6px 0}
+  .cmd-cards{flex-direction:column}
+  .order-slots{flex-direction:column}
+  .pipeline-diagram{justify-content:center}
+  .squash-diagram{flex-direction:column}
+  .intro-compare{flex-direction:column}
+  .intro-arrow-big{transform:rotate(90deg)}
+  .intro-flow{flex-direction:column;align-items:stretch}
+  .intro-flow-arrow{flex-direction:row;justify-content:center;padding:4px 0}
+  .ifa-line{width:20px;height:2px}
+}
+
+/* INTRO SCREEN */
+.intro-screen{margin-top:8px}
+.intro-compare{display:flex;gap:16px;align-items:stretch;margin-bottom:20px}
+.intro-box{flex:1;padding:20px;border-radius:12px;border:1px solid var(--bd);background:var(--sf);min-width:0}
+.intro-bad{border-color:rgba(239,68,68,.3)}
+.intro-good{border-color:rgba(16,185,129,.3)}
+.intro-box-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.intro-icon{font-size:24px}
+.intro-box-head h3{font-size:16px;font-weight:700}
+.intro-files{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.intro-file{font:13px var(--mo);padding:6px 10px;background:var(--bg3);border-radius:6px;animation:fadeUp .3s ease both;color:var(--tx2)}
+.intro-file.good{color:var(--gn);background:rgba(16,185,129,.06)}
+.intro-tags{display:flex;flex-direction:column;gap:4px}
+.intro-tag{font-size:13px;line-height:1.5}
+.intro-tag.bad{color:var(--rd)}.intro-tag.good{color:var(--gn)}
+.intro-arrow-big{font-size:28px;color:var(--tx2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+.intro-summary{text-align:center;padding:16px 20px;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(16,185,129,.06));border:1px solid rgba(99,102,241,.2);border-radius:12px;margin-bottom:20px}
+.intro-summary-text{font-size:18px;font-weight:700}
+
+.intro-how{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-bottom:20px}
+.intro-how h3{font-size:16px;font-weight:700;margin-bottom:16px;text-align:center}
+.intro-flow{display:flex;align-items:center;justify-content:center;gap:0}
+.intro-flow-box{display:flex;flex-direction:column;align-items:center;gap:3px;padding:14px 16px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;min-width:110px;text-align:center}
+.ifb-icon{font-size:24px}
+.ifb-name{font-size:14px;font-weight:700}
+.ifb-sub{font:10px var(--mo);color:var(--tx2)}
+.ifb-desc{font-size:11px;color:var(--tx2);margin-top:2px}
+.intro-flow-arrow{display:flex;flex-direction:column;align-items:center;gap:2px;padding:0 8px;color:var(--tx2)}
+.ifa-line{width:2px;height:12px;background:var(--tx2);border-radius:1px}
+.ifa-cmd{font:600 11px var(--mo);color:var(--ac);white-space:nowrap}
+.intro-analogy{text-align:center;font-size:14px;color:var(--yw);margin-top:16px;padding:10px;background:rgba(245,158,11,.06);border-radius:8px}
+.intro-action{text-align:center;margin-top:8px}
+      `}</style>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(App));
+</script>
+</body>
+</html>

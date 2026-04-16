@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>운영체제 기말고사 스터디 가이드</title>
+<style>
+:root {
+  --primary: #3B82F6;
+  --primary-dark: #2563EB;
+  --success: #10B981;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --bg: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-sidebar: #f1f5f9;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --card-bg: #ffffff;
+  --code-bg: #f1f5f9;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+.dark {
+  --primary: #60A5FA;
+  --primary-dark: #3B82F6;
+  --success: #34D399;
+  --danger: #F87171;
+  --warning: #FBBF24;
+  --bg: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-sidebar: #16213e;
+  --text: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border: #334155;
+  --card-bg: #16213e;
+  --code-bg: #0f172a;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+  transition: background 0.3s, color 0.3s;
+}
+.header {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header h1 { font-size:18px; font-weight:700; }
+.header-right { display:flex; align-items:center; gap:12px; }
+.progress-wrap { width:200px; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+.progress-bar { height:100%; background:var(--primary); border-radius:4px; transition:width 0.5s; }
+.progress-text { font-size:12px; color:var(--text-secondary); min-width:36px; text-align:right; }
+.dark-toggle {
+  background:none; border:1px solid var(--border); border-radius:6px;
+  padding:6px 10px; cursor:pointer; font-size:16px; color:var(--text);
+}
+.menu-toggle {
+  display:none; background:none; border:none; font-size:24px; cursor:pointer; color:var(--text);
+}
+.sidebar {
+  position:fixed; top:56px; left:0; bottom:0; width:280px;
+  background:var(--bg-sidebar); border-right:1px solid var(--border);
+  overflow-y:auto; padding:12px 0; z-index:90;
+  transition: transform 0.3s;
+}
+.sidebar-section { padding:0 12px; margin-bottom:4px; }
+.sidebar-section-title {
+  font-size:11px; text-transform:uppercase; letter-spacing:1px;
+  color:var(--text-secondary); padding:8px 4px 4px; font-weight:600;
+}
+.sidebar-item {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 12px; border-radius:6px; cursor:pointer;
+  font-size:13px; color:var(--text); transition:background 0.2s;
+  position:relative;
+}
+.sidebar-item:hover { background:var(--border); }
+.sidebar-item.active { background:var(--primary); color:white; font-weight:600; }
+.sidebar-item .ch-num { font-weight:700; min-width:28px; }
+.sidebar-item .check { position:absolute; right:8px; font-size:14px; color:var(--success); }
+.sidebar-item.active .check { color:white; }
+.main {
+  margin-left:280px; margin-top:56px; min-height:calc(100vh - 56px);
+}
+.tabs {
+  display:flex; border-bottom:2px solid var(--border);
+  background:var(--bg-secondary); position:sticky; top:56px; z-index:50;
+}
+.tab {
+  flex:1; padding:14px; text-align:center; cursor:pointer;
+  font-weight:600; font-size:14px; color:var(--text-secondary);
+  border-bottom:3px solid transparent; transition:all 0.2s;
+}
+.tab:hover { color:var(--text); background:var(--border); }
+.tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+.content { padding:24px; max-width:900px; margin:0 auto; }
+.chapter-title {
+  font-size:24px; font-weight:800; margin-bottom:8px;
+  color:var(--primary);
+}
+.chapter-subtitle { font-size:14px; color:var(--text-secondary); margin-bottom:24px; }
+.section {
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px; margin-bottom:20px;
+  box-shadow:var(--shadow);
+}
+.section-title {
+  font-size:16px; font-weight:700; margin-bottom:12px;
+  display:flex; align-items:center; gap:8px;
+}
+.section-icon { font-size:20px; }
+.summary-grid { display:flex; flex-direction:column; gap:12px; }
+.summary-item {
+  font-size:14px; line-height:1.9; padding:14px 18px;
+  background:var(--bg-secondary); border-radius:8px;
+  border-left:3px solid var(--primary);
+}
+.summary-item strong { color:var(--primary); }
+.concept-list { list-style:none; }
+.concept-list li {
+  padding:8px 0; border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+.concept-list li:last-child { border-bottom:none; }
+.concept-list li strong { color:var(--primary); }
+.key-point {
+  background:var(--code-bg); border-left:4px solid var(--primary);
+  padding:12px 16px; margin:8px 0; border-radius:0 var(--radius) var(--radius) 0;
+  font-size:14px;
+}
+.calc-table {
+  width:100%; border-collapse:collapse; margin:12px 0; font-size:13px;
+}
+.calc-table th, .calc-table td {
+  border:1px solid var(--border); padding:8px 10px; text-align:center;
+}
+.calc-table th {
+  background:var(--primary); color:white; font-weight:600;
+}
+.calc-table tr:nth-child(even) { background:var(--bg-secondary); }
+.code-block {
+  background:var(--code-bg); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px; margin:12px 0;
+  font-family:'Menlo','Consolas','Courier New',monospace;
+  font-size:13px; line-height:1.6; overflow-x:auto; white-space:pre;
+}
+.quiz-section { margin-bottom:24px; }
+.quiz-card {
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px; margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+.quiz-badge {
+  display:inline-block; padding:2px 8px; border-radius:4px;
+  font-size:11px; font-weight:700; margin-bottom:8px;
+}
+.badge-textbook { background:#dbeafe; color:#1d4ed8; }
+.badge-exam { background:#fef3c7; color:#92400e; }
+.badge-concept { background:#d1fae5; color:#065f46; }
+.badge-calc { background:#ede9fe; color:#5b21b6; }
+.quiz-q {
+  font-size:14px; font-weight:600; margin-bottom:12px; line-height:1.6;
+}
+.quiz-diff {
+  font-size:11px; padding:2px 6px; border-radius:3px;
+  margin-left:8px; vertical-align:middle;
+}
+.diff-easy { background:#d1fae5; color:#065f46; }
+.diff-medium { background:#fef3c7; color:#92400e; }
+.diff-hard { background:#fecaca; color:#991b1b; }
+.quiz-choices { list-style:none; margin-bottom:12px; }
+.quiz-choices li {
+  padding:10px 14px; margin:4px 0; border:1px solid var(--border);
+  border-radius:6px; cursor:pointer; font-size:14px; transition:all 0.2s;
+}
+.quiz-choices li:hover { background:var(--bg-secondary); }
+.quiz-choices li.selected { border-color:var(--primary); background:rgba(59,130,246,0.08); }
+.quiz-choices li.correct { border-color:var(--success); background:rgba(16,185,129,0.08); color:var(--success); font-weight:600; }
+.quiz-choices li.wrong { border-color:var(--danger); background:rgba(239,68,68,0.08); color:var(--danger); }
+.quiz-answer {
+  display:none; padding:12px 16px; border-radius:var(--radius);
+  background:var(--bg-secondary); border-left:4px solid var(--success);
+  font-size:13px; line-height:1.7;
+}
+.quiz-answer.show { display:block; }
+.quiz-btn {
+  display:inline-block; padding:8px 16px; background:var(--primary);
+  color:white; border:none; border-radius:6px; cursor:pointer;
+  font-size:13px; font-weight:600; margin-top:8px;
+}
+.quiz-btn:hover { background:var(--primary-dark); }
+.quiz-score {
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px; text-align:center;
+  margin-bottom:20px;
+}
+.quiz-score .score-num { font-size:32px; font-weight:800; color:var(--primary); }
+.hidden { display:none; }
+.mark-done-btn {
+  display:block; width:100%; padding:12px; margin-top:20px;
+  background:var(--success); color:white; border:none;
+  border-radius:var(--radius); font-size:14px; font-weight:600;
+  cursor:pointer;
+}
+.mark-done-btn:hover { opacity:0.9; }
+.mark-done-btn.done { background:var(--text-secondary); }
+@media(max-width:768px){
+  .sidebar { transform:translateX(-100%); width:260px; }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; }
+  .menu-toggle { display:block; }
+  .progress-wrap { width:100px; }
+}
+.algo-step { margin:8px 0; padding:8px 12px; background:var(--bg-secondary); border-radius:6px; font-size:13px; }
+.algo-step strong { color:var(--primary); }
+.warning-box { background:#fef3c7; border:1px solid #f59e0b; border-radius:var(--radius); padding:12px 16px; margin:12px 0; font-size:13px; }
+.dark .warning-box { background:rgba(245,158,11,0.1); }
+.dark .badge-textbook { background:rgba(59,130,246,0.2); color:#93bbfc; }
+.dark .badge-exam { background:rgba(245,158,11,0.2); color:#fbbf24; }
+.dark .badge-concept { background:rgba(16,185,129,0.2); color:#6ee7b7; }
+.dark .badge-calc { background:rgba(139,92,246,0.2); color:#c4b5fd; }
+</style>
+</head>
+<body>
+<div class="header">
+  <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+  <h1>운영체제 기말고사 스터디 가이드</h1>
+  <div class="header-right">
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+    <span class="progress-text" id="progressText">0%</span>
+    <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">&#127769;</button>
+  </div>
+</div>
+
+<div class="sidebar" id="sidebar"></div>
+
+<div class="main" id="mainContent"></div>
+
+<script>
+// ========== DATA ==========
+const chapters = [
+{
+  id:1, title:"운영체제 소개",
+  objectives: [
+    "운영체제의 정의와 역할(자원 관리, 사용자 지원)을 설명할 수 있다.",
+    "커널 모드와 사용자 모드의 차이를 이해하고 시스템 호출의 역할을 설명할 수 있다.",
+    "일체형 커널과 마이크로커널의 차이를 비교할 수 있다.",
+    "운영체제의 네 가지 서브시스템(프로세스/메모리/장치/파일 관리자)을 설명할 수 있다.",
+    "일괄처리, 시분할, 실시간, 분산 운영체제의 특징을 구분할 수 있다."
+  ],
+  summary: `운영체제는 대표적인 시스템 소프트웨어로 컴퓨터 시스템의 자원을 관리하고 프로그램이 동작하기 위한 서비스를 제공하는 프로그램들의 모음이다.
+
+<strong>역할:</strong> (1) 자원 관리 - CPU, 메모리, 입출력장치 등 하드웨어/소프트웨어 자원을 효율적으로 관리. (2) 사용자 지원 - 사용자가 내린 명령을 해석하여 실행하며 하드웨어와의 매개체 역할.
+
+<strong>커널 모드와 사용자 모드:</strong> 커널 모드(슈퍼바이저 모드)는 하드웨어를 직접 제어할 수 있는 CPU 명령어를 사용할 수 있는 모드. 사용자 모드(보호 모드)는 하드웨어를 직접 제어할 수 없는 모드. 시스템 호출을 통해 사용자 모드에서 커널 모드로 전환.
+
+<strong>커널 구조:</strong>
+- 일체형 커널(모놀리식): 모든 서비스가 커널 내에 포함. 장점: 효율적 상호작용. 단점: 하나의 오류가 시스템 전체 장애. 예: UNIX, Linux
+- 마이크로커널: 최소한의 요소(메모리 관리, IPC, 멀티태스킹)만 커널에 남김. 장점: 확장성, 안정성. 단점: IPC로 인한 성능 저하.
+
+<strong>운영체제의 구성:</strong> 프로세스 관리자, 메모리 관리자, 장치 관리자, 파일 관리자의 네 가지 서브시스템.
+
+<strong>운영체제 유형:</strong> 일괄처리(작업을 모아서 순서대로), 시분할(대화형, 빠른 응답시간), 실시간(처리기한 내 결과), 분산(네트워크로 연결된 여러 컴퓨터).`,
+  concepts: [
+    {term:"운영체제", def:"컴퓨터 시스템의 자원을 관리하고 프로그램이 동작하기 위한 서비스를 제공하는 시스템 소프트웨어"},
+    {term:"커널 모드", def:"하드웨어를 직접 제어할 수 있는 CPU 명령어를 사용할 수 있는 모드 (슈퍼바이저 모드)"},
+    {term:"사용자 모드", def:"하드웨어를 직접 제어할 수 없는 모드 (보호 모드)"},
+    {term:"시스템 호출", def:"사용자 모드의 응용 프로그램이 운영체제에 서비스를 요청하는 메커니즘"},
+    {term:"일체형 커널", def:"운영체제의 모든 서비스가 커널 내에 포함된 구조 (UNIX, Linux)"},
+    {term:"마이크로커널", def:"커널 내부에 최소한의 요소만 남기고 나머지는 사용자 모드로 분리한 구조"}
+  ],
+  textbookQuiz: [
+    {q:"운영체제의 역할 두 가지는?", choices:["자원 관리와 사용자 지원","프로그램 실행과 데이터 저장","네트워크 관리와 보안","하드웨어 생산과 소프트웨어 개발"], answer:0, explanation:"운영체제의 역할은 (1) 컴퓨터 시스템의 자원을 관리하는 것, (2) 사용자를 지원하는 것이다."},
+    {q:"마이크로커널에 대한 설명으로 옳은 것은?", choices:["모든 서비스가 커널 내부에 존재한다","커널 내부에 최소한의 요소만 남겨 놓은 커널이다","UNIX와 Linux가 마이크로커널이다","커널 외부 요소에 문제가 발생하면 시스템 전체가 장애를 일으킨다"], answer:1, explanation:"마이크로커널은 커널 내부에 메모리 관리, IPC, 멀티태스킹 등 최소한의 요소만 남기고 나머지는 커널 외부로 분리한 구조이다."},
+    {q:"운영체제의 구성요소가 아닌 것은?", choices:["프로세스 관리자","메모리 관리자","네트워크 관리자","파일 관리자"], answer:2, explanation:"운영체제의 구성요소는 프로세스 관리자, 메모리 관리자, 장치 관리자, 파일 관리자의 4가지이다."},
+    {q:"시분할 운영체제에 대한 설명으로 옳은 것은?", choices:["작업을 모아서 순서대로 처리한다","각 사용자의 프로그램을 한 번에 조금씩 수행한다","특수 목적의 컴퓨터 시스템을 위한 것이다","네트워크를 통해 다른 컴퓨터의 자원을 이용한다"], answer:1, explanation:"시분할 운영체제는 각 사용자의 프로그램을 한 번에 조금씩 수행하여 마치 여러 프로그램이 동시에 실행되는 것과 비슷한 효과를 낸다."}
+  ],
+  extraQuiz: [
+    {q:"[개념] 커널 모드에서만 동작하며 응용 프로그램과 하드웨어 사이의 가교 역할을 하는 운영체제의 핵심 요소는?", choices:["디스패처","커널","컴파일러","부트로더"], answer:1, explanation:"커널은 커널 모드에서 동작하며 응용 프로그램과 하드웨어 수준의 처리 사이의 가교 역할을 하는 운영체제의 핵심 요소이다.", diff:"easy"},
+    {q:"[개념] 응용 프로그램이 하드웨어에 대한 제어가 필요한 경우 사용하는 메커니즘은?", choices:["인터럽트","시스템 호출","폴링","DMA"], answer:1, explanation:"시스템 호출은 운영체제에 서비스를 요청하는 메커니즘으로, 사용자 모드에서 시스템 호출을 하면 커널 모드로 변경되어 하드웨어를 제어한다.", diff:"easy"}
+  ]
+},
+{
+  id:2, title:"프로세스와 쓰레드",
+  objectives: [
+    "프로그램과 프로세스의 차이를 설명할 수 있다.",
+    "프로세스 제어 블록(PCB)의 구성요소를 나열할 수 있다.",
+    "프로세스의 5가지 상태(생성/준비/실행/대기/종료)와 상태 전이를 설명할 수 있다.",
+    "부모 프로세스와 자식 프로세스의 관계를 이해할 수 있다.",
+    "프로세스와 쓰레드의 차이를 설명할 수 있다."
+  ],
+  summary: `<strong>프로세스:</strong> 실행 중인 프로그램으로, 동작을 하는 능동적인 개체. CPU, 메모리, 입출력장치, 파일 등의 자원이 할당됨.
+
+<strong>프로세스의 구성:</strong>
+- 메모리 구조: 코드 영역(프로그램 자체) + 데이터 영역(상수/변수, 정적 데이터/스택/힙)
+- 프로세스 제어 블록(PCB): PID, 프로세스 상태, 프로그램 카운터(PC), 레지스터, 메모리 관리 정보, 프로세스 우선순위, 회계정보
+
+<strong>프로세스 상태:</strong>
+- 생성: 처음 작업이 시스템에 주어진 상태. PCB와 메모리 구조 생성 후 준비상태로 전이
+- 준비: CPU 할당을 기다리는 상태. 디스패치되면 실행상태로 전이
+- 실행: CPU가 프로세스의 명령들을 처리하는 상태
+- 대기: I/O 작업 등으로 보류되는 상태. 재개 조건 만족시 준비상태로 전이
+- 종료: 프로세스가 끝난 상태. 자원 회수
+
+<strong>부모/자식 프로세스:</strong> UNIX/Linux는 fork()로 부모의 복제본을 만듦(PID는 새로 지정). Windows는 CreateProcess()로 새 프로그램으로 생성.
+
+<strong>쓰레드:</strong> 프로세스 내에서의 다중처리를 위한 개념. 프로세스=자원 소유의 단위, 쓰레드=디스패칭의 단위. 쓰레드는 PC, 레지스터 값, 스택 영역, 상태정보만 직접 가지고 나머지는 프로세스와 공유.`,
+  concepts: [
+    {term:"프로세스", def:"실행 중인 프로그램. 동작을 하는 능동적인 개체"},
+    {term:"PCB", def:"운영체제가 프로세스를 관리하기 위해 필요한 정보의 모음 (PID, 상태, PC, 레지스터 등)"},
+    {term:"디스패치", def:"프로세스에 CPU를 할당하는 과정 (준비 -> 실행)"},
+    {term:"문맥 교환", def:"CPU가 현재 프로세스의 문맥을 PCB에 저장하고 다른 프로세스의 PCB로부터 문맥을 복원하는 작업"},
+    {term:"쓰레드", def:"프로세스 내에서의 다중처리를 위한 개념. 디스패칭의 단위"}
+  ],
+  textbookQuiz: [
+    {q:"프로그램과 프로세스의 차이로 옳은 것은?", choices:["프로그램은 능동적, 프로세스는 수동적이다","프로그램은 정적이며 수동적, 프로세스는 실행 중인 프로그램으로 능동적이다","둘 다 동일한 개념이다","프로세스는 디스크에 저장된 상태이다"], answer:1, explanation:"프로그램은 동작을 하지 않는 정적이며 수동적인 개체이고, 프로세스는 실행 중인 프로그램으로 능동적인 개체이다."},
+    {q:"프로세스 제어 블록(PCB)에 포함되지 않는 정보는?", choices:["프로세스 번호(PID)","프로그램 카운터(PC)","프로세스 우선순위","컴파일러 버전"], answer:3, explanation:"PCB에는 PID, 프로세스 상태, PC, 레지스터, 메모리 관리 정보, 우선순위, 회계정보 등이 포함된다."},
+    {q:"프로세스 상태 전이에서 '디스패치'는 어떤 전이인가?", choices:["생성 -> 준비","준비 -> 실행","실행 -> 대기","대기 -> 준비"], answer:1, explanation:"디스패치는 준비상태의 프로세스가 CPU를 할당받아 실행상태로 전이되는 것이다."},
+    {q:"프로세스와 쓰레드의 차이로 옳은 것은?", choices:["프로세스는 디스패칭의 단위, 쓰레드는 자원 소유의 단위이다","프로세스는 자원 소유의 단위, 쓰레드는 디스패칭의 단위이다","프로세스와 쓰레드는 동일한 개념이다","쓰레드는 독립적인 메모리 구조를 가진다"], answer:1, explanation:"프로세스는 자원 소유의 단위이며, 쓰레드는 디스패칭의 단위이다. 쓰레드는 최소한의 정보만 가지고 나머지는 프로세스와 공유한다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] UNIX/Linux에서 자식 프로세스를 생성하는 시스템 호출은?", choices:["exec()","fork()","CreateProcess()","spawn()"], answer:1, explanation:"UNIX/Linux는 fork() 시스템 호출을 이용하여 자식 프로세스를 생성하며, 자식 프로세스는 부모 프로세스의 복제본이 된다.", diff:"easy"},
+    {q:"[개념] 실행상태의 프로세스가 I/O 작업을 만나면 어떤 상태로 전이하는가?", choices:["준비상태","종료상태","대기상태","생성상태"], answer:2, explanation:"실행상태의 프로세스가 I/O를 요구하는 작업을 만나면 대기상태로 전이한다. 상대적으로 오랜 시간이 걸리기 때문에 CPU를 다른 프로세스에 할당하기 위해서이다.", diff:"easy"}
+  ]
+},
+{
+  id:3, title:"프로세스 스케줄링",
+  objectives: [
+    "상위/중간/하위단계 스케줄링의 역할을 구분할 수 있다.",
+    "선점 스케줄링과 비선점 스케줄링의 차이를 설명할 수 있다.",
+    "FCFS, SJF, SRT, RR, HRN, 다단계 피드백 큐 스케줄링의 동작을 설명할 수 있다.",
+    "각 스케줄링 알고리즘에 대해 평균대기시간과 평균반환시간을 계산할 수 있다."
+  ],
+  summary: `<strong>스케줄링 단계:</strong>
+- 상위단계(장기): 작업 큐에서 작업을 선택하여 프로세스를 생성 후 준비 큐에 전달. I/O 중심과 연산 중심 작업을 균형 있게 선택
+- 하위단계(단기): 준비 큐의 프로세스를 선택하여 CPU 할당. 수행 주체: 디스패처. 매우 빈번하므로 메모리에 상주
+- 중간단계(중기): 프로세스를 일시적으로 메모리에서 제거/활성화하여 부하 조절
+
+<strong>스케줄링 목표:</strong> 공정성(모든 프로세스가 적정 수준 CPU 작업), 균형성(자원 충분히 활용)
+- 일괄처리: 처리량 극대화, 반환시간 최소화, CPU 활용 극대화
+- 시분할: 빠른 응답시간, 과다한 대기시간 방지
+- 실시간: 처리기한 맞춤
+
+<strong>스케줄링 정책:</strong>
+- 선점 방식: 실행 중 인터럽트 걸고 다른 프로세스에 CPU 할당 가능. 문맥 교환 오버헤드 발생
+- 비선점 방식: 실행 시작된 프로세스는 대기/종료까지 계속 실행. 오버헤드 없으나 긴 프로세스가 짧은 프로세스를 오래 기다리게 할 수 있음
+
+<strong>평가 기준:</strong> 평균대기시간(준비 큐에서 기다린 시간의 합의 평균), 평균반환시간(생성~완료 소요시간의 평균)
+
+<strong>알고리즘:</strong>
+- FCFS: 비선점. 도착순서대로 디스패치. 단점: 짧은 프로세스가 긴 프로세스를 기다림
+- SJF: 비선점. 예상실행시간이 가장 짧은 것 먼저. 단점: CPU 시간 예측 불가
+- SRT: SJF의 선점 방식. 남은 실행시간이 가장 짧은 것 먼저. SJF보다 효율적이나 오버헤드 큼
+- RR: 선점. 도착순서대로 디스패치하되 시간 할당량으로 제한. 시분할에 적합. 할당량이 너무 크면 FCFS와 동일
+- HRN: 비선점. 응답비율=(대기시간+예상실행시간)/예상실행시간이 가장 큰 것 먼저. SJF의 불평등 보완
+- 다단계 피드백 큐: 선점. 단계별 시간 할당량이 다른 여러 준비 큐. 입출력 중심은 높은 우선권, 연산 중심은 큰 시간 할당량`,
+  concepts: [
+    {term:"처리량(throughput)", def:"주어진 시간에 처리한 프로세스 수"},
+    {term:"반환시간(turnaround time)", def:"프로세스 생성 시점부터 종료 시점까지의 소요시간"},
+    {term:"응답시간(response time)", def:"요청한 시점부터 반응이 시작되는 시점까지의 소요시간"},
+    {term:"대기시간(waiting time)", def:"프로세스가 종료될 때까지 준비 큐에서 기다린 시간의 합"},
+    {term:"응답비율(HRN)", def:"(대기시간 + 예상실행시간) / 예상실행시간. 클수록 우선순위 높음"}
+  ],
+  textbookQuiz: [
+    {q:"하위단계 스케줄링의 수행 주체는?", choices:["스케줄러","디스패처","인터럽트 핸들러","메모리 관리자"], answer:1, explanation:"하위단계 스케줄링의 수행 주체는 디스패처(dispatcher)가 되며, 매우 빈번하게 발생하므로 메모리에 늘 상주해 있어야 한다."},
+    {q:"시분할 운영체제의 스케줄링 목표는?", choices:["처리량의 극대화, CPU 활용 극대화","빠른 응답시간, 과다한 대기시간 방지","처리기한을 맞춤","반환시간의 최소화"], answer:1, explanation:"시분할 운영체제는 빠른 응답시간과 과다한 대기시간 방지를 스케줄링의 목표로 한다."},
+    {q:"FCFS 스케줄링이 시분할 운영체제에 적합하지 않은 이유는?", choices:["오버헤드가 크기 때문","실행시간이 짧은 프로세스가 긴 프로세스를 기다릴 수 있기 때문","시간 할당량이 없기 때문","우선순위를 고려하지 않기 때문"], answer:1, explanation:"FCFS는 비선점 방식으로 짧은 프로세스가 긴 프로세스를 기다리게 되는 불합리한 점이 있어 시분할 운영체제에 부적합하다."},
+    {q:"RR 스케줄링에서 시간 할당량이 너무 크면 어떻게 되는가?", choices:["SJF 스케줄링과 동일해진다","FCFS 스케줄링과 동일해진다","SRT 스케줄링과 동일해진다","HRN 스케줄링과 동일해진다"], answer:1, explanation:"시간 할당량이 너무 크면 모든 프로세스가 할당량 내에 종료되므로 FCFS 스케줄링과 동일해진다."},
+    {q:"HRN 스케줄링의 응답비율 공식은?", choices:["대기시간 / 예상실행시간","예상실행시간 / 대기시간","(대기시간 + 예상실행시간) / 예상실행시간","대기시간 / (대기시간 + 예상실행시간)"], answer:2, explanation:"HRN의 응답비율 = (대기시간 + 예상실행시간) / 예상실행시간. 예상실행시간이 짧을수록, 대기시간이 길수록 응답비율이 커진다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] 선점 스케줄링 정책에 대한 설명으로 옳은 것은?", choices:["실행 중인 프로세스를 바로 준비상태로 전이시킬 수 없다","문맥 교환에 따른 오버헤드가 발생하지 않는다","실행 중인 프로세스에 인터럽트를 걸고 다른 프로세스에 CPU를 할당할 수 있다","강제적인 문맥 교환이 없다"], answer:2, explanation:"선점 스케줄링 정책은 실행 중인 프로세스에 인터럽트를 걸고 다른 프로세스에 CPU를 할당할 수 있는 방식이다. 문맥 교환에 따른 오버헤드가 발생한다.", diff:"medium"},
+    {q:"[계산] 다단계 피드백 큐 스케줄링에서 단계 k의 준비 큐에 있는 프로세스가 디스패치되려면?", choices:["단계 k+1의 준비 큐가 비어 있어야 한다","단계 1부터 단계 k-1까지 모든 준비 큐가 비어 있어야 한다","단계 k의 시간 할당량이 남아 있어야 한다","모든 단계의 준비 큐가 비어 있어야 한다"], answer:1, explanation:"단계 k의 준비 큐에 있는 프로세스가 디스패치되려면 단계 1부터 단계 k-1까지 모든 준비 큐가 비어 있어야만 한다.", diff:"medium"}
+  ]
+},
+{
+  id:4, title:"병행 프로세스 I",
+  objectives: [
+    "병행성의 개념과 독립/협력 프로세스의 차이를 설명할 수 있다.",
+    "상호배제, 동기화, 프로세스 간 통신(IPC)의 개념을 이해할 수 있다.",
+    "세마포어의 정의와 P/V 연산의 동작을 설명할 수 있다.",
+    "세마포어를 이용한 상호배제와 동기화 해결 코드를 작성할 수 있다."
+  ],
+  summary: `<strong>병행성(concurrency):</strong> 여러 개의 프로세스 또는 쓰레드가 동시에 수행되는 시스템의 특성.
+- 하나의 CPU: 인터리빙 형식
+- 여러 CPU: 병렬처리 형식
+- 강결합 시스템: 여러 CPU가 하나의 기억장치 공유
+- 약결합 시스템: 독립된 컴퓨터 시스템이 네트워크로 연결
+
+<strong>독립 프로세스:</strong> 다른 프로세스와 영향을 주고받지 않음. 결정적, 재생 가능.
+<strong>협력 프로세스:</strong> 다른 프로세스와 영향을 주고받음. 비결정적, 재생 불가능.
+
+<strong>병행성 문제:</strong>
+- 상호배제(mutual exclusion): 2개 이상의 프로세스가 동시에 임계영역을 수행하지 못하도록 하는 것. 임계영역=공유자원을 액세스하는 코드 영역
+- 동기화(synchronization): 2개 이상의 프로세스에 대한 처리순서를 결정하는 것
+- 프로세스 간 통신(IPC): 프로세스들이 데이터를 공유하기 위해 필요한 것
+
+<strong>세마포어:</strong> 데이크스트라(Dijkstra)가 제안한 정수형 공용변수.
+- 연산 P(s): s>0이면 s를 1 감소, 아니면 현재 프로세스 대기
+- 연산 V(s): 대기 큐가 비어있으면 s를 1 증가, 아니면 대기 중인 프로세스 1개를 진행
+
+<strong>상호배제 해결:</strong> 세마포어 mutex(초깃값=1). 진입영역에 P(mutex), 해제영역에 V(mutex)
+<strong>동기화 해결:</strong> 세마포어 sync(초깃값=0). 코드 S2 앞에 P(sync), 코드 S1 뒤에 V(sync)`,
+  concepts: [
+    {term:"임계영역(critical section)", def:"2개 이상의 프로세스가 동시에 사용하면 안 되는 공유자원을 액세스하는 프로그램 코드 영역"},
+    {term:"상호배제(mutual exclusion)", def:"2개 이상의 프로세스가 동시에 임계영역을 수행하지 못하도록 하는 것"},
+    {term:"세마포어", def:"정수형 공용변수. P와 V 두 기본연산에 의해서만 사용됨"},
+    {term:"연산 P", def:"검사/감소. s>0이면 s--, 아니면 현재 프로세스 대기"},
+    {term:"연산 V", def:"증가. 대기 큐 비었으면 s++, 아니면 대기 프로세스 1개 진행"}
+  ],
+  textbookQuiz: [
+    {q:"병행 프로세스에 대한 설명으로 바른 것은?", choices:["하나의 프로세스가 끝나야 다른 프로세스가 시작한다","하나의 프로세스는 다른 프로세스와 상호작용을 할 수 없다","하나의 CPU에서는 하나의 프로세스만 동작할 수 있다","프로세스들 사이에 공유자원을 점유하기 위한 경쟁이 발생할 수 있다"], answer:3, explanation:"병행 프로세스는 동시에 실행되는 프로세스이며, 공유자원을 점유하기 위한 경쟁이 발생할 수 있다."},
+    {q:"2개 이상의 프로세스가 동시에 임계영역을 수행하지 못하도록 하는 것은?", choices:["상호배제","쓰래싱","인터럽트","상위단계 스케줄링"], answer:0, explanation:"상호배제(mutual exclusion)는 2개 이상의 프로세스가 동시에 임계영역을 수행하지 못하도록 하는 것이다."},
+    {q:"세마포어에 대한 설명으로 바르지 않은 것은?", choices:["정수형 공용변수","초기화가 필요 없다","두 기본연산 P와 V에 의해서만 사용 가능하다","연산 P와 연산 V는 인터럽트되지 않고 하나의 단위로 처리된다"], answer:1, explanation:"세마포어는 상황에 맞도록 0 이상인 정수로 초기화한다."},
+    {q:"세마포어의 두 연산 P와 V에 대한 설명으로 바른 것은?", choices:["P: 감소, V: 감소","P: 감소, V: 증가","P: 증가, V: 감소","P: 증가, V: 증가"], answer:1, explanation:"연산 P는 검사 또는 감소시키려는 시도이며, 연산 V는 증가를 나타낸다."},
+    {q:"상호배제를 위한 세마포어 코드에서 진입영역과 해제영역에 들어갈 연산은? (가) __(mutex); S1; (나) __(mutex);", choices:["(가) P, (나) P","(가) V, (나) P","(가) P, (나) V","(가) V, (나) V"], answer:2, explanation:"진입영역은 P(mutex)로 검사하고, 해제영역은 V(mutex)로 다른 프로세스가 임계영역을 수행할 수 있도록 한다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] 프로세스 A의 코드 S1 수행 후 프로세스 B의 코드 S2를 수행하도록 동기화할 때, 세마포어 sync(초깃값=0)의 P와 V 위치는?", choices:["S1 앞에 P, S2 뒤에 V","S2 앞에 P, S1 뒤에 V","S1 앞에 V, S2 뒤에 P","S2 앞에 V, S1 뒤에 P"], answer:1, explanation:"S2 수행 전에 P(sync)로 검사하고, S1 수행 후에 V(sync)로 S2 수행을 시작할 수 있도록 한다.", diff:"medium"},
+    {q:"[기출유형] 독립 프로세스의 특징이 아닌 것은?", choices:["다른 프로세스의 영향을 받지 않는다","실행결과가 결정적이다","재생 가능하다","실행결과가 실행순서에 좌우된다"], answer:3, explanation:"실행결과가 실행순서에 좌우되는 것은 협력 프로세스의 특징이다. 독립 프로세스의 실행은 결정적이며 재생 가능하다.", diff:"easy"}
+  ]
+},
+{
+  id:5, title:"병행 프로세스 II",
+  objectives: [
+    "생산자-소비자 문제의 정의와 세마포어를 이용한 해결 코드를 이해할 수 있다.",
+    "판독기-기록기 문제(제1, 제2)의 차이를 설명할 수 있다.",
+    "공유 메모리 방법과 메시지 전달방법의 차이를 설명할 수 있다.",
+    "직접통신과 간접통신의 차이를 설명할 수 있다."
+  ],
+  summary: `<strong>생산자-소비자 문제(유한 버퍼 문제):</strong>
+- 생산자: 데이터를 버퍼에 넣는 프로세스
+- 소비자: 데이터를 버퍼에서 꺼내는 프로세스
+- 조건1: 버퍼에 여러 프로세스가 동시에 접근 불가(상호배제)
+- 조건2: 버퍼 크기가 유한(동기화). 가득 차면 생산자 대기, 비면 소비자 대기
+- 세마포어 3개: mutex(초깃값=1), empty(초깃값=n), full(초깃값=0)
+
+<strong>판독기-기록기 문제:</strong>
+- 조건1: 기록기가 쓰는 중에는 다른 기록기/판독기 접근 불가(상호배제)
+- 조건2: 여러 판독기는 동시에 읽기 가능
+- 제1: 판독기 우선 -> 기록기 기아상태 가능
+- 제2: 기록기 우선 -> 판독기 기아상태 가능
+
+<strong>프로세스 간 통신(IPC):</strong>
+- 공유 메모리 방법: 공유변수 사용. 고속. 통신 문제는 프로그래머가 해결
+- 메시지 전달방법: send/receive 연산 사용. 소량 데이터에 적합. 통신 문제는 운영체제가 해결
+  - 직접통신: 두 프로세스가 직접 서로를 지정. 두 프로세스 사이에 하나의 링크만 존재. 양방향
+  - 간접통신: 우편함을 통해 메시지 교환. 여러 링크 존재 가능. 하나의 링크에 여러 프로세스 연관 가능`,
+  concepts: [
+    {term:"생산자-소비자 문제", def:"유한 버퍼 문제. 버퍼를 사이에 두고 데이터를 넣고 꺼내는 두 프로세스 간의 동기화/상호배제 문제"},
+    {term:"판독기-기록기 문제", def:"공유자원에 대한 읽기/쓰기 프로세스 간의 동기화 문제"},
+    {term:"공유 메모리 방법", def:"공유변수를 이용한 IPC. 고속. 프로그래머가 통신 문제 해결"},
+    {term:"메시지 전달방법", def:"send/receive를 이용한 IPC. 소량 데이터. 운영체제가 통신 문제 해결"}
+  ],
+  textbookQuiz: [
+    {q:"생산자-소비자 문제에 대한 설명으로 바르지 않은 것은?", choices:["버퍼가 가득 차면 생산자가 대기해야 하므로 동기화 필요","버퍼가 비어 있으면 소비자가 대기해야 하므로 동기화 필요","버퍼에 동시 접근 불가하므로 상호배제 필요","무한 버퍼 문제라고도 한다"], answer:3, explanation:"생산자-소비자 문제는 유한 버퍼 문제라고도 한다. 버퍼의 크기가 유한하다는 것이 조건이다."},
+    {q:"크기 n인 버퍼의 생산자-소비자 문제에서 세마포어 mutex와 full의 초깃값은?", choices:["mutex=0, full=0","mutex=0, full=n","mutex=1, full=0","mutex=1, full=n"], answer:2, explanation:"상호배제를 위한 세마포어 mutex의 초깃값은 1, 버퍼가 빈 경우의 동기화를 위한 세마포어 full의 초깃값은 0이다."},
+    {q:"판독기-기록기 문제에 대한 설명으로 바른 것은?", choices:["여러 기록기가 동시에 공유 데이터에 접근 가능","여러 판독기가 동시에 공유 데이터에 접근 가능","기록기 작업 중 판독기가 접근 가능","판독기 작업 중 기록기가 접근 가능"], answer:1, explanation:"여러 판독기가 동시에 공유 데이터 객체에 접근하는 것은 문제 없다. 기록기가 쓰는 중에는 다른 기록기나 판독기는 접근할 수 없다."},
+    {q:"메시지 전달방법 중 직접통신에 대한 설명으로 바른 것은?", choices:["우편함 이름을 명시한다","공유 우편함이 필요하다","하나의 링크는 두 프로세스 사이만 연관된다","여러 링크가 존재 가능하다"], answer:2, explanation:"직접통신에서 하나의 링크는 오직 두 프로세스 사이에만 연관되며, 통신 링크는 양방향이다."}
+  ],
+  extraQuiz: [
+    {q:"[개념] 프로세스 간 통신을 위한 공유 메모리 방법의 특징이 아닌 것은?", choices:["공유변수가 통신에 사용된다","고속 통신이 가능하다","통신 문제는 프로그래머가 해결한다","send/receive 메시지 전달 명령이 사용된다"], answer:3, explanation:"send/receive 명령은 메시지 전달방법에 대한 설명이다. 공유 메모리 방법은 공유변수를 사용한다.", diff:"easy"},
+    {q:"[개념] 간접통신에 대한 설명으로 바른 것은?", choices:["하나의 링크는 두 프로세스만 연관된다","공유 우편함을 통해 메시지를 교환한다","각 프로세스 쌍 사이에 하나의 링크만 존재한다","자동으로 링크가 설정된다"], answer:1, explanation:"간접통신은 우편함을 두고 이를 통해 메시지를 주고받는 방법이다.", diff:"easy"}
+  ]
+},
+{
+  id:6, title:"교착상태 I",
+  objectives: [
+    "교착상태와 기아상태의 차이를 설명할 수 있다.",
+    "교착상태의 4대 필요조건을 나열하고 설명할 수 있다.",
+    "자원할당 그래프와 교착상태의 관계를 이해할 수 있다.",
+    "교착상태 예방기법(4가지 조건 제거)을 설명할 수 있다."
+  ],
+  summary: `<strong>교착상태(deadlock):</strong> 여러 개의 프로세스가 서로 상대방의 작업이 끝나기만 기다리고 있어 어느 쪽도 영원히 진행하지 못하는 상태.
+- 교착상태: 관련된 모든 프로세스가 자원획득의 가능성 없이 무한히 대기
+- 기아상태: 관련된 프로세스의 일부가 자원획득의 가능성은 있으나 계속 대기
+
+<strong>교착상태의 4대 필요조건:</strong>
+1. 상호배제: 프로세스가 자원에 대한 배타적 통제권 요구
+2. 점유대기: 한 자원을 점유하면서 다른 자원 요청하여 대기
+3. 비선점: 프로세스에 할당된 자원은 스스로 반환 전에는 해제 안 됨
+4. 환형대기: 자원 점유 및 요구관계가 환형을 이루며 대기
+
+<strong>자원할당 그래프:</strong>
+- 사이클이 없으면 교착상태 없음
+- 사이클이 있으면 교착상태가 발생할 수도 있고 아닐 수도 있음
+
+<strong>교착상태 처리기법:</strong> 예방, 회피, 탐지 및 복구
+
+<strong>교착상태 예방:</strong>
+- 상호배제 조건 제거: 공유할 수 없는 자원은 불가능
+- 점유대기 조건 제거: 모든 자원을 한꺼번에 요구 / 새 자원 요구 시 점유 자원 해제
+- 비선점 조건 제거: 자원을 선점 가능하게 함
+- 환형대기 조건 제거: 모든 자원에 일련번호를 지정하여 순서대로만 요구`,
+  concepts: [
+    {term:"교착상태", def:"여러 프로세스가 서로 상대방의 작업이 끝나기만 기다려 어느 쪽도 영원히 진행 못하는 상태"},
+    {term:"기아상태", def:"관련 프로세스의 일부가 자원획득의 가능성은 있으나 계속 대기하는 상태"},
+    {term:"점유대기", def:"이미 한 자원을 점유하면서 다른 프로세스가 점유한 자원을 요청하여 대기하는 상황"},
+    {term:"환형대기", def:"자원 점유 및 요구관계가 환형을 이루며 대기하는 상황"},
+    {term:"자원할당 그래프", def:"프로세스와 자원 간의 요구/할당 관계를 나타내는 방향 그래프"}
+  ],
+  textbookQuiz: [
+    {q:"교착상태와 기아상태에 대한 설명으로 바르지 않은 것은?", choices:["교착상태는 프로세스가 필요한 자원을 할당받지 못하고 계속 대기","기아상태는 프로세스가 필요한 자원을 할당받지 못하고 계속 대기","교착상태는 관련된 프로세스의 일부는 진행될 가능성이 있다","기아상태는 관련된 프로세스의 일부는 진행될 가능성이 있다"], answer:2, explanation:"교착상태는 관련된 프로세스 모두 무한히 대기상태이고, 기아상태는 관련된 프로세스의 일부는 진행될 가능성이 있다."},
+    {q:"교착상태의 필요조건에 해당되지 않는 것은?", choices:["상호배제","선점","점유대기","환형대기"], answer:1, explanation:"교착상태의 필요조건은 상호배제, 점유대기, 비선점, 환형대기이다. '선점'이 아니라 '비선점'이다."},
+    {q:"자원할당 그래프에 사이클이 없으면?", choices:["교착상태가 반드시 발생한다","교착상태가 발생할 수도 있다","교착상태가 존재하지 않는다","교착상태 여부를 알 수 없다"], answer:2, explanation:"자원할당 그래프에 사이클이 없으면 교착상태가 존재하지 않는다."},
+    {q:"교착상태의 처리기법으로 적절하지 않은 것은?", choices:["교착상태 방임","교착상태 탐지","교착상태 회피","교착상태 복구"], answer:0, explanation:"교착상태의 처리기법은 교착상태 예방, 회피, 탐지 및 복구이다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] 교착상태의 정의로 올바른 것은?", choices:["프로세스가 CPU를 독점하는 상태","여러 프로세스가 서로 상대방의 작업이 끝나기만 기다려 영원히 진행 못하는 상태","프로세스가 우선순위에서 계속 밀리는 상태","메모리 부족으로 프로세스가 실행되지 못하는 상태"], answer:1, explanation:"교착상태는 여러 프로세스가 서로 상대방의 작업이 끝나기만 기다리고 있어 어느 쪽도 영원히 진행하지 못하는 상태이다. 기아상태와 구분해야 한다.", diff:"medium"},
+    {q:"[기출유형] 교착상태 필요조건 중 '프로세스가 이미 한 자원을 점유하면서 다른 자원을 요청하여 대기하는 상황'은?", choices:["상호배제","점유대기","비선점","환형대기"], answer:1, explanation:"점유대기(hold and wait) 조건은 프로세스가 이미 한 자원을 할당받아 점유하고 있는 상황에서 다른 자원을 요청하여 대기하는 상황이다.", diff:"easy"}
+  ]
+},
+{
+  id:7, title:"교착상태 II",
+  objectives: [
+    "안전상태와 안전순서열의 개념을 설명할 수 있다.",
+    "변형된 자원할당 그래프를 이용한 교착상태 회피를 이해할 수 있다.",
+    "은행원 알고리즘의 동작을 설명할 수 있다.",
+    "교착상태 탐지 및 복구 방법을 설명할 수 있다."
+  ],
+  summary: `<strong>교착상태 회피:</strong> 프로세스의 자원 사용에 대한 사전 정보(현재 할당된 자원, 가용상태의 자원, 프로세스들의 최대 요구량)를 활용하여 교착상태가 발생하지 않는 상태에 머무르도록 하는 방법.
+
+<strong>안전상태:</strong> 교착상태를 회피하면서 각 프로세스에 최대 요구량까지 빠짐없이 자원을 할당할 수 있는 상태. 안전순서열이 존재하는 경우.
+<strong>불안전상태:</strong> 안전순서열이 존재하지 않는 경우. 교착상태가 될 수도 있고 아닐 수도 있음.
+- 교착상태는 불안전상태에서만 발생 가능 -> 항상 안전상태를 유지해야 함
+
+<strong>각 자원의 단위자원이 하나밖에 없을 경우:</strong> 변형된 자원할당 그래프 이용. 선언간선 추가. 할당간선으로 바꿔도 사이클이 안 생기면 할당, 사이클이 생기면 불안전상태이므로 할당 불가.
+
+<strong>각 자원의 단위자원이 여러 개일 경우:</strong> 은행원 알고리즘. 자원 요구 시 할당 후의 상태를 계산하여 안전상태가 보장되는 경우에만 할당.
+
+<strong>교착상태 탐지:</strong> Shoshani와 Coffman 알고리즘. 탐지 시점: 즉시 받아들일 수 없는 자원 요구 시, 정해진 시간간격마다, CPU 효율이 일정 수준 이하로 떨어질 때
+<strong>교착상태 복구:</strong> 모든 프로세스 종료, 사이클 제거까지 하나씩 종료, 자원을 단계적으로 선점`,
+  concepts: [
+    {term:"안전상태", def:"안전순서열이 존재하여 교착상태 없이 모든 프로세스가 종료 가능한 상태"},
+    {term:"안전순서열", def:"순서 있는 프로세스 집합으로, 각 프로세스의 추가 요구량이 가용자원+앞선 프로세스 자원으로 충당 가능"},
+    {term:"은행원 알고리즘", def:"자원 할당 후 안전상태인지 확인하여 안전상태가 보장될 때만 할당하는 교착상태 회피 알고리즘"}
+  ],
+  textbookQuiz: [
+    {q:"교착상태 회피를 위해 필요한 사전 정보와 거리가 먼 것은?", choices:["현재 할당된 자원","가용상태의 자원","프로세스들의 최소 요구량","프로세스들의 최대 요구량"], answer:2, explanation:"교착상태 회피에서 사용하는 사전 정보는 현재 할당된 자원, 가용상태의 자원, 프로세스들의 최대 요구량이다."},
+    {q:"교착상태 회피기법에서 자원을 할당해 주는 경우는?", choices:["현재 상태가 안전상태일 때","현재 상태가 불안전상태일 때","자원을 할당해도 안전상태가 유지될 때","안전순서열이 존재하지 않을 때"], answer:2, explanation:"현재 안전상태일지라도 할당 후 불안전상태가 될 수 있으므로, 자원을 할당해도 안전상태가 유지될 때만 할당한다."},
+    {q:"은행원 알고리즘에 대한 설명으로 바르지 않은 것은?", choices:["교착상태 회피를 위한 알고리즘이다","각 자원의 단위자원이 여러 개일 경우 적용 가능하다","자원을 요구받으면 할당한 뒤 현재상태가 안전상태인지 확인한다","내부적으로 안전 알고리즘을 호출한다"], answer:2, explanation:"자원을 요구받으면 할당하기 전에 할당 후의 상태를 계산하여 안전상태인지 확인한다."},
+    {q:"탐지 알고리즘 수행 시점으로 적절하지 않은 것은?", choices:["정해진 시간간격마다","자원 요구가 생길 때마다","CPU 효율이 일정 수준 이하로 떨어질 때","즉시 받아들일 수 없는 자원 요구가 있을 때"], answer:1, explanation:"탐지 알고리즘은 시간 복잡도가 크므로 자원 요구가 생길 때마다 수행하는 것은 부담이 된다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] 교착상태는 어떤 상태에서만 발생될 수 있는가?", choices:["안전상태","불안전상태","준비상태","실행상태"], answer:1, explanation:"교착상태는 불안전상태에서만 발생될 수 있다. 따라서 교착상태를 회피하려면 항상 안전상태를 유지해야 한다.", diff:"medium"}
+  ]
+},
+{
+  id:8, title:"메모리 관리",
+  objectives: [
+    "기억장치 계층구조를 설명할 수 있다.",
+    "고정 분할과 동적 분할의 차이(내부 단편화 vs 외부 단편화)를 설명할 수 있다.",
+    "최초/후속/최적/최악 적합 배치기법을 적용할 수 있다.",
+    "빈 공간 리스트가 주어졌을 때 각 배치기법으로 할당 위치를 결정할 수 있다."
+  ],
+  summary: `<strong>기억장치 계층구조:</strong> 적절한 비용으로 높은 성능을 내기 위한 계층적 구성.
+- 접근속도: (빠름) 레지스터 > 캐시 메모리 > 메모리 > 보조기억장치 (느림)
+- 비트당 비용: (높음) 레지스터 > 캐시 메모리 > 메모리 > 보조기억장치 (낮음)
+
+<strong>단일 프로그래밍:</strong> 하나의 프로세스만 메모리를 전용으로 사용. 연속 메모리 할당. 문제: 용량 초과 프로세스 실행 불가, 메모리 낭비.
+
+<strong>다중 프로그래밍:</strong> 여러 프로세스가 메모리에 동시 적재.
+- 고정 분할: 메모리를 고정된 크기 영역으로 분할. <strong>내부 단편화</strong> 발생(프로세스 크기 < 분할영역 크기)
+- 동적 분할: 각 프로세스에 필요한 만큼만 할당. <strong>외부 단편화</strong> 발생(작은 공백이 흩어져 생김)
+  - 해결: 통합(인접 공백을 하나로), 집약(모든 공백을 하나로 모음)
+
+<strong>메모리 보호:</strong> 하한-상한 레지스터 쌍 또는 하한-크기 레지스터 쌍으로 주소 범위 제한.
+
+<strong>메모리 배치기법:</strong>
+- 최초 적합: 가장 먼저 발견되는 빈 공간 할당
+- 후속 적합: 이전 탐색이 끝난 다음 부분부터 가장 먼저 발견되는 빈 공간 할당 (최초 적합의 변형)
+- 최적 적합: 필요한 공간을 제공할 수 있는 빈 공간 중 가장 작은 곳 할당
+- 최악 적합: 필요한 공간을 제공할 수 있는 빈 공간 중 가장 큰 곳 할당`,
+  concepts: [
+    {term:"내부 단편화", def:"고정 분할에서 프로세스 크기가 분할영역보다 작아 남게 되는 메모리"},
+    {term:"외부 단편화", def:"동적 분할에서 할당/반환이 반복되며 작은 공백이 흩어져 사용 불가 상태"},
+    {term:"통합", def:"인접된 공백을 더 큰 하나의 공백으로 만드는 것"},
+    {term:"집약", def:"메모리 내의 모든 공백을 하나로 모으는 것"},
+    {term:"최초 적합", def:"가장 먼저 발견되는 빈 공간에 할당"},
+    {term:"최적 적합", def:"필요 공간을 제공할 수 있는 빈 공간 중 가장 작은 곳에 할당"},
+    {term:"최악 적합", def:"필요 공간을 제공할 수 있는 빈 공간 중 가장 큰 곳에 할당"}
+  ],
+  textbookQuiz: [
+    {q:"기억장치 계층구조를 비트당 가격 기준으로 바르게 나열한 것은? (최고가 -> 최저가)", choices:["레지스터 > 캐시 메모리 > 메모리 > 보조기억장치","캐시 메모리 > 레지스터 > 메모리 > 보조기억장치","보조기억장치 > 메모리 > 캐시 메모리 > 레지스터","메모리 > 캐시 메모리 > 레지스터 > 보조기억장치"], answer:0, explanation:"비트당 비용: (높음) 레지스터 > 캐시 메모리 > 메모리 > 보조기억장치 (낮음)"},
+    {q:"고정 분할 방식에서 발생할 수 있는 단편화는?", choices:["외부 단편화","내부 단편화","양쪽 모두","단편화 없음"], answer:1, explanation:"고정 분할 방식에서는 프로세스 크기가 분할영역보다 작아 분할영역 내에 남게 되는 내부 단편화가 발생할 수 있다."},
+    {q:"빈 공간 리스트가 공백1(50MB), 공백2(25MB), 공백3(35MB), 공백4(40MB)일 때 20MB 요구에 대해 최적 적합으로 할당되는 위치는?", choices:["공백 1","공백 2","공백 3","공백 4"], answer:1, explanation:"20MB를 제공할 수 있는 빈 공간 중 가장 작은 곳은 공백 2(25MB)이다."},
+    {q:"같은 조건에서 최악 적합으로 할당되는 위치는?", choices:["공백 1","공백 2","공백 3","공백 4"], answer:0, explanation:"20MB를 제공할 수 있는 빈 공간 중 가장 큰 곳은 공백 1(50MB)이다."},
+    {q:"동적 분할 방식에서 외부 단편화를 해결하는 방법이 아닌 것은?", choices:["통합","집약","고정 분할로 변경","메모리 재배치"], answer:2, explanation:"외부 단편화 해결 방법은 통합(인접 공백을 하나로)과 집약(모든 공백을 하나로 모음)이다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] 빈 공간 리스트가 공백1(50MB), 공백2(25MB), 공백3(35MB), 공백4(40MB)이고 이전 탐색이 공백2에서 끝났을 때, 20MB에 대해 후속 적합으로 할당되는 위치는?", choices:["공백 1","공백 2","공백 3","공백 4"], answer:2, explanation:"이전에 탐색이 끝난 그다음 부분인 공백 3부터 시작하여 20MB가 적재될 수 있는 빈 공간 중 가장 먼저 발견되는 곳은 공백 3(35MB)이다.", diff:"medium"},
+    {q:"[기출유형] 고정 분할 vs 동적 분할에 대한 설명으로 바른 것은?", choices:["고정 분할은 외부 단편화 발생","동적 분할은 내부 단편화 발생","고정 분할은 내부 단편화, 동적 분할은 외부 단편화 발생","둘 다 단편화가 발생하지 않음"], answer:2, explanation:"고정 분할은 내부 단편화, 동적 분할은 외부 단편화가 발생한다.", diff:"medium"}
+  ]
+},
+{
+  id:9, title:"가상 메모리",
+  objectives: [
+    "가상 메모리의 개념과 사상(mapping)을 설명할 수 있다.",
+    "페이징 기법과 세그먼테이션 기법의 차이를 비교할 수 있다.",
+    "가상주소로부터 실주소를 계산할 수 있다.",
+    "요구 페이지 호출기법과 예상 페이지 호출기법의 차이를 설명할 수 있다."
+  ],
+  summary: `<strong>가상 메모리:</strong> 메모리 크기보다 더 큰 기억공간이 필요한 프로세스를 실행할 수 있게 하는 방법. 가상주소(프로세스가 참조)를 실주소(메모리에서 사용)와 분리.
+- 사상(mapping): 가상주소를 실주소로 변환하는 과정
+- 동적 주소변환(DAT): 프로세스 실행 중 가상주소를 실주소로 변환
+- 인위적 연속성: 가상주소 공간에서 연속적이지만 실주소 공간에서 연속적일 필요 없음
+
+<strong>블록 단위 주소변환:</strong> 가상주소 v=(b, d) - b는 블록 번호, d는 변위
+
+<strong>페이징 기법:</strong> 고정된 크기의 블록(페이지)으로 나누어 관리. 페이지 프레임=실제 메모리의 틀.
+- 실주소 = 페이지 프레임 번호 x 페이지 크기 + 변위
+- 내부 단편화 발생 가능, 외부 단편화 없음
+- 동적 주소변환: 직접사상, 연관사상, 연관/직접 사상
+
+<strong>세그먼테이션 기법:</strong> 논리적 의미에 부합하는 다양한 크기의 블록(세그먼트)으로 나누어 관리.
+- 실주소 = 세그먼트 시작주소 + 변위
+
+<strong>페이징/세그먼테이션 혼용기법:</strong> 세그먼트를 다시 페이지 단위로 분할.
+
+<strong>호출기법:</strong>
+- 요구 페이지 호출: 페이지 요구 시 메모리에 적재. 오버헤드 최소화.
+- 예상 페이지 호출: 곧 사용될 것으로 예상되는 페이지를 미리 적재. 프로세스 시작 시점에 적용하면 성능 개선.`,
+  concepts: [
+    {term:"가상 메모리", def:"메모리 크기보다 큰 프로세스를 실행할 수 있게 하는 방법. 가상주소와 실주소를 분리"},
+    {term:"페이지", def:"고정된 크기의 블록 (페이징 기법)"},
+    {term:"세그먼트", def:"논리적 의미에 부합하는 다양한 크기의 블록 (세그먼테이션 기법)"},
+    {term:"페이지 프레임", def:"실제 메모리에서 페이지를 담을 수 있도록 분할된 영역"},
+    {term:"요구 페이지 호출", def:"페이지가 실제로 참조될 때 메모리에 적재하는 방법"}
+  ],
+  textbookQuiz: [
+    {q:"가상 메모리에 대한 설명으로 바르지 않은 것은?", choices:["메모리 크기보다 더 큰 프로세스를 실행할 수 있게 한다","프로세스에 의해 참조되는 주소가 실주소, 메모리의 주소가 가상주소이다","동적 주소변환을 통해 사상이 이루어진다","인위적 연속성이 제공된다"], answer:1, explanation:"프로세스에 의해 참조되는 주소가 가상주소, 메모리에서 사용하는 주소가 실주소이다."},
+    {q:"페이징 기법에서 페이지 크기가 100이고 가상주소 (2,7)에 대응되는 페이지 프레임 번호가 5일 때, 실주소는?", choices:["207","205","302","507"], answer:3, explanation:"실주소 = 페이지 프레임 번호(5) x 페이지 크기(100) + 변위(7) = 507"},
+    {q:"세그먼테이션 기법에서 세그먼트 번호 2의 시작주소가 300일 때, 가상주소 (2,7)의 실주소는?", choices:["307","3002","207","50002"], answer:0, explanation:"실주소 = 세그먼트 시작주소(300) + 변위(7) = 307"},
+    {q:"페이지가 실제로 참조되어야 메모리에 적재하는 방법은?", choices:["예상 페이지 호출","요구 페이지 호출","동적 재배치","이중 버퍼링"], answer:1, explanation:"요구 페이지 호출기법은 페이지가 요구될 때, 즉 실제로 참조될 때 해당 페이지를 메모리에 적재하는 방법이다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] 페이징 기법의 특징으로 옳은 것은?", choices:["페이지의 크기가 모두 다르다","외부 단편화가 발생할 수 있다","페이지의 크기는 논리적 측면과 무관하다","페이지 프레임이 흩어져 있으면 사용 불가하다"], answer:2, explanation:"페이지는 고정된 크기의 블록으로 논리적 측면과 무관하다. 외부 단편화 없이 내부 단편화만 발생할 수 있다.", diff:"medium"}
+  ]
+},
+{
+  id:10, title:"페이지 교체 알고리즘",
+  objectives: [
+    "최적화 원칙(Belady)과 교체 제외 페이지의 개념을 설명할 수 있다.",
+    "FIFO, LRU, LFU, 2차 기회, 클럭 페이지 교체 알고리즘의 동작을 시뮬레이션할 수 있다.",
+    "Belady의 이상현상을 설명할 수 있다.",
+    "워킹 세트 알고리즘과 PFF 알고리즘을 설명할 수 있다."
+  ],
+  summary: `<strong>최적화 원칙:</strong> 앞으로 가장 오랫동안 사용되지 않을 페이지를 교체 대상으로 선택. 미래를 예측할 수 없으므로 실제로 실현 불가능.
+
+<strong>FIFO 페이지 교체:</strong> 메모리 내에 가장 오래 있었던 페이지 교체. FIFO 큐로 구현. 단점: 가장 많이 쓰이는 페이지를 교체 가능, Belady의 이상현상(페이지 프레임 수 증가 시 오히려 페이지 부재 증가)
+
+<strong>LRU 페이지 교체:</strong> 가장 오랫동안 사용되지 않은 페이지 교체. 국부성 휴리스틱에 의존. Belady의 이상현상 없음. 단점: 막대한 오버헤드.
+
+<strong>LFU 페이지 교체:</strong> 참조된 횟수가 가장 적은 페이지 교체. 단점: 최근에 적재된 페이지가 교체될 가능성.
+
+<strong>2차 기회 페이지 교체:</strong> 참조 비트가 0이면서 메모리 내에 가장 오래 있었던 페이지 교체. FIFO 보완.
+- 참조 비트가 1이면 0으로 바꿔 큐 뒤에 추가, 0이면 교체 대상
+- 클럭 페이지 교체: 2차 기회 알고리즘을 원형 큐로 관리
+
+<strong>워킹 세트 알고리즘:</strong> 데닝(Denning)이 제안. W(t,o) = 시각 t를 포함한 직전 o시간 동안 참조한 페이지 집합. 워킹 세트를 메모리에 유지시키는 것을 원칙으로 함.
+- 쓰래싱: 페이지 부재가 비정상적으로 많이 발생하여 시스템 처리량이 급격히 저하되는 현상
+
+<strong>PFF 알고리즘:</strong> 페이지 부재 빈도를 이용하여 프로세스별 페이지 집합 크기를 변화시키는 기법. PFF가 상한보다 높으면 프레임 추가, 하한보다 낮으면 참조되지 않은 페이지 제거.`,
+  concepts: [
+    {term:"최적화 원칙", def:"앞으로 가장 오랫동안 사용되지 않을 페이지를 교체 대상으로 선택 (실현 불가능)"},
+    {term:"Belady의 이상현상", def:"페이지 프레임 수를 늘렸는데 오히려 페이지 부재가 증가하는 현상 (FIFO에서 발생)"},
+    {term:"LRU", def:"가장 오랫동안 사용되지 않은 페이지를 교체. 국부성 휴리스틱 기반"},
+    {term:"워킹 세트", def:"시각 t를 포함한 직전 o시간 동안 참조한 페이지의 집합"},
+    {term:"쓰래싱", def:"페이지 부재가 비정상적으로 많이 발생하여 시스템 처리량이 급격히 저하되는 현상"},
+    {term:"PFF", def:"페이지 부재 빈도를 이용하여 프로세스별 페이지 집합 크기를 조절하는 기법"}
+  ],
+  textbookQuiz: [
+    {q:"페이지 교체 대상을 선택하기 위한 최적화 원칙은?", choices:["가장 자주 사용한 페이지를 선택","가장 최근에 사용한 페이지를 선택","가장 오래된 페이지를 선택","앞으로 가장 오랫동안 사용되지 않을 페이지를 선택"], answer:3, explanation:"최적화 원칙은 앞으로 가장 오랫동안 사용되지 않을 페이지를 교체 대상으로 선택하는 것이다."},
+    {q:"페이지 프레임 수가 증가해도 페이지 부재율이 증가하는 현상은?", choices:["Belady의 이상현상","국부성 휴리스틱","문맥 교환","쓰래싱"], answer:0, explanation:"Belady의 이상현상은 프로세스에 더 많은 수의 페이지를 할당할 경우 오히려 페이지 부재가 더 많이 발생하는 현상이다."},
+    {q:"워킹 세트 알고리즘에 대한 설명으로 바른 것은?", choices:["Belady가 제안했다","페이지 부재비율을 증가시키기 위한 방법이다","프로세스의 워킹 세트를 메모리에 유지시킨다","워킹 세트의 크기는 변화 없다"], answer:2, explanation:"워킹 세트 알고리즘은 데닝(Denning)이 제안했으며, 프로세스의 워킹 세트를 메모리에 유지시키는 것을 원칙으로 한다."},
+    {q:"W(7,3)에서 시각별 참조가 A,B,C,A,C,C,A,A일 때, W(7,3)은?", choices:["{A}","{A,B}","{A,C}","{A,B,C}"], answer:2, explanation:"W(7,3)은 시각 7-3+1=5부터 시각 7까지 참조한 페이지의 집합이므로, 시각5:C, 시각6:A, 시각7:A -> {A,C}이다."},
+    {q:"페이지 부재비율이 높으면 페이지 프레임을 더 배정하고, 낮으면 회수하는 기법은?", choices:["PFF","LRU","FIFO","LFU"], answer:0, explanation:"PFF(Page Fault Frequency) 알고리즘은 페이지 부재 빈도를 이용하여 프로세스별 페이지 집합의 크기를 변화시킨다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] FIFO 페이지 교체에서 시각순 참조 A,B,C 후 2개 프레임에 A,B가 있을 때, 시각4에 C를 참조하면 교체 대상은?", choices:["A","B","C","교체 불필요"], answer:0, explanation:"FIFO는 메모리 내에 가장 오래 있었던 페이지를 교체한다. 시각 1에 먼저 들어온 A가 교체 대상이 된다.", diff:"medium"},
+    {q:"[기출유형] LRU에서 가장 오랫동안 사용되지 않은 페이지를 교체하는 근거가 되는 원리는?", choices:["최적화 원칙","Belady의 이상현상","국부성 휴리스틱","PFF"], answer:2, explanation:"LRU는 최근의 상황이 가까운 미래에 대한 좋은 척도라는 국부성 휴리스틱에 의존한다.", diff:"easy"}
+  ]
+},
+{
+  id:11, title:"장치관리",
+  objectives: [
+    "전용/공용/가상장치의 차이를 구분할 수 있다.",
+    "폴링, 인터럽트, DMA의 입출력 처리 유형을 비교할 수 있다.",
+    "버퍼링(단일/이중/순환)과 스풀링의 개념을 설명할 수 있다."
+  ],
+  summary: `<strong>입출력장치 구분:</strong>
+- 전용장치: 한 번에 하나의 프로세스에만 할당
+- 공용장치: 여러 프로세스에 동시에 할당
+- 가상장치: 전용장치를 공용장치처럼 보이게 함
+
+<strong>장치 구성:</strong> 장치제어기(하드웨어, 장치를 직접 다루는 전자장치) + 장치 드라이버(소프트웨어, 입출력 요청을 해당 장치에 맞도록 변환)
+
+<strong>입출력 처리 유형:</strong>
+- 폴링: CPU가 입출력장치의 상태를 지속적으로 확인. CPU 낭비 심함
+- 인터럽트: 장치가 CPU의 작업을 잠시 중단시키고 상태를 알림. 인터럽트 발생까지 CPU는 다른 작업 가능
+- DMA: DMA 제어기를 이용하여 CPU를 통하지 않고 메모리에 직접 접근하여 데이터 전송. 인터럽트 횟수를 한 번으로 줄임
+  - 사이클 스틸링: CPU와 DMA 제어기 모두 메모리 액세스 시 DMA에 우선권 부여
+
+<strong>버퍼링:</strong> CPU 처리속도와 전송속도의 차이를 해결
+- 단일: 저장과 처리를 동시에 할 수 없어 비효율적
+- 이중(플립플롭): 두 개의 버퍼로 저장과 처리를 동시 가능
+- 순환: 여러 개의 버퍼를 돌아가면서 사용
+
+<strong>스풀링:</strong> 저속 입출력장치와의 데이터 전송을 고속장치(디스크)를 통하도록 하여 입출력 작업을 빠르게 함. 전용장치를 가상장치(공용장치처럼)로 변환.`,
+  concepts: [
+    {term:"폴링", def:"CPU가 입출력장치의 상태를 지속적으로 확인하는 방법. CPU 낭비 심함"},
+    {term:"인터럽트", def:"어떤 장치가 다른 장치의 작업을 잠시 중단시키고 자신의 상태를 알리는 기능"},
+    {term:"DMA", def:"DMA 제어기를 이용하여 CPU를 통하지 않고 메모리에 직접 접근하여 데이터를 전송하는 방법"},
+    {term:"사이클 스틸링", def:"CPU와 DMA 제어기 모두 메모리 액세스 시 DMA 제어기에 우선권을 주는 것"},
+    {term:"스풀링", def:"저속 입출력장치와의 전송을 디스크 같은 고속장치를 통하도록 하는 것"}
+  ],
+  textbookQuiz: [
+    {q:"입출력 처리 유형에 대한 설명으로 바른 것은?", choices:["프로그램 방법은 폴링을 이용하여 CPU의 낭비가 심하다","인터럽트 방법은 인터럽트 발생까지 CPU가 다른 작업을 할 수 없다","DMA 방법은 CPU의 낭비가 심하다","사이클 스틸링은 CPU에 우선권을 부여한다"], answer:0, explanation:"프로그램 방법(폴링)은 CPU가 장치 상태를 지속적으로 확인하므로 CPU 낭비가 심하다."},
+    {q:"CPU를 통하지 않고 메모리에 직접 접근하여 데이터를 전송하는 방법은?", choices:["기억장치 인터리빙","버퍼링","DMA","가상 기억장치"], answer:2, explanation:"DMA(Direct Memory Access)는 DMA 제어기를 이용하여 CPU를 통하지 않고 메모리에 직접 접근하여 데이터를 전송하는 방법이다."},
+    {q:"단일 버퍼링 대신 이중 버퍼링의 효과는?", choices:["메모리가 절약된다","버퍼에 데이터 저장과 처리가 동시에 가능하다","입력 완료를 CPU가 알 수 있다","오류 정정이 가능하다"], answer:1, explanation:"이중 버퍼링은 두 개의 버퍼를 이용하여 저장과 처리를 동시에 할 수 있다."},
+    {q:"스풀링에 대한 설명으로 옳은 것은?", choices:["프로세스 간 동기화를 위한 기법이다","입출력 프로세스와 저속장치 사이의 전송을 고속장치를 통하도록 한다","CPU 스케줄링 알고리즘이다","메모리 보호 방법이다"], answer:1, explanation:"스풀링은 입출력 프로세스와 저속 입출력장치 사이의 데이터 전송을 자기 디스크와 같은 고속장치를 통하도록 하는 것이다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] 인터럽트의 정의로 옳은 것은?", choices:["CPU가 장치 상태를 주기적으로 확인하는 것","어떤 장치가 다른 장치의 작업을 잠시 중단시키고 자신의 상태를 알리는 기능","CPU를 거치지 않고 메모리에 직접 접근하는 것","버퍼를 이용한 데이터 전송"], answer:1, explanation:"인터럽트(interrupt)는 어떤 장치가 다른 장치의 작업을 잠시 중단시키고 자신의 상태를 알리는 기능이다.", diff:"easy"},
+    {q:"[기출유형] 버퍼링에 대한 설명으로, 빈칸에 들어갈 것은? '단일 __, 이중 __, 순환 __'", choices:["사이클 스틸링","버퍼링","인터럽트","인터리빙"], answer:1, explanation:"CPU의 데이터 처리속도와 전송속도의 차이를 해결하는 방법으로 단일 버퍼링, 이중 버퍼링, 순환 버퍼링이 있다.", diff:"easy"}
+  ]
+},
+{
+  id:12, title:"저장장치 및 파일 관리",
+  objectives: [
+    "순차접근/직접접근 저장장치의 차이를 설명할 수 있다.",
+    "디스크 접근 시간의 구성(탐구시간+회전지연시간+전송시간)을 설명할 수 있다.",
+    "FCFS, SSTF, SCAN, C-SCAN, LOOK 디스크 스케줄링의 트랙 이동 순서를 구할 수 있다.",
+    "SSD와 HDD의 차이를 설명할 수 있다."
+  ],
+  summary: `<strong>저장장치 종류:</strong>
+- 순차접근: 테이프 장치. 초기 접근시간이 굉장히 오래 걸림. 백업용
+- 직접접근: 자기 디스크(트랙/섹터/실린더), 광디스크(나선형 트랙), SSD(전력 없이 데이터 유지)
+  - SSD: 자기 디스크보다 속도 빠르고 전력 소모 적음. 가격 비싸고 수명 짧음
+
+<strong>디스크 접근 시간 = 탐구시간 + 회전지연시간 + 전송시간</strong>
+- 탐구시간(seek time): 헤드를 원하는 트랙에 위치시키는 시간 (가장 느림)
+- 회전지연시간(rotational latency): 요구된 자료가 헤드 밑에 올 때까지 회전 시간
+- 전송시간(transfer time): 자료를 읽거나 쓰는 시간
+
+<strong>디스크 스케줄링 알고리즘:</strong>
+- FCFS: 도착순서대로 서비스. 단점: 헤드 이동거리 길어질 수 있음
+- SSTF: 현재 위치에서 가장 가까운 트랙 먼저. 단점: 양 끝 트랙 기아상태
+- SCAN: 양 끝 트랙 사이를 왕복하며 진행방향의 가장 가까운 요구 처리. 끝까지 도달 후 방향 전환
+- C-SCAN: 한쪽 방향으로만 처리. 양 끝 트랙 차별 제거
+- LOOK: SCAN과 같지만 더 이상 요구가 없으면 끝까지 안 가고 방향 전환
+- SLTF: 동일 실린더 내에서 회전지연시간 최적화
+
+<strong>파일 구조:</strong> 순차 파일, 인덱스된 순차 파일, 직접 파일
+<strong>디스크 공간 할당:</strong> 연속 할당(외부 단편화, 확장 비효율) vs 불연속 할당(포인터로 연결)`,
+  concepts: [
+    {term:"탐구시간", def:"기계적 동작으로 헤드를 원하는 트랙에 위치시키는 시간 (가장 느림)"},
+    {term:"회전지연시간", def:"요구된 자료가 헤드 밑에 이를 때까지 디스크가 회전하는 시간"},
+    {term:"전송시간", def:"헤드 위치에서 자료를 읽거나 쓰는 시간"},
+    {term:"SSTF", def:"최단 탐구시간을 갖는 접근 요구를 먼저 처리. 양 끝 트랙 기아상태 가능"},
+    {term:"SCAN", def:"양 끝 트랙 사이를 왕복하며 진행방향의 가장 가까운 요구 처리"},
+    {term:"LOOK", def:"SCAN과 같지만 더 이상 요구가 없으면 방향을 바꿈"}
+  ],
+  textbookQuiz: [
+    {q:"디스크 접근 시간의 구성 요소가 아닌 것은?", choices:["탐구시간","회전지연시간","전송시간","컴파일시간"], answer:3, explanation:"디스크 접근 요구 처리시간 = 탐구시간 + 회전지연시간 + 전송시간이다."},
+    {q:"헤드가 트랙 10에서 트랙 20,8,25,3의 요구가 있을 때, FCFS의 서비스 순서는?", choices:["20,8,25,3","8,3,20,25","8,3,25,20","20,25,8,3"], answer:0, explanation:"FCFS는 먼저 도착한 접근 요구가 먼저 서비스를 받으므로 도착순서 20,8,25,3이다."},
+    {q:"같은 조건에서 SSTF의 서비스 순서는?", choices:["20,8,25,3","8,3,20,25","8,3,25,20","20,25,8,3"], answer:1, explanation:"SSTF는 현재 위치에서 가장 가까운 트랙부터 서비스. 트랙10에서 가장 가까운 8 -> 3 -> 20 -> 25"},
+    {q:"같은 조건에서 LOOK의 서비스 순서는? (헤드 진행방향: 트랙 0 쪽)", choices:["20,8,25,3","8,3,20,25","8,3,25,20","20,25,8,3"], answer:1, explanation:"LOOK은 SCAN과 같지만 더 이상 요구가 없으면 방향 전환. 트랙0 쪽으로: 8->3, 더 이상 없으므로 방향 전환: 20->25"},
+    {q:"SSD에 대한 설명으로 옳은 것은?", choices:["자기 디스크보다 속도가 느리다","전력 소모가 많다","자기 디스크보다 속도가 빠르고 전력 소모가 적다","자기 디스크보다 수명이 길다"], answer:2, explanation:"SSD는 자기 디스크보다 속도가 빠르고 전력 소모가 적지만, 가격이 비싸며 수명이 짧다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] 같은 조건에서 C-SCAN의 서비스 순서는? (헤드 진행방향: 트랙 0 쪽)", choices:["20,8,25,3","8,3,20,25","8,3,25,20","20,25,8,3"], answer:2, explanation:"C-SCAN은 한쪽 방향으로만 서비스. 트랙0 쪽: 8->3->트랙0, 방향 전환 후 큰 번호 쪽에서: 25->20", diff:"medium"},
+    {q:"[기출유형] LOOK 스케줄링에서 트랙10 -> 8,3,20,25 순으로 서비스할 때 총탐구시간은?", choices:["22","29","34","44"], answer:1, explanation:"10->8(2) + 8->3(5) + 3->20(17) + 20->25(5) = 29", diff:"medium"}
+  ]
+},
+{
+  id:13, title:"분산 운영체제",
+  objectives: [
+    "분산 시스템의 장점(자원 공유, 성능 향상, 신뢰성 향상, 통신의 편리성)을 설명할 수 있다.",
+    "분산 운영체제의 투명성과 이주 방식(데이터/계산/프로세스)을 설명할 수 있다.",
+    "분산 공유 메모리의 장단점을 설명할 수 있다.",
+    "원격 프로시저 호출(RPC)의 동작을 설명할 수 있다."
+  ],
+  summary: `<strong>분산 시스템:</strong> 복수의 컴퓨터가 네트워크로 연결. 로컬 자원(자신의 컴퓨터) + 원격 자원(네트워크로 연결된 컴퓨터).
+장점: 자원 공유, 성능 향상(병렬 수행), 신뢰성 향상, 통신의 편리성.
+
+<strong>분산 운영체제:</strong> 분산 시스템 관리. 투명성 제공(로컬/원격 자원 구분 없이 사용).
+- 데이터 이주: 원격 데이터를 로컬로 전송
+- 계산 이주: 원격 프로시저 호출로 원격지에서 처리
+- 프로세스 이주: 프로세스 자체를 원격지로 이주
+
+<strong>분산 파일 시스템:</strong> 원격 파일을 로컬처럼 사용. UNIX에서 마운트(mount) 이용. 캐시 사용.
+<strong>분산 공유 메모리:</strong> 물리적으로 분리된 메모리를 하나의 주소공간으로 접근. 장점: 확장성, 큰 가상 메모리 공간. 단점: 접근속도 느림, 보호 메커니즘 필요.
+
+<strong>RPC:</strong> 네트워크로 연결된 다른 컴퓨터의 프로시저를 실행시키는 것. 같은 컴퓨터의 프로시저 호출처럼 이용 가능하게 함. 네트워크 통신이 필요하므로 로컬 프로시저 호출보다 시간이 더 걸림.`,
+  concepts: [
+    {term:"분산 시스템", def:"복수의 컴퓨터가 네트워크로 연결된 시스템"},
+    {term:"투명성", def:"로컬 자원과 원격 자원의 구분을 없애 주는 것"},
+    {term:"RPC", def:"네트워크로 연결된 다른 컴퓨터에 있는 프로시저를 실행시키는 것"},
+    {term:"분산 공유 메모리", def:"물리적으로 분리된 메모리들을 하나의 주소공간으로 접근하게 해 주는 것"}
+  ],
+  textbookQuiz: [
+    {q:"분산 시스템의 장점이 아닌 것은?", choices:["자원 공유","성능 향상","신뢰성 향상","간단한 구조"], answer:3, explanation:"분산 시스템의 장점은 자원 공유, 성능 향상, 신뢰성 향상, 통신의 편리성이며, 구조는 오히려 복잡해진다."},
+    {q:"분산 운영체제에 대한 설명으로 옳지 않은 것은?", choices:["사용자가 원격 자원과 로컬 자원을 구별하여 사용해야 한다","데이터 이주는 원격 데이터를 로컬로 전송하는 방식이다","계산 이주는 원격 프로시저 호출을 통해 처리하는 방식이다","프로세스 이주는 프로세스를 원격지로 이주시키는 방식이다"], answer:0, explanation:"분산 운영체제는 투명성을 제공하여 사용자가 원격/로컬 자원을 구별할 필요가 없다."},
+    {q:"RPC에 대한 설명으로 옳지 않은 것은?", choices:["클라이언트가 스텁 루틴을 호출한다","같은 컴퓨터의 프로시저 호출과 같은 성능을 낼 수 있다","파라미터와 결과는 네트워크 메시지로 변환된다","같은 컴퓨터처럼 이용하게 해 준다"], answer:1, explanation:"RPC는 네트워크를 통하므로 같은 컴퓨터의 프로시저 호출보다 시간이 더 걸린다."}
+  ],
+  extraQuiz: [
+    {q:"[개념] 모든 노드가 링크로 직접 연결되어 있는 네트워크 구조는?", choices:["완전연결 네트워크","트리 구조 네트워크","링형 네트워크","버스형 네트워크"], answer:0, explanation:"모든 노드가 링크로 직접 연결되어 있는 네트워크 구조는 완전연결 네트워크이다.", diff:"easy"}
+  ]
+},
+{
+  id:14, title:"운영체제 보안",
+  objectives: [
+    "보안의 기본 목표(기밀성, 가용성, 무결성)를 설명할 수 있다.",
+    "정보침해 유형(가로채기/흐름차단/변조/위조)을 구분할 수 있다.",
+    "접근제어 유형(임의적/강제적/역할기반)을 비교할 수 있다.",
+    "보안 모델(참조 모니터, 벨-라파듈라, 비바)을 설명할 수 있다.",
+    "보안 커널과 TCB의 개념을 설명할 수 있다."
+  ],
+  summary: `<strong>보안의 기본 목표:</strong>
+- 기밀성: 주체가 자원을 합법적으로 사용할 수 없다면 사용되어서는 안 됨
+- 가용성: 주체가 자원을 사용하는 데 문제가 없다면 반드시 사용할 수 있어야 함
+- 무결성: 객체에 저장되어 있는 정보는 항상 정확함
+
+<strong>침해 형태:</strong>
+- 가로채기: 기밀성 공격. 허락받지 않은 자원 접근
+- 흐름 차단: 가용성 공격. 시스템 일부를 파괴/사용 불가
+- 변조: 무결성 공격. 기존 데이터 내용을 바꿈
+- 위조: 무결성 공격. 기존에 없던 불법적인 정보 삽입
+
+<strong>대표적 침해유형:</strong> 트로이 목마(숨겨진 기능으로 권한 도용), 트랩도어(비밀 통로), 비밀 채널, 웜/바이러스
+
+<strong>접근제어:</strong>
+- 임의적 접근제어: 관리자/소유자가 접근권한 부여. 유연하나 관리 어려움
+- 강제적 접근제어: 보안정책이 중앙에서 관리. 사용자는 정책을 넘어서는 행동 불가
+- 역할 기반 접근제어: 역할이 주어졌을 때만 권한 사용 가능
+
+<strong>보안 모델:</strong>
+- 참조 모니터 모델: 주체가 객체를 접근하는 과정에서 참조 모니터가 접근제어 수행. 단순접근 허용 여부만 결정
+- 벨-라파듈라(BLP): 기밀성 중심. 읽기=객체보안수준<=주체보안허가수준, 쓰기=객체보안수준>=주체보안허가수준
+- 비바: 무결성 중심. BLP와 반대. 자신보다 높은 등급 객체에 쓰기 불가
+
+<strong>보안 커널:</strong> 기존 커널에 보안기능을 통합. TCB(Trusted Computing Base)=참조 모니터를 구현한 형태.`,
+  concepts: [
+    {term:"기밀성", def:"자원을 합법적으로 사용할 수 없다면 사용되어서는 안 됨"},
+    {term:"가용성", def:"자원을 사용하는 데 문제가 없다면 반드시 사용할 수 있어야 함"},
+    {term:"무결성", def:"객체에 저장되어 있는 정보는 항상 정확함"},
+    {term:"역할 기반 접근제어", def:"주체는 역할이 주어졌을 때만 권한을 사용할 수 있는 접근제어"},
+    {term:"참조 모니터", def:"주체가 객체를 접근하는 과정에서 접근제어를 수행하는 모델"},
+    {term:"벨-라파듈라", def:"기밀성 유지에 중점을 둔 정보 흐름 모델"},
+    {term:"비바", def:"무결성을 고려하는 모델. 벨-라파듈라와 반대"},
+    {term:"보안 커널", def:"기존 운영체제 커널에 보안기능을 통합한 것"}
+  ],
+  textbookQuiz: [
+    {q:"운영체제 보안이 달성하려는 목표가 아닌 것은?", choices:["기밀성","가용성","무결성","경제성"], answer:3, explanation:"운영체제 보안이 달성하려는 목표는 기밀성, 가용성, 무결성이다."},
+    {q:"무결성에 대한 공격으로, 기존 데이터를 변경하는 것은?", choices:["가로채기","흐름 차단","변조","위조"], answer:2, explanation:"변조는 무결성 공격으로 기존 데이터의 내용을 바꾸는 것이다. 위조는 기존에 없던 불법적인 정보를 삽입하는 것이다."},
+    {q:"숨겨진 기능이 있는 프로그램으로 사용자의 권한을 이용하여 시스템에 침투하는 침해유형은?", choices:["트랩도어","트로이 목마","비밀 채널","웜"], answer:1, explanation:"트로이 목마는 숨겨진 기능이 있는 프로그램을 사용자가 실행하게 만들어 이 사용자의 권한을 이용하여 시스템에 침투하는 것이다."},
+    {q:"관리자 또는 자원 소유자가 주체에 접근권한을 부여하는 보안정책은?", choices:["임의적 접근제어","강제적 접근제어","역할 기반 접근제어","최소권한"], answer:0, explanation:"임의적 접근제어는 관리자 또는 자원 소유자가 주체에 자원의 접근권한을 부여할 수 있는 정책이다."},
+    {q:"참조 모니터 모델에 대한 설명으로 옳은 것은?", choices:["정보의 기밀성 유지에 중점","주체와 객체 사이에서 참조 모니터가 접근제어 수행","무결성을 고려하는 모델","암호화를 통한 보안 제공"], answer:1, explanation:"참조 모니터 모델은 주체가 객체를 접근하는 과정에서 참조 모니터가 접근제어를 수행하며, 단순접근의 허용 여부만 결정한다."}
+  ],
+  extraQuiz: [
+    {q:"[기출유형] 운영체제 보안의 기본 목표 중 '주체가 자원을 합법적으로 사용할 수 없다면 사용되어서는 안 됨'은?", choices:["기밀성","가용성","무결성","경제성"], answer:0, explanation:"기밀성은 주체가 자원을 합법적으로 사용할 수 없다면 사용되어서는 안 된다는 것이다.", diff:"easy"},
+    {q:"[기출유형] 역할 기반 접근제어에 대한 설명으로 옳은 것은?", choices:["관리자가 자원 소유자에게 접근권한을 부여한다","보안정책이 중앙에서 관리된다","주체는 역할이 주어졌을 때만 권한 사용 가능하다","사용자는 최소한의 권한만 받는다"], answer:2, explanation:"역할 기반 접근제어는 주체가 역할을 부여받은 후, 현재 행사하는 역할에 권한이 주어졌을 때만 권한을 사용할 수 있다.", diff:"medium"},
+    {q:"[기출유형] 벨-라파듈라 모델과 비바 모델에 대한 설명으로 옳은 것은?", choices:["둘 다 기밀성에 중점을 둔다","벨-라파듈라는 기밀성, 비바는 무결성에 중점을 둔다","둘 다 무결성에 중점을 둔다","벨-라파듈라는 무결성, 비바는 기밀성에 중점을 둔다"], answer:1, explanation:"벨-라파듈라 모델은 기밀성, 비바 모델은 무결성에 중점을 둔 모델로 서로 반대이다.", diff:"medium"},
+    {q:"[기출유형] 보안 커널에 대한 설명으로 옳은 것은?", choices:["기존 운영체제 커널에 보안기능을 통합한 것이다","보안기능을 커널로 옮기는 것만으로 안전성이 높아진다","마이크로커널과 동일한 개념이다","사용자 모드에서 동작한다"], answer:0, explanation:"보안 커널은 운영체제에서 기존의 운영체제 커널에 보안기능을 통합시킨 것이다. 단순히 옮기는 것만으로 안전성이 높아지지는 않는다.", diff:"easy"}
+  ]
+},
+{
+  id:15, title:"운영체제 사례",
+  objectives: [
+    "리눅스의 특징(일체형 커널, 공개소스, POSIX 지원)을 설명할 수 있다.",
+    "임베디드 시스템과 실시간 시스템(경성/연성)의 차이를 설명할 수 있다.",
+    "윈도우 커널 구조(마이크로커널 확장)를 설명할 수 있다.",
+    "안드로이드의 특징과 안드로이드 런타임(ART)을 설명할 수 있다."
+  ],
+  summary: `<strong>Linux:</strong>
+- 1991년 리누스 토발즈가 MINIX에 기반하여 발표
+- 일체형 커널(모놀리식) 구조. 모듈을 이용하여 기능 추가 가능
+- 무료, POSIX 표준 준수, 높은 안정성, 낮은 하드웨어 요구
+- 멀티태스킹, 멀티유저, 멀티코어/멀티프로세서 지원
+- 대부분 C언어로 작성
+
+<strong>임베디드 시스템:</strong> 특정 기능을 수행하기 위해 설계된 컴퓨터 시스템. 보통 실시간 시스템에 이용.
+- 경성 실시간 시스템: 반드시 마감시간 내 작업 완수 (예: 항공기 전자제어)
+- 연성 실시간 시스템: 마감시간 내 완수가 바람직하지만 필수는 아님 (예: 멀티미디어 재생)
+- 임베디드 리눅스: 경성 실시간 시스템에는 부적합
+
+<strong>Windows:</strong>
+- Windows XP 이후 Windows NT 기반
+- 마이크로커널을 확장한 형태의 커널 구조
+- 하드웨어는 추상화 계층(HAL)을 거쳐 접근
+- 보안 참조 모니터 포함
+
+<strong>Android:</strong>
+- 리눅스 기반 커널. C/C++로 구현된 OS에 Java 응용 프로그램 동작
+- ARM, x86 CPU 지원. 소스 코드 공개
+- 안드로이드 런타임(ART): 설치 시 바이트코드를 기계 코드로 번역하여 성능 향상`,
+  concepts: [
+    {term:"Linux", def:"유닉스 호환 공개 운영체제. 일체형 커널. POSIX 표준 준수"},
+    {term:"경성 실시간 시스템", def:"반드시 마감시간 내에 작업을 완수해야 하는 시스템"},
+    {term:"연성 실시간 시스템", def:"마감시간 내 완수가 바람직하지만 필수는 아닌 시스템"},
+    {term:"Windows 커널", def:"마이크로커널을 확장한 형태. HAL을 통해 하드웨어 접근"},
+    {term:"ART", def:"안드로이드 런타임. 설치 시 바이트코드를 기계 코드로 번역하여 성능 향상"}
+  ],
+  textbookQuiz: [
+    {q:"리눅스에 대한 설명으로 옳지 않은 것은?", choices:["주변장치를 파일로 간주하여 접근한다","마이크로커널 구조를 채용한다","멀티태스킹, 멀티유저를 지원한다","대부분 C언어로 작성되어 있다"], answer:1, explanation:"리눅스는 일체형 커널 구조이다. 필요한 서비스를 모듈을 이용하여 추가할 수 있다."},
+    {q:"임베디드 리눅스에 대한 설명으로 옳지 않은 것은?", choices:["운영체제의 크기를 최소화해야 한다","많은 사용자와 개발자로부터 검증받았다","기존 실시간 운영체제에 비해 하드웨어 사양이 낮다","다양한 네트워크 프로토콜을 지원한다"], answer:2, explanation:"임베디드 리눅스는 RTOS 등 기존의 실시간 운영체제에 비해 요구되는 하드웨어 사양이 높다."},
+    {q:"안드로이드에 대한 설명으로 옳지 않은 것은?", choices:["소스 코드가 공개된다","ARM 구조만 지원하며 다른 CPU 지원이 어렵다","리눅스에 기반한 커널 구조이다","C/C++로 작성된 OS에 Java 응용 프로그램이 동작한다"], answer:1, explanation:"안드로이드는 ARM 및 x86 CPU를 지원하며, 소스 코드가 공개되어 다른 CPU 지원도 이론적으로 가능하다."}
+  ],
+  extraQuiz: [
+    {q:"[개념] Windows XP 이후의 윈도우 커널에 대한 설명으로 적절한 것은?", choices:["일체형 커널 구조이다","마이크로커널을 확장한 형태이다","유닉스를 지원하지 않는다","인텔 CPU에서만 동작한다"], answer:1, explanation:"Windows XP 이후의 윈도우는 Windows NT 기반으로, 마이크로커널을 확장한 형태의 커널 구조이다.", diff:"easy"},
+    {q:"[개념] 안드로이드 런타임(ART)의 특징은?", choices:["실행 시마다 바이트코드를 해석한다","설치 시 바이트코드를 기계 코드로 번역한다","가상기계 방식으로 실행한다","컴파일 없이 소스 코드를 직접 실행한다"], answer:1, explanation:"ART는 응용 프로그램을 설치할 때 바이트코드를 실제 기계 코드로 번역하여 이후 실행 성능을 높인다.", diff:"easy"}
+  ]
+}
+];
+
+// ========== APP STATE ==========
+let currentChapter = 1;
+let currentTab = 'study';
+let quizStates = {};
+let completedChapters = JSON.parse(localStorage.getItem('os_completed') || '{}');
+let quizScores = JSON.parse(localStorage.getItem('os_quizScores') || '{}');
+let isDark = localStorage.getItem('os_dark') === 'true';
+
+if(isDark) document.body.classList.add('dark');
+updateDarkBtn();
+
+// ========== RENDER ==========
+function renderSidebar() {
+  const sb = document.getElementById('sidebar');
+  let html = '<div class="sidebar-section"><div class="sidebar-section-title">목차</div>';
+  chapters.forEach(ch => {
+    const active = ch.id === currentChapter ? 'active' : '';
+    const check = completedChapters[ch.id] ? '<span class="check">&#10003;</span>' : '';
+    html += `<div class="sidebar-item ${active}" onclick="selectChapter(${ch.id})">
+      <span class="ch-num">${ch.id}장</span><span>${ch.title}</span>${check}</div>`;
+  });
+  html += '</div>';
+  sb.innerHTML = html;
+}
+
+function renderMain() {
+  const ch = chapters.find(c => c.id === currentChapter);
+  if(!ch) return;
+  let html = `
+    <div class="tabs">
+      <div class="tab ${currentTab==='study'?'active':''}" onclick="switchTab('study')">&#128214; 자습서</div>
+      <div class="tab ${currentTab==='quiz'?'active':''}" onclick="switchTab('quiz')">&#128221; 퀴즈</div>
+    </div>
+    <div class="content">
+      <div class="chapter-title">제${ch.id}장 ${ch.title}</div>
+      <div class="chapter-subtitle">Chapter ${ch.id}</div>
+      ${currentTab === 'study' ? renderStudy(ch) : renderQuiz(ch)}
+      <button class="mark-done-btn ${completedChapters[ch.id]?'done':''}" onclick="toggleDone(${ch.id})">
+        ${completedChapters[ch.id] ? '&#10003; 학습 완료됨 (클릭하여 해제)' : '이 장 학습 완료로 표시'}
+      </button>
+    </div>`;
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function renderStudy(ch) {
+  let html = '';
+  // 학습목표
+  html += `<div class="section"><div class="section-title"><span class="section-icon">&#127919;</span> 학습목표</div>
+    <ul class="concept-list">${ch.objectives.map(o => `<li>${o}</li>`).join('')}</ul></div>`;
+  // 핵심 요약
+  const summaryItems = ch.summary.split('\n\n').filter(s => s.trim()).map(s =>
+    `<div class="summary-item">${s.replace(/\n- /g, '<br>• ').replace(/\n/g, '<br>')}</div>`
+  ).join('');
+  html += `<div class="section"><div class="section-title"><span class="section-icon">&#128220;</span> 핵심 요약</div>
+    <div class="summary-grid">${summaryItems}</div></div>`;
+  // 주요 개념
+  html += `<div class="section"><div class="section-title"><span class="section-icon">&#128218;</span> 주요 개념 정리</div>
+    <ul class="concept-list">${ch.concepts.map(c => `<li><strong>${c.term}</strong>: ${c.def}</li>`).join('')}</ul></div>`;
+  return html;
+}
+
+function renderQuiz(ch) {
+  const key = `ch${ch.id}`;
+  if(!quizStates[key]) {
+    quizStates[key] = {
+      textbook: ch.textbookQuiz.map(() => ({selected:null, revealed:false})),
+      extra: ch.extraQuiz.map(() => ({selected:null, revealed:false}))
+    };
+  }
+  const state = quizStates[key];
+  let html = '';
+  // Score
+  const totalQ = ch.textbookQuiz.length + ch.extraQuiz.length;
+  const correctT = state.textbook.filter((s,i) => s.revealed && s.selected === ch.textbookQuiz[i].answer).length;
+  const correctE = state.extra.filter((s,i) => s.revealed && s.selected === ch.extraQuiz[i].answer).length;
+  const totalCorrect = correctT + correctE;
+  const totalRevealed = state.textbook.filter(s=>s.revealed).length + state.extra.filter(s=>s.revealed).length;
+  html += `<div class="quiz-score"><div class="score-num">${totalCorrect}/${totalRevealed || 0}</div>
+    <div style="font-size:13px;color:var(--text-secondary)">정답률 ${totalRevealed ? Math.round(totalCorrect/totalRevealed*100) : 0}% (전체 ${totalQ}문제)</div></div>`;
+  // 교재 연습문제
+  html += `<div class="quiz-section"><h3 style="margin-bottom:12px;font-size:16px">&#128218; 교재 연습문제</h3>`;
+  ch.textbookQuiz.forEach((q, i) => {
+    html += renderQuizCard(q, i, 'textbook', key, state.textbook[i]);
+  });
+  html += '</div>';
+  // 추가 퀴즈
+  html += `<div class="quiz-section"><h3 style="margin-bottom:12px;font-size:16px">&#128293; 추가 연습 퀴즈</h3>`;
+  ch.extraQuiz.forEach((q, i) => {
+    html += renderQuizCard(q, i, 'extra', key, state.extra[i]);
+  });
+  html += '</div>';
+  html += `<button class="quiz-btn" onclick="resetQuiz('${key}')" style="background:var(--text-secondary)">퀴즈 초기화</button>`;
+  return html;
+}
+
+function renderQuizCard(q, idx, type, chKey, state) {
+  const qText = q.q;
+  let badgeClass = 'badge-textbook';
+  let badgeText = '교재';
+  if(qText.includes('[기출유형]')) { badgeClass = 'badge-exam'; badgeText = '기출유형'; }
+  else if(qText.includes('[개념]')) { badgeClass = 'badge-concept'; badgeText = '개념'; }
+  else if(qText.includes('[계산]')) { badgeClass = 'badge-calc'; badgeText = '계산'; }
+  else if(type === 'textbook') { badgeClass = 'badge-textbook'; badgeText = '교재'; }
+
+  let diffHtml = '';
+  if(q.diff) {
+    const dc = q.diff === 'easy' ? 'diff-easy' : q.diff === 'medium' ? 'diff-medium' : 'diff-hard';
+    const dt = q.diff === 'easy' ? '기본' : q.diff === 'medium' ? '보통' : '심화';
+    diffHtml = `<span class="quiz-diff ${dc}">${dt}</span>`;
+  }
+
+  const cleanQ = qText.replace(/\[(기출유형|개념|계산)\]\s*/g, '');
+  let html = `<div class="quiz-card">
+    <span class="quiz-badge ${badgeClass}">${badgeText}</span>${diffHtml}
+    <div class="quiz-q">${idx+1}. ${cleanQ}</div>
+    <ul class="quiz-choices">`;
+  const symbols = ['&#9312;','&#9313;','&#9314;','&#9315;'];
+  q.choices.forEach((c, ci) => {
+    let cls = '';
+    if(state.revealed) {
+      if(ci === q.answer) cls = 'correct';
+      else if(ci === state.selected) cls = 'wrong';
+    } else if(ci === state.selected) {
+      cls = 'selected';
+    }
+    html += `<li class="${cls}" onclick="selectAnswer('${chKey}','${type}',${idx},${ci})">${symbols[ci]} ${c}</li>`;
+  });
+  html += `</ul>`;
+  if(!state.revealed) {
+    html += `<button class="quiz-btn" onclick="revealAnswer('${chKey}','${type}',${idx})">정답 확인</button>`;
+  }
+  html += `<div class="quiz-answer ${state.revealed?'show':''}">
+    <strong>정답: ${symbols[q.answer]} ${q.choices[q.answer]}</strong><br><br>
+    <strong>해설:</strong> ${q.explanation}</div></div>`;
+  return html;
+}
+
+function selectAnswer(chKey, type, qIdx, choiceIdx) {
+  if(quizStates[chKey][type][qIdx].revealed) return;
+  quizStates[chKey][type][qIdx].selected = choiceIdx;
+  renderMain();
+}
+
+function revealAnswer(chKey, type, qIdx) {
+  quizStates[chKey][type][qIdx].revealed = true;
+  saveQuizScores();
+  renderMain();
+}
+
+function resetQuiz(chKey) {
+  const ch = chapters.find(c => `ch${c.id}` === chKey);
+  if(!ch) return;
+  quizStates[chKey] = {
+    textbook: ch.textbookQuiz.map(() => ({selected:null, revealed:false})),
+    extra: ch.extraQuiz.map(() => ({selected:null, revealed:false}))
+  };
+  renderMain();
+}
+
+function saveQuizScores() {
+  const scores = {};
+  Object.keys(quizStates).forEach(key => {
+    const ch = chapters.find(c => `ch${c.id}` === key);
+    if(!ch) return;
+    const s = quizStates[key];
+    const correctT = s.textbook.filter((st,i) => st.revealed && st.selected === ch.textbookQuiz[i].answer).length;
+    const correctE = s.extra.filter((st,i) => st.revealed && st.selected === ch.extraQuiz[i].answer).length;
+    scores[key] = correctT + correctE;
+  });
+  localStorage.setItem('os_quizScores', JSON.stringify(scores));
+}
+
+// ========== NAVIGATION ==========
+function selectChapter(id) {
+  currentChapter = id;
+  renderSidebar();
+  renderMain();
+  closeSidebar();
+  window.scrollTo(0, 0);
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  renderMain();
+}
+
+function toggleDone(id) {
+  if(completedChapters[id]) delete completedChapters[id];
+  else completedChapters[id] = true;
+  localStorage.setItem('os_completed', JSON.stringify(completedChapters));
+  updateProgress();
+  renderSidebar();
+  renderMain();
+}
+
+function updateProgress() {
+  const total = chapters.length;
+  const done = Object.keys(completedChapters).length;
+  const pct = Math.round(done / total * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '%';
+}
+
+function toggleDark() {
+  isDark = !isDark;
+  document.body.classList.toggle('dark', isDark);
+  localStorage.setItem('os_dark', isDark);
+  updateDarkBtn();
+}
+
+function updateDarkBtn() {
+  document.getElementById('darkBtn').textContent = isDark ? '\u2600\uFE0F' : '\uD83C\uDF19';
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ========== INIT ==========
+renderSidebar();
+renderMain();
+updateProgress();
+</script>
+</body>
+</html>

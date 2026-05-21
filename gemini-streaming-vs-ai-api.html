@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gemini Streaming vs 일반 AI API — safe-u works</title>
+<style>
+:root {
+  --primary: #3B82F6;
+  --primary-dark: #2563EB;
+  --success: #10B981;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --purple: #8B5CF6;
+  --bg: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-sidebar: #f1f5f9;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --card-bg: #ffffff;
+  --code-bg: #f1f5f9;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+.dark {
+  --primary: #60A5FA;
+  --primary-dark: #3B82F6;
+  --success: #34D399;
+  --danger: #F87171;
+  --warning: #FBBF24;
+  --purple: #A78BFA;
+  --bg: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-sidebar: #16213e;
+  --text: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border: #334155;
+  --card-bg: #16213e;
+  --code-bg: #0f172a;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+  transition: background 0.3s, color 0.3s;
+}
+.header {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header h1 { font-size:17px; font-weight:700; }
+.header-right { display:flex; align-items:center; gap:12px; }
+.dark-toggle {
+  background:none; border:1px solid var(--border); border-radius:6px;
+  padding:6px 10px; cursor:pointer; font-size:16px; color:var(--text);
+}
+.menu-toggle {
+  display:none; background:none; border:none; font-size:24px; cursor:pointer; color:var(--text);
+}
+.sidebar {
+  position:fixed; top:56px; left:0; bottom:0; width:280px;
+  background:var(--bg-sidebar); border-right:1px solid var(--border);
+  overflow-y:auto; padding:12px 0; z-index:90;
+  transition: transform 0.3s;
+}
+.sidebar-section-title {
+  font-size:11px; text-transform:uppercase; letter-spacing:1px;
+  color:var(--text-secondary); padding:12px 16px 4px; font-weight:600;
+}
+.sidebar-item {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 16px; cursor:pointer;
+  font-size:13px; color:var(--text); transition:background 0.2s;
+  border-left:3px solid transparent;
+}
+.sidebar-item:hover { background:var(--border); }
+.sidebar-item.active { background:var(--card-bg); color:var(--primary); font-weight:600; border-left-color:var(--primary); }
+.content {
+  margin-left:280px; margin-top:56px;
+  padding:40px 48px 120px;
+  max-width:980px;
+}
+section { margin-bottom:56px; scroll-margin-top:72px; }
+h2 {
+  font-size:24px; font-weight:800; margin-bottom:8px;
+  display:flex; align-items:center; gap:10px;
+}
+h2 .num {
+  font-size:14px; font-weight:700; color:white; background:var(--primary);
+  width:28px; height:28px; border-radius:8px;
+  display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+h3 { font-size:18px; font-weight:700; margin:28px 0 12px; }
+.lead { color:var(--text-secondary); margin-bottom:20px; font-size:15px; }
+p { margin-bottom:12px; }
+.card {
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px 22px; margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+.card.api { border-left:4px solid var(--primary); }
+.card.stream { border-left:4px solid var(--purple); }
+.tag {
+  display:inline-block; font-size:11px; font-weight:700;
+  padding:3px 9px; border-radius:20px; margin-bottom:10px;
+  text-transform:uppercase; letter-spacing:0.5px;
+}
+.tag.api { background:rgba(59,130,246,0.15); color:var(--primary); }
+.tag.stream { background:rgba(139,92,246,0.15); color:var(--purple); }
+table {
+  width:100%; border-collapse:collapse; margin:14px 0 20px;
+  font-size:14px; background:var(--card-bg);
+  border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+}
+th, td { padding:11px 14px; text-align:left; border-bottom:1px solid var(--border); vertical-align:top; }
+th { background:var(--bg-secondary); font-weight:700; font-size:13px; }
+tr:last-child td { border-bottom:none; }
+td:first-child { font-weight:600; white-space:nowrap; }
+code {
+  background:var(--code-bg); padding:2px 6px; border-radius:4px;
+  font-family:'SF Mono','Fira Code',monospace; font-size:13px;
+  color:var(--primary-dark);
+}
+.dark code { color:var(--primary); }
+pre {
+  background:var(--code-bg); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px; overflow-x:auto;
+  margin:12px 0 20px; font-size:13px; line-height:1.6;
+}
+pre code { background:none; padding:0; color:var(--text); }
+.note {
+  background:rgba(245,158,11,0.1); border-left:4px solid var(--warning);
+  padding:14px 18px; border-radius:0 var(--radius) var(--radius) 0;
+  margin:16px 0; font-size:14px;
+}
+.note b { color:var(--warning); }
+.flow {
+  display:flex; align-items:center; flex-wrap:wrap; gap:8px;
+  font-size:13px; margin:12px 0;
+}
+.flow .step {
+  background:var(--bg-secondary); border:1px solid var(--border);
+  padding:7px 12px; border-radius:6px; font-weight:600;
+}
+.flow .arrow { color:var(--text-secondary); font-weight:700; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.path { font-size:12px; color:var(--text-secondary); font-family:'SF Mono',monospace; }
+@media (max-width:900px) {
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .content { margin-left:0; padding:24px 18px 100px; }
+  .menu-toggle { display:block; }
+  .grid2 { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+    <h1>Gemini Streaming vs 일반 AI API</h1>
+  </div>
+  <div class="header-right">
+    <button class="dark-toggle" onclick="document.body.classList.toggle('dark')">🌙</button>
+  </div>
+</div>
+
+<nav class="sidebar">
+  <div class="sidebar-section-title">목차</div>
+  <div class="sidebar-item active" data-target="overview">개요 — 두 갈래</div>
+  <div class="sidebar-item" data-target="api">① 일반 AI API</div>
+  <div class="sidebar-item" data-target="stream">② Gemini Streaming</div>
+  <div class="sidebar-item" data-target="compare">핵심 차이 비교</div>
+  <div class="sidebar-item" data-target="why">왜 나눴나</div>
+  <div class="sidebar-item" data-target="typewriter">타자기 효과 트릭</div>
+  <div class="sidebar-item" data-target="files">파일 레퍼런스</div>
+</nav>
+
+<main class="content">
+
+<section id="overview">
+  <h2><span class="num">0</span>개요 — 두 갈래</h2>
+  <p class="lead">safe-u works 에는 성격이 완전히 다른 <b>두 개의 AI 경로</b>가 공존한다. 핵심 차이는 <b>어디로 가느냐(백엔드 경로)</b> + <b>응답을 어떻게 받느냐(프로토콜)</b>.</p>
+  <div class="grid2">
+    <div class="card api">
+      <span class="tag api">① 일반 AI API</span>
+      <p>표준 <code>ApiDefinition</code>(axios)로 m6.api 의 <code>/ai/safeu/...</code> 를 호출 → 외부 AI 서버 프록시. <b>완성된 결과를 한 방에</b> 받는다.</p>
+      <p class="path">packages/api → m6.api /ai/safeu → ai.mindlens.kr (OpenAI)</p>
+    </div>
+    <div class="card stream">
+      <span class="tag stream">② Gemini Streaming</span>
+      <p>raw <code>fetch</code> + SSE 로 <b>별도 Agent 서버</b> <code>/v3/safeu/agent/.../stream</code> 호출 → Gemini 직접. <b>토큰을 청크 단위로</b> 흘려받는다.</p>
+      <p class="path">raw fetch → m6.api agent/safeu → Gemini SDK</p>
+    </div>
+  </div>
+</section>
+
+<section id="api">
+  <h2><span class="num">1</span>일반 AI API (non-stream)</h2>
+  <p class="lead">다른 CRUD API 와 동일한 패턴. request → 완성 응답 (request-response).</p>
+  <table>
+    <tr><th>항목</th><th>내용</th></tr>
+    <tr><td>호출 방식</td><td>표준 <code>ApiDefinition</code> (axios) — CRUD API 와 동일</td></tr>
+    <tr><td>백엔드</td><td><code>AiSafeUService</code> → <code>axios.post</code> 외부 AI 서버 프록시</td></tr>
+    <tr><td>모델</td><td><code>gpt-4o</code> 기본 (예: <code>generateRiskAssessmentApiDef</code>)</td></tr>
+    <tr><td>응답</td><td><b>한 방에 전체 JSON</b> 리턴</td></tr>
+    <tr><td>용도</td><td>위험성평가 생성, 사진 분석, 체크리스트 생성, 회의록 요약 — <b>구조화된 큰 결과물</b></td></tr>
+    <tr><td>클라이언트</td><td><code>useQuery</code>/mutation 패턴, 로딩 스피너</td></tr>
+  </table>
+  <h3>예시 ApiDef</h3>
+  <pre><code>// packages/api/src/riskAssessment/generateRiskAssessmentApiDef.ts
+export const generateRiskAssessmentApiDef: ApiDefinition&lt;...&gt; = {
+  method: 'post',
+  url: () =&gt; '/ai/safeu/works/risk-assessment/generate',
+  config: ({ task, ... }) =&gt; ({
+    data: { task, ..., model: model || 'gpt-4o' },
+  }),
+};</code></pre>
+  <p>대상: <code>risk-assessment/generate</code>, <code>photoReport/analyzePhotos</code>, <code>meetingNote/summarize</code>, <code>checklist/generate</code> 등.</p>
+</section>
+
+<section id="stream">
+  <h2><span class="num">2</span>Gemini Streaming (SSE)</h2>
+  <p class="lead">클라가 fetch 의 ReadableStream 을 직접 소비하며 토큰이 도착하는 대로 화면에 흘린다.</p>
+  <div class="flow">
+    <span class="step">클라 raw fetch</span><span class="arrow">→</span>
+    <span class="step">m6.api /v3/safeu/agent/.../stream</span><span class="arrow">→</span>
+    <span class="step">Gemini generateContentStream()</span>
+  </div>
+  <table>
+    <tr><th>항목</th><th>내용</th></tr>
+    <tr><td>호출 방식</td><td><code>ApiDefinition</code> 안 씀. raw <code>fetch</code> + <code>ReadableStream</code> 직접 소비 (<code>async function*</code>)</td></tr>
+    <tr><td>백엔드</td><td><code>@google/generative-ai</code> SDK → <code>model.generateContentStream()</code></td></tr>
+    <tr><td>모델</td><td><code>gemini-2.5-flash</code> (<code>WRITER_MODEL</code>), <code>thinkingBudget: 0</code></td></tr>
+    <tr><td>응답</td><td><b>SSE 청크 스트림</b> — <code>event: chunk</code> / <code>done</code> / <code>error</code></td></tr>
+    <tr><td>용도</td><td>AI 작성 보조(조치내용 한 문장) — 온열점검, 회의록, 위험체크리스트</td></tr>
+    <tr><td>클라이언트</td><td>커스텀 hook + 타자기 효과 UI</td></tr>
+  </table>
+  <h3>SSE 이벤트 포맷</h3>
+  <pre><code>event: chunk  data: { text: &lt;delta&gt; }   ← 토큰 단위 도착
+event: done   data: { full: &lt;final&gt; }
+event: error  data: { message }</code></pre>
+  <h3>백엔드 (NestJS 컨트롤러)</h3>
+  <pre><code>// heat-check-action-writer.controller.ts
+res.setHeader('Content-Type', 'text/event-stream');
+res.setHeader('Cache-Control', 'no-cache, no-transform');
+res.setHeader('X-Accel-Buffering', 'no');   // nginx 버퍼링 차단
+// 15초마다 ': heartbeat' 전송으로 연결 유지
+
+for await (const chunk of this.service.stream(body)) {
+  send('chunk', { text: chunk.text });
+}</code></pre>
+</section>
+
+<section id="compare">
+  <h2><span class="num">3</span>핵심 차이 비교</h2>
+  <table>
+    <tr><th>축</th><th>① 일반 AI API</th><th>② Gemini Streaming</th></tr>
+    <tr><td>프로토콜</td><td>request → 완성 응답</td><td>SSE 점진적 청크</td></tr>
+    <tr><td>transport</td><td>axios (<code>ApiDefinition</code>)</td><td>raw <code>fetch</code> + ReadableStream</td></tr>
+    <tr><td>백엔드 위치</td><td><code>services/ai</code> (외부 프록시)</td><td><code>agent/safeu</code> (Gemini 직접)</td></tr>
+    <tr><td>모델</td><td>gpt-4o 등</td><td>gemini-2.5-flash</td></tr>
+    <tr><td>취소</td><td>불가/제한</td><td><code>AbortController</code> 즉시 중단</td></tr>
+    <tr><td>UX</td><td>스피너 후 한 번에 표시</td><td>글자 흘러나옴 (타자기)</td></tr>
+    <tr><td>base URL</td><td><code>NEXT_PUBLIC_SAFE_U_SERVER_URL</code></td><td><code>NEXT_PUBLIC_AGENT_API</code> (별도)</td></tr>
+  </table>
+</section>
+
+<section id="why">
+  <h2><span class="num">4</span>왜 나눴나</h2>
+  <div class="card">
+    <p>📦 <b>큰 구조화 결과물</b>(위험성평가 표, 사진분석) → 부분 표시 의미 없음 → <b>non-stream</b></p>
+  </div>
+  <div class="card">
+    <p>✍️ <b>짧은 자연어 작성</b>(조치내용 1문장) → 즉각 반응성 중요 → <b>streaming + 타자기 효과</b></p>
+  </div>
+  <div class="card">
+    <p>🏗️ Agent 경로는 <b>별도 서버</b>(포트 6600 / <code>NEXT_PUBLIC_AGENT_API</code>)로 분리 — m6.api 의 일반 AI 프록시와 인프라 자체가 다르다.</p>
+  </div>
+</section>
+
+<section id="typewriter">
+  <h2><span class="num">5</span>타자기 효과 트릭</h2>
+  <div class="note">
+    <b>문제</b> — Gemini 가 큰 청크 단위로 텍스트를 보내서 그대로 textarea 에 붙이면 <b>"복붙"처럼</b> 보인다.
+  </div>
+  <p>해결: 클라가 서버 청크를 <code>target</code> 버퍼에 누적하고, <b>별도 ticker</b> 가 한 글자씩 <code>displayed</code> 로 옮겨 textarea 에 흘려보낸다.</p>
+  <pre><code>// useHeatCheckActionAiWriter.ts (L123-175)
+let target = '';      // 서버 청크 누적
+let displayed = '';   // 화면에 흘린 글자
+const TYPE_INTERVAL_MS = 22;   // 평균 글자 간격
+const PUNCT_PAUSE_MS = 70;     // 문장부호 직후 짧은 휴지
+
+const tick = () =&gt; {
+  if (displayed.length &lt; target.length) {
+    const nextChar = target.charAt(displayed.length);
+    displayed = target.slice(0, displayed.length + 1);
+    onChange(displayed);
+    const delay = /[\.,。·!?]/.test(nextChar) ? PUNCT_PAUSE_MS : TYPE_INTERVAL_MS;
+    typewriter = setTimeout(tick, delay);
+  } else if (serverDone) {
+    finishWith(target);   // 다 흘리고 종료
+  } else {
+    typewriter = setTimeout(tick, WAIT_FOR_CHUNK_MS); // 다음 청크 대기
+  }
+};</code></pre>
+</section>
+
+<section id="files">
+  <h2><span class="num">6</span>파일 레퍼런스</h2>
+  <h3>① 일반 AI API</h3>
+  <table>
+    <tr><th>레이어</th><th>경로</th></tr>
+    <tr><td>ApiDef</td><td><code>packages/api/src/riskAssessment/generateRiskAssessmentApiDef.ts</code></td></tr>
+    <tr><td>백엔드</td><td><code>m6.api/src/m6/services/ai/ai.safeu.service.ts</code></td></tr>
+  </table>
+  <h3>② Gemini Streaming</h3>
+  <table>
+    <tr><th>레이어</th><th>경로</th></tr>
+    <tr><td>클라 API</td><td><code>apps/works/src/heat-check/prevention/apis/streamHeatCheckActionWriter.ts</code></td></tr>
+    <tr><td>클라 hook</td><td><code>apps/works/src/heat-check/prevention/hooks/useHeatCheckActionAiWriter.ts</code></td></tr>
+    <tr><td>공용 UI</td><td><code>apps/works/src/shared/components/ai-writer/AiActionWriter.tsx</code></td></tr>
+    <tr><td>백엔드 컨트롤러</td><td><code>m6.api/src/m6/agent/safeu/heat-check-action-writer.controller.ts</code></td></tr>
+    <tr><td>백엔드 서비스</td><td><code>m6.api/src/m6/agent/safeu/heat-check-action-writer.service.ts</code></td></tr>
+    <tr><td>모델 상수</td><td><code>m6.api/src/m6/agent/safeu/agent.constants.ts</code></td></tr>
+  </table>
+  <div class="note" style="background:rgba(59,130,246,0.1);border-left-color:var(--primary);">
+    같은 streaming 패턴이 <b>회의록</b>(<code>meeting-note-action-writer</code>), <b>위험체크리스트</b>(<code>risk-checklist-action-writer</code>), <b>온열건강</b>(<code>heat-health-action-writer</code>)에도 동일 적용됨.
+  </div>
+</section>
+
+</main>
+
+<script>
+const items = document.querySelectorAll('.sidebar-item');
+const sections = document.querySelectorAll('section');
+items.forEach(it => it.addEventListener('click', () => {
+  document.getElementById(it.dataset.target).scrollIntoView({behavior:'smooth'});
+  document.querySelector('.sidebar').classList.remove('open');
+}));
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      items.forEach(i => i.classList.toggle('active', i.dataset.target === e.target.id));
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pierre — Rendering Diffs 결정 지점 트레이닝</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-400: #9ca3af;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+        body { background: #f3f4f6; color: var(--gray-800); line-height: 1.7; }
+        .container { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+        header { border-bottom: 1px solid var(--gray-200); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+        h1 { font-size: 1.85rem; font-weight: 800; color: var(--gray-900); line-height: 1.3; margin-bottom: 0.5rem; }
+        .subtitle { color: var(--gray-600); font-size: 0.95rem; }
+        .source { display: inline-block; margin-top: 0.75rem; padding: 0.35rem 0.7rem; background: var(--gray-100); color: var(--gray-700); font-size: 0.8rem; border-radius: 4px; text-decoration: none; }
+        .source:hover { background: var(--gray-200); }
+        .tldr { background: #fffbeb; border-left: 4px solid var(--accent); padding: 1rem 1.25rem; margin-bottom: 2rem; border-radius: 4px; }
+        .tldr-label { font-size: 0.75rem; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        .tldr p { color: var(--gray-800); }
+        h2 { font-size: 1.3rem; font-weight: 700; color: var(--gray-900); margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary); }
+        h3 { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); margin: 1.5rem 0 0.5rem; }
+        p { margin-bottom: 0.85rem; color: var(--gray-700); }
+        ul { padding-left: 1.25rem; margin-bottom: 0.85rem; }
+        li { margin-bottom: 0.4rem; color: var(--gray-700); }
+        code { background: var(--gray-100); padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.9em; font-family: 'SF Mono', Monaco, monospace; color: var(--gray-900); }
+        .decision { background: white; border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .decision-header { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 1rem; }
+        .decision-num { font-size: 0.75rem; font-weight: 700; color: white; background: var(--primary); padding: 0.2rem 0.55rem; border-radius: 99px; letter-spacing: 0.05em; }
+        .decision-title { font-size: 1.1rem; font-weight: 700; color: var(--gray-900); }
+        .vs { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.75rem; align-items: stretch; margin-bottom: 1rem; }
+        .vs-box { background: var(--gray-50); padding: 0.85rem; border-radius: 6px; border: 1px solid var(--gray-200); }
+        .vs-box.chosen { background: #ecfdf5; border-color: var(--success); }
+        .vs-box.skipped { background: #fef2f2; border-color: var(--danger); opacity: 0.85; }
+        .vs-arrow { display: flex; align-items: center; color: var(--gray-400); font-size: 1.25rem; font-weight: 700; }
+        .vs-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.3rem; }
+        .chosen .vs-label { color: var(--success); }
+        .skipped .vs-label { color: var(--danger); }
+        .vs-text { font-size: 0.92rem; color: var(--gray-800); }
+        .why { font-size: 0.92rem; color: var(--gray-700); padding: 0.75rem 1rem; background: var(--gray-50); border-radius: 6px; margin-bottom: 1rem; }
+        .why strong { color: var(--gray-900); }
+        .question { background: #eff6ff; border-left: 3px solid var(--primary); padding: 0.85rem 1.1rem; border-radius: 4px; margin-top: 1rem; }
+        .question-label { font-size: 0.7rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+        .question p { color: var(--gray-800); margin-bottom: 0.3rem; }
+        .answer-slot { display: block; margin-top: 0.6rem; padding: 0.6rem 0.85rem; background: white; border: 1px dashed var(--gray-400); border-radius: 4px; font-size: 0.85rem; color: var(--gray-400); font-style: italic; }
+        .meta-section { margin-top: 3rem; padding: 1.25rem; background: var(--gray-100); border-radius: 8px; }
+        .meta-section h2 { border-bottom: none; padding-bottom: 0; margin-top: 0; font-size: 1.1rem; }
+        .missing { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.6rem; }
+        .missing-icon { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+        footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-200); text-align: center; color: var(--gray-400); font-size: 0.8rem; }
+        @media (max-width: 600px) {
+            .vs { grid-template-columns: 1fr; }
+            .vs-arrow { display: none; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Rendering Diffs — 결정 지점 트레이닝</h1>
+            <p class="subtitle">Pierre Computer 의 큰 diff 렌더링 엔지니어링</p>
+            <a class="source" href="https://pierre.computer/writing/on-rendering-diffs" target="_blank" rel="noopener">원문 ↗</a>
+        </header>
+
+        <div class="tldr">
+            <div class="tldr-label">한 줄</div>
+            <p>큰 diff 를 부드럽게 보여주려고 *기존 가상화 도구 안 쓰고* 자체 inverse sticky + DOM pool + worker syntax highlight 조합으로 풀어냄. Linux v6→v7 diff 메모리 2.4GB → 1.15GB.</p>
+        </div>
+
+        <h2>저자의 결정 4가지</h2>
+        <p>이 글의 가치는 "절감 수치" 가 아니라 <strong>왜 그 선택을 했는가</strong> 에 있음. 각 결정마다 본인 답 채우면서 읽기.</p>
+
+        <article class="decision">
+            <div class="decision-header">
+                <span class="decision-num">결정 1</span>
+                <span class="decision-title">가상화 라이브러리 vs 자체 구현</span>
+            </div>
+            <div class="vs">
+                <div class="vs-box skipped">
+                    <div class="vs-label">버려진 선택</div>
+                    <div class="vs-text">react-virtualized · TanStack Virtual 같은 기존 가상화</div>
+                </div>
+                <div class="vs-arrow">→</div>
+                <div class="vs-box chosen">
+                    <div class="vs-label">고른 선택</div>
+                    <div class="vs-text">Inverse sticky 자체 개발</div>
+                </div>
+            </div>
+            <div class="why">
+                <strong>저자 논리</strong>: 기존 가상화는 가변 높이 라인·hunk 단위 점프·구문 강조 비동기에 *적합하지 않음*. 첫 패스에서 추정값으로 깔고, 보이는 영역만 정확히 측정해 보정.
+            </div>
+            <div class="question">
+                <div class="question-label">스스로 답</div>
+                <p>같은 문제 받으면 본인은 어떤 도구부터 검색함? 자체 구현 결정 = 어떤 조건에서 정당화됨?</p>
+                <span class="answer-slot">여기에 본인 답 채우기</span>
+            </div>
+        </article>
+
+        <article class="decision">
+            <div class="decision-header">
+                <span class="decision-num">결정 2</span>
+                <span class="decision-title">syntax highlight 위치 — 메인 vs worker</span>
+            </div>
+            <div class="vs">
+                <div class="vs-box skipped">
+                    <div class="vs-label">버려진 선택</div>
+                    <div class="vs-text">메인 스레드에서 실시간 highlight</div>
+                </div>
+                <div class="vs-arrow">→</div>
+                <div class="vs-box chosen">
+                    <div class="vs-label">고른 선택</div>
+                    <div class="vs-text">worker pool 로 지연 처리</div>
+                </div>
+            </div>
+            <div class="why">
+                <strong>저자 논리</strong>: highlight 는 CPU heavy. 메인 막으면 스크롤 끊김. worker 로 빼면 *직렬화 비용* 새로 생기지만 인터랙션 부드러움 우선.
+            </div>
+            <div class="question">
+                <div class="question-label">스스로 답</div>
+                <p>현재 본인 프로젝트에서 *메인 스레드 점유율 높은* 작업 1개 고르면? 그게 worker 로 빠질 수 있음? 못 빠진다면 왜?</p>
+                <span class="answer-slot">여기에 본인 답 채우기</span>
+            </div>
+        </article>
+
+        <article class="decision">
+            <div class="decision-header">
+                <span class="decision-num">결정 3</span>
+                <span class="decision-title">원본 데이터 vs 파싱 결과 — 같이 보유 vs 분리</span>
+            </div>
+            <div class="vs">
+                <div class="vs-box skipped">
+                    <div class="vs-label">버려진 선택</div>
+                    <div class="vs-text">원본 patch 문자열 계속 보유 (재파싱 가능)</div>
+                </div>
+                <div class="vs-arrow">→</div>
+                <div class="vs-box chosen">
+                    <div class="vs-label">고른 선택</div>
+                    <div class="vs-text">파싱 후 원본 참조 끊고 GC 허용</div>
+                </div>
+            </div>
+            <div class="why">
+                <strong>저자 논리</strong>: 메모리 절감 = 2.4GB → 1.15GB 핵심 원인. 재파싱 비용 ↔ 메모리 trade off 에서 후자 선택.
+            </div>
+            <div class="question">
+                <div class="question-label">스스로 답</div>
+                <p>2.4GB → 1.15GB. *어떤 도구* 의 어떤 페이지면 이 수치가 의미 있음? 본인 프로젝트에 1GB 쓰는 페이지 등장하면 어떻게 평가됨?</p>
+                <span class="answer-slot">여기에 본인 답 채우기</span>
+            </div>
+        </article>
+
+        <article class="decision">
+            <div class="decision-header">
+                <span class="decision-num">결정 4</span>
+                <span class="decision-title">DOM 노드 — 매번 생성 vs pool 재사용</span>
+            </div>
+            <div class="vs">
+                <div class="vs-box skipped">
+                    <div class="vs-label">버려진 선택</div>
+                    <div class="vs-text">파일/diff 컨테이너 매번 새로 만들기</div>
+                </div>
+                <div class="vs-arrow">→</div>
+                <div class="vs-box chosen">
+                    <div class="vs-label">고른 선택</div>
+                    <div class="vs-text">DOM 풀링 — 재사용</div>
+                </div>
+            </div>
+            <div class="why">
+                <strong>저자 논리</strong>: 스크롤 시 DOM 할당/해제 = 메인 막힘. pool 두면 할당 비용 0.
+            </div>
+            <div class="question">
+                <div class="question-label">스스로 답</div>
+                <p>DOM pool = React 의 *재조정(reconciliation)* 과 어떻게 충돌함? 라이브러리 vs 수동 pool 어디서 갈라짐?</p>
+                <span class="answer-slot">여기에 본인 답 채우기</span>
+            </div>
+        </article>
+
+        <h2>이 글이 일부러 안 말한 것</h2>
+        <p>시니어 사고 = <strong>없는 정보 찾기</strong>. 저자가 자랑 안 한 것들.</p>
+        <div class="meta-section">
+            <div class="missing"><span class="missing-icon">!</span><div>이 시스템 개발에 <strong>몇 명·몇 주</strong> 들었는지 — 비용·ROI 빠짐</div></div>
+            <div class="missing"><span class="missing-icon">!</span><div>유지보수 부담 — 자체 sticky 로직은 *팀 누군가 책임* 져야 함</div></div>
+            <div class="missing"><span class="missing-icon">!</span><div>GitHub PR view 대비 <strong>실제 사용자 체감 속도</strong> 비교 데이터 X</div></div>
+            <div class="missing"><span class="missing-icon">!</span><div>Safari 성능 문제 인정만 하고 *우회 방법* X (WebKit 탓)</div></div>
+            <div class="missing"><span class="missing-icon">!</span><div>"코드 리뷰 도구" 가 정말 <strong>1GB 메모리</strong> 써도 되는 영역인지 — 일반 웹앱 기준 안 잡음</div></div>
+        </div>
+
+        <h2>본인 일에 옮길 점</h2>
+        <p>이 글의 5가지 기법은 *대규모 데이터 + 부드러운 UI* 가 필요한 곳에 일반화 가능.</p>
+        <ul>
+            <li>긴 리스트 (수백 행 리포트, 점검 로그, 검색 결과)</li>
+            <li>대용량 PDF · 보고서 프리뷰</li>
+            <li>실시간 차트 + 표 혼합 화면</li>
+            <li>모바일 무한 스크롤 + 무거운 셀</li>
+        </ul>
+        <p>고를 때 기준: <strong>"내가 이 코드 1년 뒤에도 손볼 수 있는가"</strong>. 자체 구현 = 멋있지만 부담 큼.</p>
+
+        <footer>
+            <p>읽고 → 답 채우고 → 본인 일에 옮기기. 수치 외우기 X.</p>
+        </footer>
+    </div>
+</body>
+</html>

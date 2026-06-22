@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB 기본 개념 — 쉬운코드 BJ.34</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-400: #9ca3af;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+        body { background: #f3f4f6; color: var(--gray-800); line-height: 1.7; }
+        .container { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+        header { border-bottom: 1px solid var(--gray-200); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+        h1 { font-size: 1.85rem; font-weight: 800; color: var(--gray-900); line-height: 1.3; margin-bottom: 0.5rem; }
+        .subtitle { color: var(--gray-600); font-size: 0.95rem; }
+        .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .meta-chip { padding: 0.3rem 0.65rem; background: var(--gray-100); color: var(--gray-700); font-size: 0.78rem; border-radius: 99px; }
+        .source { display: inline-block; margin-top: 0.75rem; padding: 0.35rem 0.7rem; background: var(--gray-100); color: var(--gray-700); font-size: 0.8rem; border-radius: 4px; text-decoration: none; }
+        .source:hover { background: var(--gray-200); }
+        .warn { background: #fef2f2; border-left: 4px solid var(--danger); padding: 1rem 1.25rem; margin-bottom: 2rem; border-radius: 4px; }
+        .warn-label { font-size: 0.75rem; font-weight: 700; color: var(--danger); letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        .tldr { background: #fffbeb; border-left: 4px solid var(--accent); padding: 1rem 1.25rem; margin-bottom: 2rem; border-radius: 4px; }
+        .tldr-label { font-size: 0.75rem; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.3rem; font-weight: 700; color: var(--gray-900); margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary); }
+        h3 { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); margin: 1.5rem 0 0.5rem; }
+        p { margin-bottom: 0.85rem; color: var(--gray-700); }
+        ul { padding-left: 1.25rem; margin-bottom: 0.85rem; }
+        li { margin-bottom: 0.4rem; color: var(--gray-700); }
+        code { background: var(--gray-100); padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.9em; font-family: 'SF Mono', Monaco, monospace; color: var(--gray-900); }
+        .concept { background: white; border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .concept-header { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.75rem; }
+        .concept-num { font-size: 0.75rem; font-weight: 700; color: white; background: var(--primary); padding: 0.2rem 0.55rem; border-radius: 99px; }
+        .concept-title { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); }
+        .meta-box { background: var(--gray-50); padding: 0.7rem 0.9rem; border-radius: 6px; margin-top: 0.75rem; font-size: 0.9rem; }
+        .meta-box strong { color: var(--gray-900); }
+        .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem; }
+        .vs-cell { padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.88rem; }
+        .vs-a { background: #fef2f2; color: var(--gray-800); }
+        .vs-b { background: #ecfdf5; color: var(--gray-800); }
+        .vs-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+        .vs-a .vs-label { color: var(--danger); }
+        .vs-b .vs-label { color: var(--success); }
+        .question { background: #eff6ff; border-left: 3px solid var(--primary); padding: 0.85rem 1.1rem; border-radius: 4px; margin-top: 1rem; }
+        .question-label { font-size: 0.7rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+        .answer-slot { display: block; margin-top: 0.6rem; padding: 0.6rem 0.85rem; background: white; border: 1px dashed var(--gray-400); border-radius: 4px; font-size: 0.85rem; color: var(--gray-400); font-style: italic; }
+        footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-200); text-align: center; color: var(--gray-400); font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DB 기본 개념 정리 — BJ.34</h1>
+            <p class="subtitle">백엔드 개발자가 알아야 할 데이터베이스 기초</p>
+            <div class="meta">
+                <span class="meta-chip">채널: 쉬운코드</span>
+                <span class="meta-chip">2022-05-20</span>
+                <span class="meta-chip">조회 83,387</span>
+                <span class="meta-chip">약 20분</span>
+            </div>
+            <a class="source" href="https://youtu.be/aL0XXc1yGPs" target="_blank" rel="noopener">원본 영상 ↗</a>
+        </header>
+
+        <div class="warn">
+            <div class="warn-label">출처 한계</div>
+            <p>이 문서는 영상 <strong>제목·주제 골격</strong> + DB 기초 일반 지식으로 재구성. 영상 음성·자막 직접 fetch 불가. 정호가 본 후 *발표자 강조 포인트* 보강 필요.</p>
+        </div>
+
+        <div class="tldr">
+            <div class="tldr-label">한 줄</div>
+            <p>"DB" 라고 부르는 단어 하나에 사실 <strong>3개의 다른 것</strong> 이 섞여 있다 — Database / DBMS / Database System. 이걸 구분 못 하면 깊이 들어갈수록 헷갈림.</p>
+        </div>
+
+        <h2>강의가 다루는 5개 개념</h2>
+
+        <article class="concept">
+            <div class="concept-header">
+                <span class="concept-num">개념 1</span>
+                <span class="concept-title">Database / DBMS / Database System</span>
+            </div>
+            <p>제일 먼저 깨야 할 혼동. 일상에서 "DB" 라고 뭉뚱그려 부르지만 셋이 다름.</p>
+            <ul>
+                <li><strong>Database</strong> = 데이터 모음 자체 (파일·테이블 집합)</li>
+                <li><strong>DBMS</strong> = 그 데이터를 관리하는 소프트웨어 (MySQL·Postgres·Mongo)</li>
+                <li><strong>Database System</strong> = Database + DBMS + 응용 + 사용자 전체 시스템</li>
+            </ul>
+            <div class="meta-box"><strong>왜 중요</strong>: "MySQL 이 느려" 라고 하면 *DBMS 문제* 임. "DB 가 커서 느려" 면 *Database 자체* 문제. 원인 진단할 때 어휘 맞아야 함.</div>
+        </article>
+
+        <article class="concept">
+            <div class="concept-header">
+                <span class="concept-num">개념 2</span>
+                <span class="concept-title">데이터 모델 (Data Models)</span>
+            </div>
+            <p>현실 세계를 데이터로 표현하는 *방식*. 같은 정보를 어떻게 구조화하느냐.</p>
+            <ul>
+                <li><strong>관계형 모델</strong> — 표(테이블)와 관계 (RDBMS)</li>
+                <li><strong>문서 모델</strong> — JSON 같은 문서 (MongoDB)</li>
+                <li><strong>키-값 모델</strong> — 키 1개로 값 조회 (Redis)</li>
+                <li><strong>그래프 모델</strong> — 노드·엣지 (Neo4j)</li>
+            </ul>
+            <div class="meta-box"><strong>핵심</strong>: 모델 선택 = 어떤 *질문에 빨라야 하는가* 결정. "이 사용자의 친구의 친구" → 그래프. "이 ID 의 데이터" → 키-값.</div>
+        </article>
+
+        <article class="concept">
+            <div class="concept-header">
+                <span class="concept-num">개념 3</span>
+                <span class="concept-title">스키마(Schema) vs 상태(State)</span>
+            </div>
+            <p>같은 DB 의 *틀* 과 *내용* 을 분리.</p>
+            <div class="vs">
+                <div class="vs-cell vs-a">
+                    <div class="vs-label">스키마 (Schema)</div>
+                    <div>테이블 정의·컬럼·타입·제약. 거의 안 바뀜.</div>
+                </div>
+                <div class="vs-cell vs-b">
+                    <div class="vs-label">상태 (State)</div>
+                    <div>지금 들어있는 실제 데이터 (행). 매 순간 바뀜.</div>
+                </div>
+            </div>
+            <div class="meta-box"><strong>실무 연결</strong>: 마이그레이션 = *스키마* 변경. INSERT/UPDATE = *상태* 변경. 두 개 다른 작업이라 운영 부담도 다름.</div>
+        </article>
+
+        <article class="concept">
+            <div class="concept-header">
+                <span class="concept-num">개념 4</span>
+                <span class="concept-title">3계층 아키텍처 (Three-schema Architecture)</span>
+            </div>
+            <p>"DB 변경했더니 앱이 다 깨짐" 막으려고 *추상화* 를 3층으로 쪼갠 설계.</p>
+            <ul>
+                <li><strong>외부 스키마 (External)</strong> — 사용자·앱이 보는 뷰. 같은 DB 라도 사용자마다 다르게 보임</li>
+                <li><strong>개념 스키마 (Conceptual)</strong> — 전체 논리 구조. 진짜 테이블·관계 정의</li>
+                <li><strong>내부 스키마 (Internal)</strong> — 디스크 저장 방식. 인덱스·파일 구조</li>
+            </ul>
+            <div class="meta-box"><strong>왜 중요</strong>: 내부(인덱스 변경) 바꿔도 개념(테이블) 안 바뀌고, 개념 바뀌어도 외부(뷰) 안 바뀌게 → *변경 격리*. 이게 좋은 시스템 설계의 핵심 패턴.</div>
+        </article>
+
+        <article class="concept">
+            <div class="concept-header">
+                <span class="concept-num">개념 5</span>
+                <span class="concept-title">DB 언어 — DDL / DML</span>
+            </div>
+            <p>DBMS 한테 명령 보내는 언어 종류. 역할로 나뉨.</p>
+            <div class="vs">
+                <div class="vs-cell vs-a">
+                    <div class="vs-label">DDL (Data Definition)</div>
+                    <div><code>CREATE TABLE</code>·<code>ALTER</code>·<code>DROP</code>. 스키마 다룸.</div>
+                </div>
+                <div class="vs-cell vs-b">
+                    <div class="vs-label">DML (Data Manipulation)</div>
+                    <div><code>SELECT</code>·<code>INSERT</code>·<code>UPDATE</code>·<code>DELETE</code>. 상태 다룸.</div>
+                </div>
+            </div>
+            <div class="meta-box"><strong>실무 팁</strong>: DDL = 보통 운영자/시니어. DML = 개발자 매일. DDL 실수 = 데이터 손실 위험 ↑ (그래서 마이그레이션 도구 따로).</div>
+        </article>
+
+        <h2>스스로 답 — WHY 5단계</h2>
+        <p>학습 스타일 따라 본인 답 채우기. 빈칸 = 학습 포인트.</p>
+
+        <div class="question">
+            <div class="question-label">Q1</div>
+            <p>본인 회사 프로젝트에서 쓰는 DB 한 가지 골라봐. 그건 어떤 *데이터 모델*? 왜 그 모델 골랐을까 (다른 모델 비교)?</p>
+            <span class="answer-slot">여기 답 채우기</span>
+        </div>
+        <div class="question">
+            <div class="question-label">Q2</div>
+            <p>스키마 vs 상태 — 본인이 작업한 PR 중 *스키마* 바꾼 거 / *상태* 바꾼 거 1개씩 떠올림. 어느 쪽이 더 위험했음?</p>
+            <span class="answer-slot">여기 답 채우기</span>
+        </div>
+        <div class="question">
+            <div class="question-label">Q3</div>
+            <p>3계층 아키텍처 = *변경 격리*. 본인 FE 코드에서 비슷한 패턴 (컴포넌트 ↔ 훅 ↔ API) 있음? 그게 왜 좋음?</p>
+            <span class="answer-slot">여기 답 채우기</span>
+        </div>
+        <div class="question">
+            <div class="question-label">Q4</div>
+            <p>DDL = 운영자 영역. 본인이 마이그레이션 직접 짠 적 있음? 다른 사람이 짠 거 본 적은? 차이?</p>
+            <span class="answer-slot">여기 답 채우기</span>
+        </div>
+        <div class="question">
+            <div class="question-label">Q5</div>
+            <p>이 영상 전체에서 *가장 헷갈렸던* 부분 1개. 헷갈리는 이유 적기. → 다음 영상 (BJ.35~) 의 학습 우선순위.</p>
+            <span class="answer-slot">여기 답 채우기</span>
+        </div>
+
+        <h2>다음 학습 권장</h2>
+        <ul>
+            <li>쉬운코드 BJ 시리즈 다음 강의 (35~) — 같은 호흡으로 진행</li>
+            <li>실무 연결: 본인 회사 프로젝트의 *스키마 파일 1개* 열어보고 위 개념 매칭</li>
+            <li>책 추천: <strong>Real MySQL 8.0</strong> (영상에서 태그) — 영상이 *왜* 알려줬다면 책은 *어떻게*</li>
+        </ul>
+
+        <footer>
+            <p>영상 = 개념. 책 + 실제 코드 = 적용. 둘 다 해야 시니어.</p>
+        </footer>
+    </div>
+</body>
+</html>

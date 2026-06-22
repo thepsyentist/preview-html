@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB 기본 개념 퀴즈 — 쉬운코드 BJ.34</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-400: #9ca3af;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+        body { background: #f3f4f6; color: var(--gray-800); line-height: 1.7; min-height: 100vh; }
+        .container { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+        header { border-bottom: 1px solid var(--gray-200); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+        h1 { font-size: 1.6rem; font-weight: 800; color: var(--gray-900); line-height: 1.3; margin-bottom: 0.4rem; }
+        .subtitle { color: var(--gray-600); font-size: 0.92rem; }
+        .meta { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
+        .meta-chip { padding: 0.25rem 0.6rem; background: var(--gray-100); color: var(--gray-700); font-size: 0.75rem; border-radius: 99px; }
+
+        .progress-wrap { background: var(--gray-100); border-radius: 99px; height: 8px; margin-bottom: 1.5rem; overflow: hidden; }
+        .progress-bar { background: var(--primary); height: 100%; width: 0%; transition: width 0.3s; }
+        .progress-text { text-align: right; font-size: 0.8rem; color: var(--gray-600); margin-top: 0.4rem; }
+
+        .quiz-card { background: white; border-radius: 12px; padding: 1.75rem; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--gray-200); }
+        .q-num { display: inline-block; padding: 0.25rem 0.7rem; background: var(--primary); color: white; font-size: 0.78rem; font-weight: 700; border-radius: 99px; margin-bottom: 0.8rem; letter-spacing: 0.04em; }
+        .q-text { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); margin-bottom: 1.2rem; line-height: 1.5; }
+        .q-text code { background: var(--gray-100); padding: 0.1rem 0.35rem; border-radius: 3px; font-size: 0.9em; font-family: 'SF Mono', Monaco, monospace; }
+
+        .options { display: flex; flex-direction: column; gap: 0.6rem; }
+        .option { display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.85rem 1rem; border: 2px solid var(--gray-200); border-radius: 8px; cursor: pointer; transition: all 0.15s; background: white; }
+        .option:hover:not(.disabled) { border-color: var(--primary); background: #eff6ff; }
+        .option.disabled { cursor: not-allowed; opacity: 0.7; }
+        .option.selected { border-color: var(--primary); background: #eff6ff; }
+        .option.correct { border-color: var(--success); background: #ecfdf5; }
+        .option.incorrect { border-color: var(--danger); background: #fef2f2; }
+        .opt-marker { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--gray-400); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; color: var(--gray-600); }
+        .option.correct .opt-marker { border-color: var(--success); background: var(--success); color: white; }
+        .option.incorrect .opt-marker { border-color: var(--danger); background: var(--danger); color: white; }
+        .option.selected:not(.correct):not(.incorrect) .opt-marker { border-color: var(--primary); background: var(--primary); color: white; }
+        .opt-text { flex: 1; color: var(--gray-800); font-size: 0.95rem; }
+
+        .feedback { display: none; margin-top: 1rem; padding: 0.9rem 1.1rem; border-radius: 8px; font-size: 0.92rem; line-height: 1.6; }
+        .feedback.show { display: block; }
+        .feedback.correct { background: #ecfdf5; border-left: 4px solid var(--success); color: var(--gray-800); }
+        .feedback.incorrect { background: #fef2f2; border-left: 4px solid var(--danger); color: var(--gray-800); }
+        .feedback-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+        .feedback.correct .feedback-label { color: var(--success); }
+        .feedback.incorrect .feedback-label { color: var(--danger); }
+        .feedback strong { color: var(--gray-900); }
+
+        .result-card { display: none; background: white; border-radius: 12px; padding: 2rem; margin-top: 2rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--gray-200); }
+        .result-card.show { display: block; }
+        .result-score { font-size: 3rem; font-weight: 800; color: var(--primary); margin: 0.5rem 0; }
+        .result-grade { font-size: 1.1rem; color: var(--gray-700); margin-bottom: 1rem; }
+        .result-msg { color: var(--gray-600); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6; }
+        .btn { display: inline-block; padding: 0.7rem 1.4rem; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+        .btn:hover { background: var(--primary-dark); }
+        .btn.secondary { background: var(--gray-100); color: var(--gray-700); margin-left: 0.5rem; }
+        .btn.secondary:hover { background: var(--gray-200); }
+
+        footer { margin-top: 2rem; text-align: center; color: var(--gray-400); font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DB 기본 개념 퀴즈</h1>
+            <p class="subtitle">쉬운코드 BJ.34 — 8문제 인터랙티브 학습</p>
+            <div class="meta">
+                <span class="meta-chip">난이도: 입문~중급</span>
+                <span class="meta-chip">소요: 5~10분</span>
+                <span class="meta-chip">즉시 채점</span>
+            </div>
+        </header>
+
+        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="progress-text" id="progressText">0 / 8 완료</div>
+
+        <div id="quizContainer"></div>
+
+        <div class="result-card" id="resultCard">
+            <div style="font-size: 0.85rem; color: var(--gray-600); letter-spacing: 0.05em;">최종 점수</div>
+            <div class="result-score" id="resultScore">0 / 8</div>
+            <div class="result-grade" id="resultGrade"></div>
+            <div class="result-msg" id="resultMsg"></div>
+            <button class="btn" onclick="location.reload()">다시 풀기</button>
+            <a class="btn secondary" href="https://youtu.be/aL0XXc1yGPs" target="_blank" rel="noopener">영상 다시 보기</a>
+        </div>
+
+        <footer>
+            <p>스크롤하면서 한 문제씩 풀기. 답 선택 시 즉시 해설.</p>
+        </footer>
+    </div>
+
+    <script>
+        const quiz = [
+            {
+                q: "일상에서 \"DB\" 라고 부르지만 사실 3가지 개념이 섞여 있다. 다음 중 <strong>실제 데이터를 관리하는 소프트웨어</strong> 를 가리키는 용어는?",
+                options: [
+                    "Database",
+                    "DBMS",
+                    "Database System",
+                    "Data Warehouse"
+                ],
+                answer: 1,
+                explain: "<strong>DBMS</strong> (Database Management System) = MySQL·Postgres·MongoDB 같은 *관리 소프트웨어*. <br>Database = 데이터 자체. Database System = Database + DBMS + 응용 + 사용자 전체."
+            },
+            {
+                q: "다음 중 같은 정보를 <strong>그래프 모델</strong> 로 표현하기에 가장 적합한 데이터는?",
+                options: [
+                    "사용자별 주문 금액 합계",
+                    "캐시 키-값 매핑 (세션 ID → 사용자 정보)",
+                    "친구의 친구 관계 탐색 (소셜 네트워크)",
+                    "전체 결제 트랜잭션 로그 시계열"
+                ],
+                answer: 2,
+                explain: "*관계 탐색* 이 핵심인 데이터 = <strong>그래프 모델</strong> (Neo4j 등). <br>관계형은 JOIN 으로 가능하지만 *깊이 N의 관계* 가 들어가면 폭발. 그래프는 노드·엣지 따라가서 O(N)."
+            },
+            {
+                q: "다음 중 <strong>스키마(Schema)</strong> 변경에 해당하는 것은?",
+                options: [
+                    "신규 사용자 INSERT",
+                    "결제 금액 UPDATE",
+                    "users 테이블에 `phone` 컬럼 ADD",
+                    "오래된 로그 DELETE"
+                ],
+                answer: 2,
+                explain: "스키마 = *틀·구조 정의*. 컬럼·테이블 추가/변경/삭제. <br>INSERT/UPDATE/DELETE = <strong>상태(State)</strong> 변경 (데이터 자체 바꿈)."
+            },
+            {
+                q: "3계층 아키텍처에서 <strong>내부 스키마</strong>(Internal) 변경 = 인덱스 추가 같은 작업. 이때 <strong>응용 코드</strong>는 어떻게 영향 받나?",
+                options: [
+                    "모든 SELECT 문 다시 작성해야 함",
+                    "DBMS 재시작 필요 (다운타임)",
+                    "원칙적으로 영향 X (변경 격리)",
+                    "외부 스키마 자동 무효화"
+                ],
+                answer: 2,
+                explain: "3계층의 핵심 = <strong>변경 격리</strong>. <br>내부(저장·인덱스) ↔ 개념(테이블·관계) ↔ 외부(뷰·앱). 한 층 바뀌어도 다른 층은 안 건드림. 인덱스 추가 = 같은 쿼리 빨라질 뿐, 결과·구조 X."
+            },
+            {
+                q: "<code>CREATE TABLE users (...)</code> 는 어떤 언어에 속하나?",
+                options: [
+                    "DDL (Data Definition Language)",
+                    "DML (Data Manipulation Language)",
+                    "DCL (Data Control Language)",
+                    "TCL (Transaction Control Language)"
+                ],
+                answer: 0,
+                explain: "<strong>DDL</strong> = 데이터 *정의*. CREATE / ALTER / DROP. <br>DML = 데이터 *조작*. SELECT / INSERT / UPDATE / DELETE. <br>실무에서 DDL = 마이그레이션·운영자 영역 (위험), DML = 개발자 매일 (일반)."
+            },
+            {
+                q: "OX. <strong>같은 DBMS</strong>(예: MySQL) 안의 데이터베이스는 *항상 같은 스키마* 를 가진다.",
+                options: [
+                    "O — DBMS 가 같으면 스키마도 같음",
+                    "X — 같은 DBMS 안에도 여러 Database 가 있고 각자 스키마 다름"
+                ],
+                answer: 1,
+                explain: "MySQL 1개 인스턴스 안에 <code>shop_db</code>, <code>auth_db</code>, <code>log_db</code> 여러 개 만들 수 있고 각자 *완전히 다른 테이블·컬럼* 가짐. <br>DBMS = 운영 서버, Database = 그 안의 *논리 컨테이너*."
+            },
+            {
+                q: "회사에서 <strong>\"마이그레이션 작업 시 DDL 보다 DML 이 더 위험\"</strong> 이라는 의견을 들었다. 이 의견이 *틀린* 이유는?",
+                options: [
+                    "DDL 은 운영 시간만 길어서 안전함",
+                    "DML 은 트랜잭션이 보호함",
+                    "DDL 은 스키마 자체를 바꾸므로 *실수 시 복구 어려움* (데이터 손실 위험 ↑)",
+                    "DML 은 항상 ROLLBACK 가능"
+                ],
+                answer: 2,
+                explain: "<strong>DDL = 더 위험</strong>. 컬럼 DROP·테이블 삭제 = 데이터 영구 손실. <br>DML 은 트랜잭션 안에서 ROLLBACK 가능. <br>그래서 DDL = 마이그레이션 도구로 *검토·승인* 거쳐 실행. 정호 본인 PR 에 DDL 들어갈 일 거의 X."
+            },
+            {
+                q: "다음 중 <strong>외부 스키마(External)</strong> 의 대표 예시는?",
+                options: [
+                    "B-Tree 인덱스 저장 구조",
+                    "users 테이블 전체 정의",
+                    "관리자만 보는 \"VIP 사용자 명단\" 뷰",
+                    "물리 디스크 페이지 크기 설정"
+                ],
+                answer: 2,
+                explain: "외부 스키마 = *사용자·앱별로 다르게 보이는 부분*. 뷰(VIEW) 가 대표. <br>관리자 = 모든 컬럼 보임. 일반 사용자 = 일부만. 같은 데이터인데 *외부 표현* 만 다름. <br>내부(B-Tree·페이지) = 디스크 레벨. 개념(테이블) = 논리 정의."
+            }
+        ];
+
+        let answered = 0;
+        let correct = 0;
+        const container = document.getElementById('quizContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        quiz.forEach((q, qi) => {
+            const card = document.createElement('div');
+            card.className = 'quiz-card';
+            card.innerHTML = `
+                <div class="q-num">Q${qi + 1}</div>
+                <div class="q-text">${q.q}</div>
+                <div class="options" id="options-${qi}"></div>
+                <div class="feedback" id="feedback-${qi}">
+                    <div class="feedback-label"></div>
+                    <div class="feedback-body"></div>
+                </div>
+            `;
+            container.appendChild(card);
+
+            const opts = card.querySelector(`#options-${qi}`);
+            q.options.forEach((opt, oi) => {
+                const optEl = document.createElement('div');
+                optEl.className = 'option';
+                optEl.innerHTML = `
+                    <div class="opt-marker">${String.fromCharCode(65 + oi)}</div>
+                    <div class="opt-text">${opt}</div>
+                `;
+                optEl.addEventListener('click', () => selectOption(qi, oi, optEl));
+                opts.appendChild(optEl);
+            });
+        });
+
+        function selectOption(qi, oi, optEl) {
+            const allOpts = document.querySelectorAll(`#options-${qi} .option`);
+            if (Array.from(allOpts).some(o => o.classList.contains('disabled'))) return;
+
+            allOpts.forEach(o => o.classList.add('disabled'));
+            const isCorrect = oi === quiz[qi].answer;
+
+            if (isCorrect) {
+                optEl.classList.add('correct');
+                correct++;
+            } else {
+                optEl.classList.add('incorrect');
+                allOpts[quiz[qi].answer].classList.add('correct');
+            }
+
+            const fb = document.getElementById(`feedback-${qi}`);
+            fb.classList.add('show', isCorrect ? 'correct' : 'incorrect');
+            fb.querySelector('.feedback-label').textContent = isCorrect ? '정답' : '오답';
+            fb.querySelector('.feedback-body').innerHTML = quiz[qi].explain;
+
+            answered++;
+            updateProgress();
+
+            if (answered === quiz.length) {
+                setTimeout(showResult, 600);
+            } else {
+                const nextCard = container.children[qi + 1];
+                if (nextCard) {
+                    setTimeout(() => nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+                }
+            }
+        }
+
+        function updateProgress() {
+            const pct = (answered / quiz.length) * 100;
+            progressBar.style.width = pct + '%';
+            progressText.textContent = `${answered} / ${quiz.length} 완료`;
+        }
+
+        function showResult() {
+            const card = document.getElementById('resultCard');
+            card.classList.add('show');
+            document.getElementById('resultScore').textContent = `${correct} / ${quiz.length}`;
+            const pct = correct / quiz.length;
+            let grade, msg;
+            if (pct === 1) { grade = '완벽'; msg = 'DB 기본 개념 완전히 잡음. 다음 강의 (BJ.35 ER 모델) 로 진행.'; }
+            else if (pct >= 0.75) { grade = '우수'; msg = '핵심 개념 잘 잡힘. 틀린 문제 해설 다시 보고 다음 강의.'; }
+            else if (pct >= 0.5) { grade = '보통'; msg = '큰 그림은 OK. 단 디테일 부족. 영상 한 번 더 + 틀린 문제 위주 복습.'; }
+            else { grade = '복습 필요'; msg = '용어 혼동 중. 영상 다시 보고 - 특히 *DBMS vs Database vs Database System* / *DDL vs DML* / *스키마 3계층* 집중.'; }
+            document.getElementById('resultGrade').textContent = grade;
+            document.getElementById('resultMsg').innerHTML = msg;
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 하반기 투자 전략 — 미키피디아 학습 노트</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-400: #9ca3af;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+        body { background: #f3f4f6; color: var(--gray-800); line-height: 1.7; }
+        .container { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+        header { border-bottom: 1px solid var(--gray-200); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+        h1 { font-size: 1.7rem; font-weight: 800; color: var(--gray-900); line-height: 1.3; margin-bottom: 0.4rem; }
+        .subtitle { color: var(--gray-600); font-size: 0.92rem; }
+        .meta { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; }
+        .meta-chip { padding: 0.25rem 0.6rem; background: var(--gray-100); color: var(--gray-700); font-size: 0.75rem; border-radius: 99px; }
+        .source { display: inline-block; margin-top: 0.75rem; padding: 0.35rem 0.7rem; background: var(--gray-100); color: var(--gray-700); font-size: 0.8rem; border-radius: 4px; text-decoration: none; }
+        .source:hover { background: var(--gray-200); }
+
+        .warn { background: #fef2f2; border-left: 4px solid var(--danger); padding: 0.85rem 1.1rem; margin-bottom: 1.5rem; border-radius: 4px; font-size: 0.88rem; }
+        .warn-label { font-size: 0.7rem; font-weight: 700; color: var(--danger); letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+
+        .progress-wrap { background: var(--gray-100); border-radius: 99px; height: 8px; margin-bottom: 0.4rem; overflow: hidden; }
+        .progress-bar { background: var(--primary); height: 100%; width: 0%; transition: width 0.3s; }
+        .progress-text { text-align: right; font-size: 0.8rem; color: var(--gray-600); margin-bottom: 1.5rem; }
+
+        h2 { font-size: 1.25rem; font-weight: 700; color: var(--gray-900); margin: 2rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--primary); }
+
+        .chapter { background: white; border: 1px solid var(--gray-200); border-radius: 10px; padding: 1.4rem 1.6rem; margin-bottom: 1.1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .chapter-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem; }
+        .chapter-title { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); }
+        .chapter-time { font-size: 0.78rem; color: var(--gray-400); font-family: 'SF Mono', Monaco, monospace; }
+        .chapter-time a { color: var(--primary); text-decoration: none; }
+        .chapter-time a:hover { text-decoration: underline; }
+
+        .prompt-block { background: #eff6ff; border-left: 3px solid var(--primary); padding: 0.7rem 0.95rem; margin-bottom: 0.6rem; border-radius: 4px; }
+        .prompt-label { font-size: 0.7rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+        .prompt-text { font-size: 0.9rem; color: var(--gray-800); }
+        textarea { width: 100%; min-height: 70px; padding: 0.6rem 0.8rem; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 0.9rem; font-family: inherit; color: var(--gray-900); background: white; resize: vertical; margin-top: 0.4rem; }
+        textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .filled { border-color: var(--success); background: #f0fdf4; }
+
+        .actions { display: flex; gap: 0.5rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        .btn { padding: 0.55rem 1rem; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .btn:hover { background: var(--primary-dark); }
+        .btn.secondary { background: var(--gray-100); color: var(--gray-700); }
+        .btn.secondary:hover { background: var(--gray-200); }
+
+        .summary-card { background: white; border: 1px solid var(--gray-200); border-radius: 10px; padding: 1.4rem 1.6rem; margin-top: 1.5rem; }
+        .summary-card h3 { font-size: 1rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.6rem; }
+        .saved-note { font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem; }
+
+        footer { margin-top: 2rem; text-align: center; color: var(--gray-400); font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>2026 하반기 투자 전략 — 학습 노트</h1>
+            <p class="subtitle">미키피디아 영상 8챕터 — 영상 보면서 핵심 직접 채움</p>
+            <div class="meta">
+                <span class="meta-chip">채널: 미키피디아 (35.7만)</span>
+                <span class="meta-chip">2026-06-20</span>
+                <span class="meta-chip">조회 23.3만</span>
+                <span class="meta-chip">약 24분</span>
+            </div>
+            <a class="source" href="https://youtu.be/mZdNLxPr9j8" target="_blank" rel="noopener">원본 영상 ↗</a>
+        </header>
+
+        <div class="warn">
+            <div class="warn-label">사용법</div>
+            영상 1회 빠르게 본 후 — 챕터별로 본인 답 채우기. 자동 저장됨 (브라우저 localStorage). 다른 사람한테 *공유 시* 빈 칸으로 보임.
+        </div>
+
+        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="progress-text" id="progressText">0 / 24 완료</div>
+
+        <h2>챕터별 정리</h2>
+
+        <article class="chapter">
+            <div class="chapter-head">
+                <div class="chapter-title">1. 고평가 시대 평가</div>
+                <div class="chapter-time"><a href="https://youtu.be/mZdNLxPr9j8?t=9" target="_blank">0:09 ~</a></div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">발표자 핵심 주장</div>
+                <div class="prompt-text">"지금 시장이 *고평가* 라고 하는 근거 1개를 본인 말로"</div>
+                <textarea data-key="c1-claim" placeholder="예: PER N배, 역사적 평균 대비 X% 위..."></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">반대 시각</div>
+                <div class="prompt-text">"고평가 아니라는 입장의 근거 1개"</div>
+                <textarea data-key="c1-counter" placeholder="예: AI 생산성 향상으로 정당화..."></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">내 결론</div>
+                <div class="prompt-text">"본인은 어느 쪽? 왜?"</div>
+                <textarea data-key="c1-my" placeholder="짧게 1~2줄"></textarea>
+            </div>
+        </article>
+
+        <article class="chapter">
+            <div class="chapter-head">
+                <div class="chapter-title">2. AI 투자 전략</div>
+                <div class="chapter-time"><a href="https://youtu.be/mZdNLxPr9j8?t=351" target="_blank">5:51 ~</a></div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">발표자 전략</div>
+                <div class="prompt-text">"AI 투자 = *어떤 종목/섹터/방식* 추천?"</div>
+                <textarea data-key="c2-strategy" placeholder="예: 엔비디아 / ETF / 인프라주..."></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">WHY</div>
+                <div class="prompt-text">"그 추천의 *이유* 발표자가 든 것"</div>
+                <textarea data-key="c2-why" placeholder=""></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">내 적용</div>
+                <div class="prompt-text">"본인 thesis (장기침체→달러헷지) 와 맞물리는 부분 1개"</div>
+                <textarea data-key="c2-apply" placeholder=""></textarea>
+            </div>
+        </article>
+
+        <article class="chapter">
+            <div class="chapter-head">
+                <div class="chapter-title">3. 금리 상승 추세</div>
+                <div class="chapter-time"><a href="https://youtu.be/mZdNLxPr9j8?t=908" target="_blank">15:08 ~</a></div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">금리 방향 + 근거</div>
+                <div class="prompt-text">"발표자가 본 금리 향후 방향 + 근거 수치"</div>
+                <textarea data-key="c3-direction" placeholder=""></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">자산 영향</div>
+                <div class="prompt-text">"금리 변화가 *주식/채권/현금* 에 미치는 영향 정리"</div>
+                <textarea data-key="c3-impact" placeholder=""></textarea>
+            </div>
+        </article>
+
+        <article class="chapter">
+            <div class="chapter-head">
+                <div class="chapter-title">4. 가상화폐 전망</div>
+                <div class="chapter-time"><a href="https://youtu.be/mZdNLxPr9j8?t=986" target="_blank">16:26 ~</a></div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">전망 + 이유</div>
+                <div class="prompt-text">"발표자 입장 (긍정/부정/중립) + 핵심 근거 1개"</div>
+                <textarea data-key="c4-view" placeholder=""></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">내 판단</div>
+                <div class="prompt-text">"본인 현재 비중·계획에 영향 줌? 안 줌? 왜?"</div>
+                <textarea data-key="c4-my" placeholder=""></textarea>
+            </div>
+        </article>
+
+        <article class="chapter">
+            <div class="chapter-head">
+                <div class="chapter-title">5. AI 기기 시장</div>
+                <div class="chapter-time"><a href="https://youtu.be/mZdNLxPr9j8?t=1078" target="_blank">17:58 ~</a></div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">유망 기업/제품</div>
+                <div class="prompt-text">"발표자가 언급한 *AI 디바이스 관련 종목·제품*"</div>
+                <textarea data-key="c5-companies" placeholder=""></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">시장 규모 / 타임라인</div>
+                <div class="prompt-text">"발표자가 든 수치·일정"</div>
+                <textarea data-key="c5-numbers" placeholder=""></textarea>
+            </div>
+        </article>
+
+        <article class="chapter">
+            <div class="chapter-head">
+                <div class="chapter-title">6. 주목 산업 (하반기 관심 분야)</div>
+                <div class="chapter-time"><a href="https://youtu.be/mZdNLxPr9j8?t=1257" target="_blank">20:57 ~</a></div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">발표자 Top 1~3</div>
+                <div class="prompt-text">"발표자가 꼽은 *주목 산업* 1~3개"</div>
+                <textarea data-key="c6-top" placeholder=""></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">이유</div>
+                <div class="prompt-text">"왜 그 산업?"</div>
+                <textarea data-key="c6-why" placeholder=""></textarea>
+            </div>
+        </article>
+
+        <article class="chapter">
+            <div class="chapter-head">
+                <div class="chapter-title">7. 결론 + 다음 액션</div>
+                <div class="chapter-time"><a href="https://youtu.be/mZdNLxPr9j8?t=1419" target="_blank">23:39 ~</a></div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">발표자 한 줄 결론</div>
+                <textarea data-key="c7-conclusion" placeholder=""></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">내 다음 액션 (오늘·이번 주 안에 할 1가지)</div>
+                <textarea data-key="c7-action" placeholder="예: 적립식 비중 점검 / 환노출 추가 / 보류..."></textarea>
+            </div>
+        </article>
+
+        <h2>메타 정리 — 영상 자체 평가</h2>
+        <article class="chapter">
+            <div class="prompt-block">
+                <div class="prompt-label">설득력</div>
+                <div class="prompt-text">"발표자 주장 중 *가장 약한* 근거 1개. 왜 약한가?"</div>
+                <textarea data-key="meta-weak" placeholder=""></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">놓친 시각</div>
+                <div class="prompt-text">"24분 안에 *안 다뤘는데 다뤄야 했던* 주제 1개"</div>
+                <textarea data-key="meta-missing" placeholder=""></textarea>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">재시청 가치</div>
+                <div class="prompt-text">"이 영상을 *다시 볼* 가치 있음? 0~10 점 + 이유"</div>
+                <textarea data-key="meta-score" placeholder=""></textarea>
+            </div>
+        </article>
+
+        <div class="actions">
+            <button class="btn" onclick="exportMd()">Markdown 으로 복사</button>
+            <button class="btn secondary" onclick="clearAll()">전부 지우기</button>
+        </div>
+
+        <div class="summary-card">
+            <h3>저장 안내</h3>
+            <p class="saved-note">입력 시 자동 저장 (이 브라우저에만). 다른 기기 = 빈 칸으로 시작.<br>완성 후 *Markdown 으로 복사* → notion·md 에 박제 추천.</p>
+        </div>
+
+        <footer>
+            <p>수치 외우기 X. 본인 사고 흔적 = 진짜 자산.</p>
+        </footer>
+    </div>
+
+    <script>
+        const STORE = 'mickey-2026-h2-notes';
+        const textareas = document.querySelectorAll('textarea');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        function loadAll() {
+            const data = JSON.parse(localStorage.getItem(STORE) || '{}');
+            textareas.forEach(t => {
+                if (data[t.dataset.key]) {
+                    t.value = data[t.dataset.key];
+                    t.classList.add('filled');
+                }
+            });
+            updateProgress();
+        }
+
+        function saveOne(t) {
+            const data = JSON.parse(localStorage.getItem(STORE) || '{}');
+            if (t.value.trim()) {
+                data[t.dataset.key] = t.value;
+                t.classList.add('filled');
+            } else {
+                delete data[t.dataset.key];
+                t.classList.remove('filled');
+            }
+            localStorage.setItem(STORE, JSON.stringify(data));
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const filled = Array.from(textareas).filter(t => t.value.trim()).length;
+            const pct = (filled / textareas.length) * 100;
+            progressBar.style.width = pct + '%';
+            progressText.textContent = `${filled} / ${textareas.length} 완료`;
+        }
+
+        function exportMd() {
+            const data = JSON.parse(localStorage.getItem(STORE) || '{}');
+            let md = '# 2026 하반기 투자 전략 — 학습 노트\n\n';
+            md += '출처: https://youtu.be/mZdNLxPr9j8 (미키피디아, 2026-06-20)\n\n';
+            document.querySelectorAll('.chapter').forEach(c => {
+                const title = c.querySelector('.chapter-title');
+                if (title) md += `## ${title.textContent}\n\n`;
+                c.querySelectorAll('.prompt-block').forEach(p => {
+                    const label = p.querySelector('.prompt-label').textContent;
+                    const ta = p.querySelector('textarea');
+                    const val = data[ta.dataset.key] || '_(미작성)_';
+                    md += `**${label}**\n\n${val}\n\n`;
+                });
+            });
+            navigator.clipboard.writeText(md).then(() => alert('Markdown 클립보드 복사됨'));
+        }
+
+        function clearAll() {
+            if (!confirm('전부 지움? 되돌릴 수 없음.')) return;
+            localStorage.removeItem(STORE);
+            textareas.forEach(t => { t.value = ''; t.classList.remove('filled'); });
+            updateProgress();
+        }
+
+        textareas.forEach(t => t.addEventListener('input', () => saveOne(t)));
+        loadAll();
+    </script>
+</body>
+</html>

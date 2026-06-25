@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understand Anything — 코드베이스 지식 그래프</title>
+    <style>
+        :root {
+            --bg: #0b0f17;
+            --bg-soft: #111827;
+            --bg-card: #151c2c;
+            --border: #1f2937;
+            --border-soft: #1a2233;
+            --text: #e5e7eb;
+            --text-dim: #9ca3af;
+            --text-mute: #6b7280;
+            --accent: #38bdf8;
+            --accent-soft: #0c4a6e;
+            --gold: #fbbf24;
+            --green: #34d399;
+            --red: #f87171;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.7; min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+
+        header { border-bottom: 1px solid var(--border); padding-bottom: 1.75rem; margin-bottom: 2.5rem; }
+        .source-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text-mute); font-size: 0.82rem; text-decoration: none; margin-bottom: 0.7rem; }
+        .source-link:hover { color: var(--accent); }
+        h1 { font-size: 2rem; font-weight: 800; color: white; line-height: 1.25; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .tagline { color: var(--text-dim); font-size: 1rem; line-height: 1.6; font-style: italic; }
+        .meta { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+        .meta-chip { padding: 0.28rem 0.7rem; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-dim); font-size: 0.76rem; border-radius: 99px; font-weight: 500; }
+        .stats { display: flex; gap: 1.25rem; margin-top: 1rem; color: var(--text-mute); font-size: 0.82rem; }
+        .stats strong { color: var(--text); }
+
+        .lead { background: linear-gradient(135deg, #0c4a6e 0%, #075985 100%); border-radius: 14px; padding: 1.5rem 1.5rem; margin-bottom: 2rem; border: 1px solid #0ea5e9; }
+        .lead-label { font-size: 0.7rem; font-weight: 700; color: #7dd3fc; letter-spacing: 0.1em; margin-bottom: 0.5rem; text-transform: uppercase; }
+        .lead-text { color: white; font-size: 1.05rem; line-height: 1.6; font-weight: 500; }
+
+        section.block { background: var(--bg-card); border-radius: 12px; padding: 1.75rem 1.5rem; margin-bottom: 1.25rem; border: 1px solid var(--border); }
+        section.block h2 { font-size: 1.25rem; font-weight: 800; color: white; line-height: 1.3; margin-bottom: 1rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 0.5rem; }
+
+        .feature-list { list-style: none; display: flex; flex-direction: column; gap: 0.85rem; }
+        .feature-item { display: flex; gap: 0.85rem; align-items: flex-start; }
+        .feature-icon { font-size: 1.1rem; flex-shrink: 0; line-height: 1.5; }
+        .feature-text { color: var(--text); font-size: 0.94rem; line-height: 1.6; }
+        .feature-text strong { color: white; font-weight: 700; }
+
+        pre { background: #0b0f17; border: 1px solid var(--border-soft); border-radius: 8px; padding: 1rem 1.2rem; overflow-x: auto; margin: 0.8rem 0; }
+        code { font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; font-size: 0.88rem; color: var(--accent); }
+        pre code { color: var(--text); }
+        p code { background: #0b0f17; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.85em; }
+
+        .cmd-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+        .cmd-table td { padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border-soft); font-size: 0.88rem; }
+        .cmd-table td:first-child { font-family: 'SF Mono', Monaco, monospace; color: var(--accent); white-space: nowrap; padding-right: 1rem; width: 38%; }
+        .cmd-table td:last-child { color: var(--text-dim); }
+        .cmd-table tr:last-child td { border-bottom: none; }
+
+        .platform-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+        .platform-chip { padding: 0.5rem 0.75rem; background: var(--bg-soft); border: 1px solid var(--border-soft); border-radius: 6px; color: var(--text); font-size: 0.83rem; text-align: center; }
+
+        .stack-row { display: flex; gap: 0.85rem; padding: 0.85rem 0; border-bottom: 1px solid var(--border-soft); }
+        .stack-row:last-child { border-bottom: none; }
+        .stack-name { color: var(--accent); font-weight: 700; min-width: 130px; font-size: 0.9rem; }
+        .stack-desc { color: var(--text-dim); font-size: 0.9rem; line-height: 1.55; }
+
+        .callout { background: var(--bg-soft); border: 1px solid var(--gold); border-radius: 8px; padding: 1rem 1.2rem; margin-top: 0.5rem; }
+        .callout-label { display: inline-block; font-size: 0.7rem; font-weight: 700; color: var(--gold); letter-spacing: 0.08em; margin-bottom: 0.4rem; text-transform: uppercase; }
+        .callout-text { color: var(--text); font-size: 0.9rem; line-height: 1.6; }
+
+        .lang-list { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .lang-tag { padding: 0.35rem 0.7rem; background: var(--accent-soft); color: #7dd3fc; border-radius: 99px; font-size: 0.78rem; font-weight: 600; }
+
+        footer { text-align: center; color: var(--text-mute); font-size: 0.82rem; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        footer a { color: var(--accent); text-decoration: none; }
+
+        @media (max-width: 600px) {
+            .container { padding: 1.5rem 1rem 3rem; }
+            h1 { font-size: 1.55rem; }
+            section.block h2 { font-size: 1.1rem; }
+            section.block { padding: 1.35rem 1.1rem; }
+            .stats { flex-wrap: wrap; gap: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="https://github.com/Egonex-AI/Understand-Anything" class="source-link" target="_blank">
+                ↗ github.com/Egonex-AI/Understand-Anything
+            </a>
+            <h1>Understand Anything</h1>
+            <p class="tagline">"Graphs that teach > graphs that impress."<br>코드베이스를 클릭 가능한 지식 그래프로 변환하는 멀티 에이전트 Claude Code 플러그인.</p>
+            <div class="meta">
+                <span class="meta-chip">🧠 코드 이해</span>
+                <span class="meta-chip">📊 지식 그래프</span>
+                <span class="meta-chip">🤖 멀티 에이전트</span>
+                <span class="meta-chip">⚖️ MIT</span>
+            </div>
+            <div class="stats">
+                <span>⭐ <strong>67.5K</strong> stars</span>
+                <span>🍴 <strong>5.6K</strong> forks</span>
+                <span>📂 <strong>89</strong> issues</span>
+                <span>🔀 <strong>160</strong> PRs</span>
+            </div>
+        </header>
+
+        <div class="lead">
+            <div class="lead-label">한 줄 요약</div>
+            <p class="lead-text">코드를 <strong>탐색·검색·질문 가능한 인터랙티브 지식 그래프</strong>로 변환. Tree-sitter (구조) + LLM (의미) 하이브리드 파이프라인.</p>
+        </div>
+
+        <section class="block">
+            <h2>✨ 핵심 기능 8가지</h2>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <span class="feature-icon">🕸️</span>
+                    <span class="feature-text"><strong>인터랙티브 지식 그래프</strong> — 노드 기반 탐색. 파일·함수·클래스 단위로 시각화.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">🏢</span>
+                    <span class="feature-text"><strong>비즈니스 로직 매핑</strong> — 도메인·플로우·프로세스 단계 가시화.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">📚</span>
+                    <span class="feature-text"><strong>지식베이스 분석</strong> — Karpathy 패턴 LLM Wiki 지원.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">🧭</span>
+                    <span class="feature-text"><strong>아키텍처 가이드 투어</strong> — 의존성 순서로 자동 정렬된 안내.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">🔎</span>
+                    <span class="feature-text"><strong>퍼지·시맨틱 검색</strong> — 코드 전반에 걸친 의미 검색.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">🔀</span>
+                    <span class="feature-text"><strong>Diff Impact 분석</strong> — 변경 사항의 파급 효과 미리보기.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">📐</span>
+                    <span class="feature-text"><strong>레이어 시각화</strong> — 아키텍처 그룹 자동 인식.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">🎭</span>
+                    <span class="feature-text"><strong>페르소나 적응형 UI</strong> — 사용자 유형에 따라 복잡도 조절.</span>
+                </li>
+            </ul>
+        </section>
+
+        <section class="block">
+            <h2>⌨️ 주요 명령어</h2>
+            <table class="cmd-table">
+                <tr>
+                    <td>/understand</td>
+                    <td>전체 코드베이스 분석</td>
+                </tr>
+                <tr>
+                    <td>/understand-dashboard</td>
+                    <td>인터랙티브 시각화 열기</td>
+                </tr>
+                <tr>
+                    <td>/understand-chat &lt;query&gt;</td>
+                    <td>코드에 대해 질문</td>
+                </tr>
+                <tr>
+                    <td>/understand-diff</td>
+                    <td>현재 변경분 영향 분석</td>
+                </tr>
+                <tr>
+                    <td>/understand-domain</td>
+                    <td>비즈니스 도메인 지식 추출</td>
+                </tr>
+                <tr>
+                    <td>/understand-knowledge &lt;path&gt;</td>
+                    <td>Wiki 지식베이스 분석</td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="block">
+            <h2>🛠️ 기술 스택</h2>
+            <div class="stack-row">
+                <div class="stack-name">Tree-sitter</div>
+                <div class="stack-desc">결정론적 구조 파싱 — import, class, function 정적 분석.</div>
+            </div>
+            <div class="stack-row">
+                <div class="stack-name">LLM 통합</div>
+                <div class="stack-desc">요약·비즈니스 매핑 등 의미 분석 담당.</div>
+            </div>
+            <div class="stack-row">
+                <div class="stack-name">멀티 에이전트</div>
+                <div class="stack-desc">스캐닝·분석·아키텍처 탐지·투어 생성 전담 에이전트 파이프라인.</div>
+            </div>
+            <div class="stack-row">
+                <div class="stack-name">언어 구성</div>
+                <div class="stack-desc">TypeScript 70.9% 중심, JS·Python 보조.</div>
+            </div>
+        </section>
+
+        <section class="block">
+            <h2>🌍 멀티 플랫폼 지원</h2>
+            <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.5rem;">다음 환경에서 동작:</p>
+            <div class="platform-grid">
+                <span class="platform-chip">Claude Code</span>
+                <span class="platform-chip">Cursor</span>
+                <span class="platform-chip">VS Code + Copilot</span>
+                <span class="platform-chip">Copilot CLI</span>
+                <span class="platform-chip">Codex</span>
+                <span class="platform-chip">OpenCode</span>
+                <span class="platform-chip">Gemini CLI</span>
+                <span class="platform-chip">Pi Agent</span>
+                <span class="platform-chip">Vibe CLI</span>
+                <span class="platform-chip">Hermes</span>
+                <span class="platform-chip">Cline</span>
+                <span class="platform-chip">KIMI CLI</span>
+                <span class="platform-chip">Trae</span>
+                <span class="platform-chip">Nanobot</span>
+            </div>
+        </section>
+
+        <section class="block">
+            <h2>💰 토큰 사용량 + 한국어 지원</h2>
+            <p style="color: var(--text-dim); font-size: 0.92rem; line-height: 1.65; margin-bottom: 0.6rem;">
+                <strong style="color: white;">초기 분석</strong>은 상당한 토큰 소비. 이후 실행은 <strong style="color: var(--green);">변경된 파일만 증분 처리</strong>.
+            </p>
+            <div class="callout">
+                <span class="callout-label">⚠️ 권장</span>
+                <p class="callout-text">큰 코드베이스에 바로 적용하기 전, <strong>작은 사이드 프로젝트로 토큰 비용을 먼저 검증</strong>하는 것을 권장.</p>
+            </div>
+            <p style="color: var(--text-dim); font-size: 0.92rem; margin-top: 1rem; margin-bottom: 0.4rem;"><code>--language</code> 플래그로 출력 언어 설정 가능:</p>
+            <div class="lang-list">
+                <span class="lang-tag">English</span>
+                <span class="lang-tag">中文</span>
+                <span class="lang-tag">日本語</span>
+                <span class="lang-tag">한국어</span>
+                <span class="lang-tag">Русский</span>
+            </div>
+        </section>
+
+        <section class="block">
+            <h2>👥 팀 협업</h2>
+            <p style="color: var(--text-dim); font-size: 0.94rem; line-height: 1.65; margin-bottom: 0.6rem;">
+                생성된 그래프는 저장소에 <code>.understand-anything/</code> 디렉토리로 커밋 가능. 팀원은 <strong style="color: white;">비싼 파이프라인 단계를 건너뛰고</strong> 바로 그래프 활용.
+            </p>
+            <div class="callout">
+                <span class="callout-label">💡 팁</span>
+                <p class="callout-text">그래프 크기가 <strong>10MB 초과</strong>하면 Git LFS 사용 권장.</p>
+            </div>
+        </section>
+
+        <section class="block">
+            <h2>🎯 적용 인사이트</h2>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <span class="feature-icon">①</span>
+                    <span class="feature-text"><strong>새 코드베이스 온보딩</strong> — 신규 팀원이 며칠 걸려 잡던 전체 구조를 그래프로 단축.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">②</span>
+                    <span class="feature-text"><strong>변경 영향 분석</strong> — <code>/understand-diff</code> 로 버그 fix·리팩토링 시 파급 효과 미리 확인.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">③</span>
+                    <span class="feature-text"><strong>LLM Wiki 지식 그래프화</strong> — <code>/understand-knowledge</code> 로 문서 기반 학습 자료를 탐색 가능한 구조로.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">④</span>
+                    <span class="feature-text"><strong>비즈니스 로직 가시화</strong> — <code>/understand-domain</code> 으로 도메인 흐름을 코드에서 추출. PM·기획자와 협업에 유용.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">⑤</span>
+                    <span class="feature-text"><strong>토큰 비용은 점검 필수</strong> — 첫 실행 비용 큼. 소규모 프로젝트로 사전 검증 후 큰 코드베이스 적용.</span>
+                </li>
+                <li class="feature-item">
+                    <span class="feature-icon">⑥</span>
+                    <span class="feature-text"><strong>아키텍처 약점 보강</strong> — 전체 구조 파악이 약한 개발자에게 가장 효과적. 가이드 투어가 의존성 순서로 자동 정렬.</span>
+                </li>
+            </ul>
+        </section>
+
+        <footer>
+            MIT License · © Yuxiang Lin and Infinite Universe, Inc. · <a href="https://github.com/Egonex-AI/Understand-Anything" target="_blank">GitHub ↗</a>
+        </footer>
+    </div>
+</body>
+</html>
